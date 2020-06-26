@@ -12,6 +12,8 @@ static SRC_FILE_CANDS: &'static [&'static str] = &["parser", "scanner"];
 static VALID_EXTENSIONS: &'static [&'static str] = &["cc", "c"];
 
 fn main() {
+    // Create a tuple of (folder name, folder relative path) that we can reference the desired
+    // output name for each compiled grammar and the path to the source code for that compiled unit
     let grammars = fs::read_dir(GRAMMARS_DIR)
         .unwrap()
         .map(|res| res.map(|e| (e.file_name(), e.path())))
