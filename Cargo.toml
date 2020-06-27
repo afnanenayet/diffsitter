@@ -13,3 +13,7 @@ anyhow = "1.0"
 
 [build-dependencies]
 cc="*"
+
+[profile.release]
+codegen-units = 1
+lto = "fat"
