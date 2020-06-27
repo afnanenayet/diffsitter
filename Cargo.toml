@@ -8,6 +8,7 @@ edition = "2018"
 
 [dependencies]
 tree-sitter = "0.16.1"
+structopt = "0.3"
 
 [build-dependencies]
 cc="*"
