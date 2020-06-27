@@ -22,4 +22,8 @@ pub struct Args {
     /// List the file types supported by this build
     #[structopt(short, long)]
     pub list_file_types: bool,
+
+    /// Output the parsed AST as a graphviz dot file
+    #[structopt(short, long)]
+    pub show_graph: bool,
 }
