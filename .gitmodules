@@ -16,3 +16,6 @@
 [submodule "grammars/tree-sitter-haskell"]
 	path = grammars/tree-sitter-haskell
 	url = git@github.com:tree-sitter/tree-sitter-haskell.git
+[submodule "tree-sitter-c"]
+	path = tree-sitter-c
+	url = git@github.com:tree-sitter/tree-sitter-c.git
