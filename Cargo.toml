@@ -15,6 +15,7 @@ colour = "0.5"
 
 [build-dependencies]
 cc="*"
+phf = { version = "0.8", features = ["macros"] }
 
 [profile.release]
 codegen-units = 1

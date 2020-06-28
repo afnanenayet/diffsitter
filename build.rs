@@ -1,4 +1,5 @@
 use cc;
+use phf::{phf_set, Set};
 use std::{
     env, fs, io,
     path::{Path, PathBuf},
@@ -13,6 +14,14 @@ static SRC_FILE_CANDS: &'static [&'static str] = &["parser", "scanner"];
 
 /// Valid extensions for source files
 static VALID_EXTENSIONS: &'static [&'static str] = &["cc", "c"];
+
+/// Tree sitter grammars are *supposed* to be valid C, but it seems like some parsers need to be
+/// compiled with C++ to avoid build errors
+static COMPILE_WITH_CPP: Set<&'static str> = phf_set! {
+    "agda",
+    "php",
+    "python",
+};
 
 /// Generated the code fo the map between the language identifiers and the function to initialize
 /// the language parser
@@ -52,6 +61,12 @@ use phf::phf_map;
         let output_name = grammar.0.to_string_lossy();
         let dir = grammar.1.join("src");
 
+        // The folder names for the grammars are hyphenated, we want to conver those to underscores
+        // so we can form valid rust identifiers
+        let language = output_name
+            .trim_start_matches("tree-sitter-")
+            .replace("-", "_");
+
         // Take the cartesian product of the source names and valid extensions, and filter for the
         // ones that actually exist in each folder
         let build_files: Vec<PathBuf> = SRC_FILE_CANDS
@@ -66,25 +81,19 @@ use phf::phf_map;
             .collect();
 
         // If building with C++ fails, try building with C
-        let build_result = cc::Build::new()
-            .include(&dir)
-            .files(build_files.clone())
-            .cpp(true)
-            .try_compile(&output_name);
-
-        // Fallback to building with C
-        if build_result.is_err() {
+        if COMPILE_WITH_CPP.contains(language.as_str()) {
             let _ = cc::Build::new()
                 .include(&dir)
-                .files(build_files)
+                .files(build_files.clone())
+                .cpp(true)
+                .try_compile(&output_name);
+        } else {
+            let _ = cc::Build::new()
+                .include(&dir)
+                .files(build_files.clone())
                 .try_compile(&output_name);
         }
 
-        // The folder names for the grammars are hyphenated, we want to conver those to underscores
-        // so we can form valid rust identifiers
-        let language = output_name
-            .trim_start_matches("tree-sitter-")
-            .replace("-", "_");
         codegen += &format!(
             "extern \"C\" {{ pub fn tree_sitter_{}() -> Language; }}\n",
             language
