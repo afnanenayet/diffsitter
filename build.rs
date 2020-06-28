@@ -65,11 +65,20 @@ use phf::phf_map;
             .filter(|candidate_file| candidate_file.is_file())
             .collect();
 
-        cc::Build::new()
+        // If building with C++ fails, try building with C
+        let build_result = cc::Build::new()
             .include(&dir)
-            .files(build_files)
+            .files(build_files.clone())
             .cpp(true)
-            .compile(&output_name);
+            .try_compile(&output_name);
+
+        // Fallback to building with C
+        if build_result.is_err() {
+            cc::Build::new()
+                .include(&dir)
+                .files(build_files)
+                .compile(&output_name);
+        }
 
         // The folder names for the grammars are hyphenated, we want to conver those to underscores
         // so we can form valid rust identifiers
