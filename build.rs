@@ -1,5 +1,8 @@
 use cc;
-use std::{fs, io, path::PathBuf};
+use std::{
+    env, fs, io,
+    path::{Path, PathBuf},
+};
 
 /// The top level directory for each language that contains the tree sitter source for each
 /// language
@@ -19,6 +22,10 @@ fn main() {
         .map(|res| res.map(|e| (e.file_name(), e.path())))
         .collect::<Result<Vec<_>, io::Error>>()
         .unwrap();
+
+    // The string represented the generated code that we get from the tree sitter grammars
+    let mut codegen = String::from("use tree_sitter::Language;\n");
+    let mut languages = Vec::new();
 
     // Iterate through each grammar, find the valid source files that are in it, and add them as
     // compilation targets
@@ -43,5 +50,31 @@ fn main() {
             .include(&dir)
             .files(build_files)
             .compile(&output_name);
+
+        // The folder names for the grammars are hyphenated, we want to conver those to underscores
+        // so we can form valid rust identifiers
+        let language = output_name
+            .trim_start_matches("tree-sitter-")
+            .replace("-", "_");
+        codegen += &format!(
+            "extern \"C\" {{ pub fn tree_sitter_{}() -> Language; }}\n",
+            language
+        );
+        languages.push(language.to_owned());
     }
+
+    // Build a vector of the languages for code gen
+    let mut vector_decl = "static LANGUAGES: &'static [&'static str] = &[".to_owned();
+
+    for language in languages {
+        vector_decl += &format!("\"{}\",\n", language);
+    }
+    vector_decl += "];\n";
+    codegen += &vector_decl;
+
+    // Write the generated code to a file called `grammar.rs`
+    let codegen_out_dir = env::var_os("OUT_DIR").unwrap();
+    let codegen_path = Path::new(&codegen_out_dir).join("grammar.rs");
+    fs::write(&codegen_path, codegen).unwrap();
+    println!("cargo:rerun-if-changed=build.rs");
 }
