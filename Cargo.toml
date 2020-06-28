@@ -10,6 +10,8 @@ edition = "2018"
 tree-sitter = "0.16.1"
 structopt = "0.3"
 anyhow = "1.0"
+phf = { version = "0.8", features = ["macros"] }
+colour = "0.5"
 
 [build-dependencies]
 cc="*"
