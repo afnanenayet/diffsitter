@@ -1,5 +1,7 @@
 # diffsitter
 
+[![asciicast](https://asciinema.org/a/343668.svg)](https://asciinema.org/a/343668)
+
 ## Summary
 
 `diffsitter` performs diffs on text files using the AST to compute the diff
