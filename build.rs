@@ -31,21 +31,11 @@ fn codegen_language_map(languages: &[String]) -> String {
 fn main() {
     // Create a tuple of (folder name, folder relative path) that we can reference the desired
     // output name for each compiled grammar and the path to the source code for that compiled unit
-    //let grammars = fs::read_dir(GRAMMARS_DIR)
-        //.unwrap()
-        //.map(|res| res.map(|e| (e.file_name(), e.path())))
-        //.collect::<Result<Vec<_>, io::Error>>()
-        //.unwrap();
-
-    // TODO revert this back to automatically building grammars. We need to whitelist because of
-    // build errors.
-    let grammars = vec![
-        (PathBuf::from("rust"), PathBuf::from("grammars/tree-sitter-rust")),
-        (PathBuf::from("css"), PathBuf::from("grammars/tree-sitter-css")),
-        (PathBuf::from("go"), PathBuf::from("grammars/tree-sitter-go")),
-        (PathBuf::from("c"), PathBuf::from("grammars/tree-sitter-c")),
-        (PathBuf::from("swift"), PathBuf::from("grammars/tree-sitter-swift")),
-    ];
+    let grammars = fs::read_dir(GRAMMARS_DIR)
+        .unwrap()
+        .map(|res| res.map(|e| (e.file_name(), e.path())))
+        .collect::<Result<Vec<_>, io::Error>>()
+        .unwrap();
 
     // The string represented the generated code that we get from the tree sitter grammars
     let mut codegen = String::from(
@@ -78,6 +68,7 @@ use phf::phf_map;
         cc::Build::new()
             .include(&dir)
             .files(build_files)
+            .cpp(true)
             .compile(&output_name);
 
         // The folder names for the grammars are hyphenated, we want to conver those to underscores
