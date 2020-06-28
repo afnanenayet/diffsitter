@@ -8,36 +8,31 @@ use cli::Args;
 use colour::{dark_green, red};
 use std::fs;
 use structopt::StructOpt;
-use tree_sitter::Parser;
 
 fn main() -> Result<()> {
     let args: Args = Args::from_args();
-    let text_a = fs::read_to_string(args.a)?;
-    let text_b = fs::read_to_string(args.b)?;
-    let language = unsafe { parse::tree_sitter_rust() };
-    let mut parser_a = Parser::new();
-    let mut parser_b = Parser::new();
-    parser_a.set_language(language).unwrap();
-    parser_b.set_language(language).unwrap();
-    let ast_a = parser_a.parse(&text_a, None).unwrap();
-    let ast_b = parser_b.parse(&text_b, None).unwrap();
+    let text_a = fs::read_to_string(&args.a)?;
+    let text_b = fs::read_to_string(&args.b)?;
+    let file_type: Option<&str> = args.file_type.as_ref().map(|x| x.as_str());
+    let ast_a = parse::parse_file(&args.a, file_type)?;
+    let ast_b = parse::parse_file(&args.b, file_type)?;
 
     let diff_vec_a = DiffVector::from_ts_tree(&ast_a, &text_a);
     let diff_vec_b = DiffVector::from_ts_tree(&ast_b, &text_b);
-    let edits = ast::min_edit(&diff_vec_a, &diff_vec_b);
+    let entries = ast::min_edit(&diff_vec_a, &diff_vec_b);
 
     // Iterate through each edit and print it out
-    for edit in edits {
-        match edit {
+    for entry in entries {
+        match entry {
             Edit::Addition(entry) => {
-                dark_green!("++ {}\n", entry.text);
+                dark_green!("+{}\n", entry.text);
             }
             Edit::Deletion(entry) => {
-                red!("-- {}\n", entry.text);
+                red!("-{}\n", entry.text);
             }
             Edit::Substitution { old, new } => {
-                red!("-- {}\n", old.text);
-                dark_green!("++ {}\n", new.text);
+                red!("-{}\n", old.text);
+                dark_green!("+{}\n", new.text);
             }
             _ => (),
         }
