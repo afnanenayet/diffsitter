@@ -14,7 +14,7 @@ phf = { version = "0.8", features = ["macros"] }
 colour = "0.5"
 
 [build-dependencies]
-cc="*"
+cc = { version = "1.0", features = ["parallel"] }
 phf = { version = "0.8", features = ["macros"] }
 
 [profile.release]

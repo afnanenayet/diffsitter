@@ -19,8 +19,12 @@ static VALID_EXTENSIONS: &'static [&'static str] = &["cc", "c"];
 /// compiled with C++ to avoid build errors
 static COMPILE_WITH_CPP: Set<&'static str> = phf_set! {
     "agda",
+    "ruby",
+    "ocaml",
     "php",
     "python",
+    "haskell",
+    "bash",
 };
 
 /// Generated the code fo the map between the language identifiers and the function to initialize
@@ -69,12 +73,12 @@ use phf::phf_map;
 
         // Take the cartesian product of the source names and valid extensions, and filter for the
         // ones that actually exist in each folder
-        let build_files: Vec<PathBuf> = SRC_FILE_CANDS
+        let build_files: Vec<PathBuf> = VALID_EXTENSIONS
             .iter()
-            .flat_map(|&fname| {
-                VALID_EXTENSIONS
+            .flat_map(|&ext| {
+                SRC_FILE_CANDS
                     .iter()
-                    .map(move |&ext| PathBuf::from(fname).with_extension(ext))
+                    .map(move |&fname| PathBuf::from(fname).with_extension(ext))
             })
             .map(|filename| dir.join(filename))
             .filter(|candidate_file| candidate_file.is_file())
