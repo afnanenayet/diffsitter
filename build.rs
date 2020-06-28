@@ -74,10 +74,10 @@ use phf::phf_map;
 
         // Fallback to building with C
         if build_result.is_err() {
-            cc::Build::new()
+            let _ = cc::Build::new()
                 .include(&dir)
                 .files(build_files)
-                .compile(&output_name);
+                .try_compile(&output_name);
         }
 
         // The folder names for the grammars are hyphenated, we want to conver those to underscores
