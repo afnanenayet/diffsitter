@@ -1,63 +1,63 @@
 [submodule "grammars/tree-sitter-php"]
 	path = grammars/tree-sitter-php
-	url = https://github.com:tree-sitter/tree-sitter-php.git
+	url = https://github.com/tree-sitter/tree-sitter-php.git
 [submodule "grammars/tree-sitter-java"]
 	path = grammars/tree-sitter-java
-	url = https://github.com:tree-sitter/tree-sitter-java.git
+	url = https://github.com/tree-sitter/tree-sitter-java.git
 [submodule "grammars/--name"]
 	path = grammars/--name
-	url = https://github.com:tree-sitter/tree-sitter-rust.git
+	url = https://github.com/tree-sitter/tree-sitter-rust.git
 [submodule "grammars/tree-sitter-rust"]
 	path = grammars/tree-sitter-rust
-	url = https://github.com:tree-sitter/tree-sitter-rust.git
+	url = https://github.com/tree-sitter/tree-sitter-rust.git
 [submodule "grammars/tree-sitter-go"]
 	path = grammars/tree-sitter-go
-	url = https://github.com:tree-sitter/tree-sitter-go.git
+	url = https://github.com/tree-sitter/tree-sitter-go.git
 [submodule "grammars/tree-sitter-haskell"]
 	path = grammars/tree-sitter-haskell
-	url = https://github.com:tree-sitter/tree-sitter-haskell.git
+	url = https://github.com/tree-sitter/tree-sitter-haskell.git
 [submodule "tree-sitter-c"]
 	path = tree-sitter-c
-	url = https://github.com:tree-sitter/tree-sitter-c.git
+	url = https://github.com/tree-sitter/tree-sitter-c.git
 [submodule "grammars/tree-sitter-c"]
 	path = grammars/tree-sitter-c
-	url = https://github.com:tree-sitter/tree-sitter-c.git
+	url = https://github.com/tree-sitter/tree-sitter-c.git
 [submodule "grammars/tree-sitter-bash"]
 	path = grammars/tree-sitter-bash
-	url = https://github.com:tree-sitter/tree-sitter-bash.git
+	url = https://github.com/tree-sitter/tree-sitter-bash.git
 [submodule "grammars/tree-sitter-c-sharp"]
 	path = grammars/tree-sitter-c-sharp
-	url = https://github.com:tree-sitter/tree-sitter-c-sharp.git
+	url = https://github.com/tree-sitter/tree-sitter-c-sharp.git
 [submodule "grammars/tree-sitter-css"]
 	path = grammars/tree-sitter-css
-	url = https://github.com:tree-sitter/tree-sitter-css.git
+	url = https://github.com/tree-sitter/tree-sitter-css.git
 [submodule "grammars/tree-sitter-html"]
 	path = grammars/tree-sitter-html
-	url = https://github.com:tree-sitter/tree-sitter-html.git
+	url = https://github.com/tree-sitter/tree-sitter-html.git
 [submodule "grammars/tree-sitter-ocaml"]
 	path = grammars/tree-sitter-ocaml
-	url = https://github.com:tree-sitter/tree-sitter-ocaml.git
+	url = https://github.com/tree-sitter/tree-sitter-ocaml.git
 [submodule "grammars/tree-sitter-python"]
 	path = grammars/tree-sitter-python
-	url = https://github.com:tree-sitter/tree-sitter-python.git
+	url = https://github.com/tree-sitter/tree-sitter-python.git
 [submodule "grammars/tree-sitter-ruby"]
 	path = grammars/tree-sitter-ruby
-	url = https://github.com:tree-sitter/tree-sitter-ruby.git
+	url = https://github.com/tree-sitter/tree-sitter-ruby.git
 [submodule "grammars/tree-sitter-typescript"]
 	path = grammars/tree-sitter-typescript
-	url = https://github.com:tree-sitter/tree-sitter-typescript.git
+	url = https://github.com/tree-sitter/tree-sitter-typescript.git
 [submodule "grammars/tree-sitter-verilog"]
 	path = grammars/tree-sitter-verilog
-	url = https://github.com:tree-sitter/tree-sitter-verilog.git
+	url = https://github.com/tree-sitter/tree-sitter-verilog.git
 [submodule "grammars/tree-sitter-julia"]
 	path = grammars/tree-sitter-julia
-	url = https://github.com:tree-sitter/tree-sitter-julia.git
+	url = https://github.com/tree-sitter/tree-sitter-julia.git
 [submodule "grammars/tree-sitter-agda"]
 	path = grammars/tree-sitter-agda
-	url = https://github.com:tree-sitter/tree-sitter-agda.git
+	url = https://github.com/tree-sitter/tree-sitter-agda.git
 [submodule "grammars/tree-sitter-scala"]
 	path = grammars/tree-sitter-scala
-	url = https://github.com:tree-sitter/tree-sitter-scala.git
+	url = https://github.com/tree-sitter/tree-sitter-scala.git
 [submodule "grammars/tree-sitter-swift"]
 	path = grammars/tree-sitter-swift
-	url = https://github.com:tree-sitter/tree-sitter-swift.git
+	url = https://github.com/tree-sitter/tree-sitter-swift.git
