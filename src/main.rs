@@ -5,6 +5,7 @@ mod parse;
 use anyhow::Result;
 use ast::{DiffVector, Edit};
 use cli::Args;
+use colour::{dark_green, red};
 use std::fs;
 use structopt::StructOpt;
 use tree_sitter::Parser;
@@ -25,22 +26,18 @@ fn main() -> Result<()> {
     let diff_vec_b = DiffVector::from_ts_tree(&ast_b, &text_b);
     let edits = ast::min_edit(&diff_vec_a, &diff_vec_b);
 
-    if edits.len() == 0 {
-        println!("asts match");
-    } else {
-        println!("asts don't match");
-    }
-
+    // Iterate through each edit and print it out
     for edit in edits {
         match edit {
             Edit::Addition(entry) => {
-                print!("\n++ {}\n", entry.text);
+                dark_green!("++ {}\n", entry.text);
             }
             Edit::Deletion(entry) => {
-                print!("\n-- {}\n", entry.text);
+                red!("-- {}\n", entry.text);
             }
             Edit::Substitution { old, new } => {
-                print!("\n-- {}\n++ {}\n", old.text, new.text);
+                red!("-- {}\n", old.text);
+                dark_green!("++ {}\n", new.text);
             }
             _ => (),
         }

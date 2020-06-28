@@ -274,11 +274,5 @@ pub fn min_edit<'a>(a: &'a DiffVector, b: &'a DiffVector) -> Vec<Edit<'a>> {
             }
         }
     }
-
-    // TODO
-    //for row in dp {
-        //println!("{:?}", row);
-    //}
-    // Return the edit path that led to the minimum edit distance
     recreate_path((a.len(), b.len()), predecessors)
 }
