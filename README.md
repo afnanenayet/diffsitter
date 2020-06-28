@@ -17,3 +17,11 @@ languages supported by the tree-sitter project.
 In order to develop for this project, you need to clone the project and
 initialize all submodules (each tree-sitter grammar is added as a
 subdirectory).
+
+```sh
+git clone
+git submodule --init --recursive
+```
+
+This uses `cargo` with the `cc` crate, so you need to install rust and have a
+working `C` compiler (the tree-sitter grammars are written in C).
