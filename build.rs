@@ -20,11 +20,11 @@ static VALID_EXTENSIONS: &'static [&'static str] = &["cc", "c"];
 static COMPILE_WITH_CPP: Set<&'static str> = phf_set! {
     "agda",
     "ruby",
-    "ocaml",
+    //"ocaml",
     "php",
     "python",
-    "haskell",
-    "bash",
+    //"haskell",
+    //"bash",
 };
 
 /// Generated the code fo the map between the language identifiers and the function to initialize
@@ -89,13 +89,15 @@ use phf::phf_map;
             let _ = cc::Build::new()
                 .include(&dir)
                 .files(build_files.clone())
+                .flag_if_supported("-std=c11")
                 .cpp(true)
-                .try_compile(&output_name);
+                .compile(&output_name);
         } else {
             let _ = cc::Build::new()
                 .include(&dir)
                 .files(build_files.clone())
-                .try_compile(&output_name);
+                .flag_if_supported("-std=c++17")
+                .compile(&output_name);
         }
 
         codegen += &format!(
