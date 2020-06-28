@@ -4,18 +4,27 @@ mod parse;
 
 use anyhow::Result;
 use ast::{DiffVector, Edit};
-use cli::Args;
+use cli::{list_supported_languages, Args};
 use colour::{dark_green, red};
 use std::fs;
 use structopt::StructOpt;
 
 fn main() -> Result<()> {
     let args: Args = Args::from_args();
-    let text_a = fs::read_to_string(&args.a)?;
-    let text_b = fs::read_to_string(&args.b)?;
+
+    if args.list {
+        list_supported_languages();
+        return Ok(());
+    }
+
+    let path_a = args.a.unwrap();
+    let path_b = args.b.unwrap();
+
+    let text_a = fs::read_to_string(&path_a)?;
+    let text_b = fs::read_to_string(&path_b)?;
     let file_type: Option<&str> = args.file_type.as_ref().map(|x| x.as_str());
-    let ast_a = parse::parse_file(&args.a, file_type)?;
-    let ast_b = parse::parse_file(&args.b, file_type)?;
+    let ast_a = parse::parse_file(&path_a, file_type)?;
+    let ast_b = parse::parse_file(&path_b, file_type)?;
 
     let diff_vec_a = DiffVector::from_ts_tree(&ast_a, &text_a);
     let diff_vec_b = DiffVector::from_ts_tree(&ast_b, &text_b);

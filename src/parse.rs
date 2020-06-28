@@ -65,3 +65,10 @@ pub fn parse_file(p: &Path, language: Option<&str>) -> Result<Tree> {
         None => Err(format_err!("Failed to parse file: {}", p.to_string_lossy())),
     }
 }
+
+/// Return the languages supported by this instance of the tool in alphabetically sorted order
+pub fn supported_languages() -> Vec<&'static str> {
+    let mut keys: Vec<&'static str> = LANGUAGES.keys().map(|&x| x).collect();
+    keys.sort_unstable();
+    keys
+}
