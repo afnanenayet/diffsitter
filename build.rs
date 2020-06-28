@@ -14,6 +14,20 @@ static SRC_FILE_CANDS: &'static [&'static str] = &["parser", "scanner"];
 /// Valid extensions for source files
 static VALID_EXTENSIONS: &'static [&'static str] = &["cc", "c"];
 
+/// Generated the code fo the map between the language identifiers and the function to initialize
+/// the language parser
+fn codegen_language_map(languages: &[String]) -> String {
+    // Build a vector of the languages for code gen
+    let mut map_decl =
+        "\nstatic LANGUAGES: phf::Map<&'static str, unsafe extern \"C\" fn() -> Language> = phf_map! {\n".to_owned();
+
+    for language in languages {
+        map_decl += &format!("\"{}\" => tree_sitter_{},\n", language, language);
+    }
+    map_decl += "};\n";
+    map_decl
+}
+
 fn main() {
     // Create a tuple of (folder name, folder relative path) that we can reference the desired
     // output name for each compiled grammar and the path to the source code for that compiled unit
@@ -24,7 +38,12 @@ fn main() {
         .unwrap();
 
     // The string represented the generated code that we get from the tree sitter grammars
-    let mut codegen = String::from("use tree_sitter::Language;\n");
+    let mut codegen = String::from(
+        r#"
+use tree_sitter::Language;
+use phf::phf_map;
+"#,
+    );
     let mut languages = Vec::new();
 
     // Iterate through each grammar, find the valid source files that are in it, and add them as
@@ -62,19 +81,11 @@ fn main() {
         );
         languages.push(language.to_owned());
     }
-
-    // Build a vector of the languages for code gen
-    let mut vector_decl = "static LANGUAGES: &'static [&'static str] = &[".to_owned();
-
-    for language in languages {
-        vector_decl += &format!("\"{}\",\n", language);
-    }
-    vector_decl += "];\n";
-    codegen += &vector_decl;
+    codegen += &codegen_language_map(&languages);
 
     // Write the generated code to a file called `grammar.rs`
     let codegen_out_dir = env::var_os("OUT_DIR").unwrap();
-    let codegen_path = Path::new(&codegen_out_dir).join("grammar.rs");
+    let codegen_path = Path::new(&codegen_out_dir).join("generated_grammar.rs");
     fs::write(&codegen_path, codegen).unwrap();
     println!("cargo:rerun-if-changed=build.rs");
 }
