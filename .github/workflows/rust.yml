@@ -13,21 +13,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Install clang
-      run: sudo apt-get install -y clang
     - uses: actions/checkout@v2
       with:
         submodules: 'recursive'
     - name: Build
       run: cargo build --verbose
-      env:
-        CC: clang
-        CXX: clang++
     - name: Run tests
       run: cargo test --verbose
-      env:
-        CC: clang
-        CXX: clang++
     - uses: actions/cache@v2
       with:
         path: |
