@@ -109,7 +109,12 @@ use phf::phf_map;
         let successful_compilation = if c_sources.len() == 2 {
             compile_grammar(&dir, &c_sources[..], &output_name, false).is_ok()
         } else {
-            compile_grammar(&dir, &sources[..], &output_name, true).is_ok()
+            // We're having some trouble linking on linux
+            if cfg!(target_os = "linux") {
+                false
+            } else {
+                compile_grammar(&dir, &sources[..], &output_name, true).is_ok()
+            }
         };
 
         // If compilation succeeded with either case, link the language
