@@ -1,5 +1,4 @@
 use cc;
-use phf::{phf_set, Set};
 use std::{
     env, fs, io,
     path::{Path, PathBuf},
@@ -12,20 +11,8 @@ static GRAMMARS_DIR: &'static str = "grammars";
 /// Candidate source file names that might be in a tree sitter directory
 static SRC_FILE_CANDS: &'static [&'static str] = &["parser", "scanner"];
 
-/// Valid extensions for source files
-static VALID_EXTENSIONS: &'static [&'static str] = &["cc", "c"];
-
-/// Tree sitter grammars are *supposed* to be valid C, but it seems like some parsers need to be
-/// compiled with C++ to avoid build errors
-static COMPILE_WITH_CPP: Set<&'static str> = phf_set! {
-    "agda",
-    "ruby",
-    "ocaml",
-    "php",
-    "python",
-    //"haskell",
-    //"bash",
-};
+/// All of the valid extensions
+static ALL_EXTS: &'static [&'static str] = &["c", "cc", "cpp"];
 
 /// Generated the code fo the map between the language identifiers and the function to initialize
 /// the language parser
@@ -39,6 +26,29 @@ fn codegen_language_map(languages: &[String]) -> String {
     }
     map_decl += "};\n";
     map_decl
+}
+
+/// Compile a set of grammar files, specifying whether they should be compiled with a C++ compiler
+fn compile_grammar(
+    include: &Path,
+    files: &[PathBuf],
+    output_name: &str,
+    cpp: bool,
+) -> Result<(), cc::Error> {
+    if cpp {
+        cc::Build::new()
+            .include(include)
+            .files(files)
+            .cpp(true)
+            .warnings(false)
+            .try_compile(&output_name)
+    } else {
+        cc::Build::new()
+            .include(include)
+            .files(files)
+            .warnings(false)
+            .try_compile(&output_name)
+    }
 }
 
 fn main() {
@@ -71,40 +81,37 @@ use phf::phf_map;
             .trim_start_matches("tree-sitter-")
             .replace("-", "_");
 
-        // Take the cartesian product of the source names and valid extensions, and filter for the
-        // ones that actually exist in each folder
-        let build_files: Vec<PathBuf> = VALID_EXTENSIONS
+        // Filter for source files. A source file is valid if it has file name and extension that
+        // is specified by the constants above, and is a valid file
+        let sources: Vec<PathBuf> = SRC_FILE_CANDS
             .iter()
-            .flat_map(|&ext| {
-                SRC_FILE_CANDS
+            .flat_map(|base| {
+                ALL_EXTS
                     .iter()
-                    .map(move |&fname| PathBuf::from(fname).with_extension(ext))
+                    .map(move |ext| PathBuf::from(base.to_owned()).with_extension(ext.to_owned()))
             })
-            .map(|filename| dir.join(filename))
-            .filter(|candidate_file| candidate_file.is_file())
+            .map(|f| dir.join(f))
+            .filter(|cand| cand.is_file())
             .collect();
 
-        // If building with C++ fails, try building with C
-        if COMPILE_WITH_CPP.contains(language.as_str()) {
-            let _ = cc::Build::new()
-                .include(&dir)
-                .files(build_files.clone())
-                .cpp(true)
-                .warnings(false)
-                .try_compile(&output_name);
-        } else {
-            let _ = cc::Build::new()
-                .include(&dir)
-                .files(build_files.clone())
-                .warnings(false)
-                .try_compile(&output_name);
+        // If there are no valid source files, don't bother trying to compile
+        if sources.is_empty() {
+            continue;
         }
 
-        codegen += &format!(
-            "extern \"C\" {{ pub fn tree_sitter_{}() -> Language; }}\n",
-            language
-        );
-        languages.push(language.to_owned());
+        // Attempt to compile with C++, then C
+        let successful_compilation = compile_grammar(&dir, &sources[..], &output_name, true)
+            .is_ok()
+            || compile_grammar(&dir, &sources[..], &output_name, false).is_ok();
+
+        // If compilation succeeded with either case, link the language
+        if successful_compilation {
+            codegen += &format!(
+                "extern \"C\" {{ pub fn tree_sitter_{}() -> Language; }}\n",
+                language
+            );
+            languages.push(language.to_owned());
+        }
     }
     codegen += &codegen_language_map(&languages);
 
