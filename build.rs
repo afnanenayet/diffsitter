@@ -110,11 +110,12 @@ use phf::phf_map;
             compile_grammar(&dir, &c_sources[..], &output_name, false).is_ok()
         } else {
             // We're having some trouble linking on linux
-            if cfg!(target_os = "linux") {
-                false
-            } else {
-                compile_grammar(&dir, &sources[..], &output_name, true).is_ok()
-            }
+            //if cfg!(target_os = "linux") {
+            //false
+            //} else {
+            //compile_grammar(&dir, &sources[..], &output_name, true).is_ok()
+            //}
+            false
         };
 
         // If compilation succeeded with either case, link the language
