@@ -81,6 +81,13 @@ use phf::phf_map;
             .trim_start_matches("tree-sitter-")
             .replace("-", "_");
 
+        let c_sources: Vec<PathBuf> = SRC_FILE_CANDS
+            .iter()
+            .map(|base| PathBuf::from(base.to_owned()).with_extension("c".to_owned()))
+            .map(|f| dir.join(f))
+            .filter(|cand| cand.is_file())
+            .collect();
+
         // Filter for source files. A source file is valid if it has file name and extension that
         // is specified by the constants above, and is a valid file
         let sources: Vec<PathBuf> = SRC_FILE_CANDS
@@ -99,10 +106,11 @@ use phf::phf_map;
             continue;
         }
 
-        // Attempt to compile with C++, then C
-        let successful_compilation = compile_grammar(&dir, &sources[..], &output_name, true)
-            .is_ok()
-            || compile_grammar(&dir, &sources[..], &output_name, false).is_ok();
+        let successful_compilation = if c_sources.len() == 2 {
+            compile_grammar(&dir, &c_sources[..], &output_name, false).is_ok()
+        } else {
+            compile_grammar(&dir, &sources[..], &output_name, true).is_ok()
+        };
 
         // If compilation succeeded with either case, link the language
         if successful_compilation {
