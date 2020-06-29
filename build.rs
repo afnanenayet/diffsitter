@@ -44,6 +44,7 @@ fn compile_grammar(
             .try_compile(&output_name)
     } else {
         cc::Build::new()
+            .cpp(false)
             .include(include)
             .files(files)
             .warnings(false)
