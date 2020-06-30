@@ -110,7 +110,8 @@ use phf::phf_map;
         // If both files have a `.c` extension, then we will compile using the C compiler,
         // otherwise the grammar supplied C++ sources.
         let successful_compilation = if c_sources.len() == 2 {
-            compile_grammar(&dir, &c_sources[..], &output_name, false).is_ok()
+            //compile_grammar(&dir, &c_sources[..], &output_name, false).is_ok()
+            false
         } else {
             compile_grammar(&dir, &sources[..], &output_name, true).is_ok()
         };
