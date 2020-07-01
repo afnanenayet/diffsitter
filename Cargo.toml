@@ -19,4 +19,4 @@ phf = { version = "0.8", features = ["macros"] }
 
 [profile.release]
 codegen-units = 1
-lto = "fat"
+lto = "thin"
