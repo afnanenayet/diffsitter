@@ -37,9 +37,9 @@ fn compile_grammar(
 ) -> Result<(), cc::Error> {
     if cpp {
         cc::Build::new()
+            .cpp(true)
             .include(include)
             .files(files)
-            .cpp(true)
             .warnings(false)
             .try_compile(&output_name)
     } else {
@@ -106,16 +106,13 @@ use phf::phf_map;
             continue;
         }
 
+        // If both files have a `.c` extension, then we will compile using the C compiler,
+        // otherwise the grammar supplied C++ sources.
         let successful_compilation = if c_sources.len() == 2 {
-            compile_grammar(&dir, &c_sources[..], &output_name, false).is_ok()
-        } else {
-            // We're having some trouble linking on linux
-            //if cfg!(target_os = "linux") {
-            //false
-            //} else {
-            //compile_grammar(&dir, &sources[..], &output_name, true).is_ok()
-            //}
+            //compile_grammar(&dir, &c_sources[..], &output_name, false).is_ok()
             false
+        } else {
+            compile_grammar(&dir, &sources[..], &output_name, true).is_ok()
         };
 
         // If compilation succeeded with either case, link the language
