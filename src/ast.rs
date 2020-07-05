@@ -147,20 +147,16 @@ fn build<'a>(vector: &RefCell<Vec<Entry<'a>>>, node: tree_sitter::Node<'a>, text
 /// edit distance so we can construct a diff
 fn recreate_path<'a>(last_idx: (usize, usize), preds: PredecessorMap<'a>) -> Vec<Edit<'a>> {
     let mut curr_idx = last_idx;
-    let mut last_edit = preds.get(&curr_idx);
     let mut res = Vec::new();
 
-    while last_edit.is_some() {
-        if let Some(&unwrapped_edit) = preds.get(&curr_idx) {
-            match unwrapped_edit.edit {
-                Edit::Noop => (),
-                _ => {
-                    res.insert(0, unwrapped_edit.edit);
-                }
+    while let Some(&entry) = preds.get(&curr_idx) {
+        match entry.edit {
+            Edit::Noop => (),
+            _ => {
+                res.insert(0, entry.edit);
             }
-            curr_idx = unwrapped_edit.previous_idx;
         }
-        last_edit = preds.get(&curr_idx);
+        curr_idx = entry.previous_idx;
     }
     res
 }
