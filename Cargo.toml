@@ -1,8 +1,14 @@
 [package]
 name = "diffsitter"
-version = "0.1.0"
+version = "0.0.1"
 authors = ["Afnan Enayet <afnan@afnan.io>"]
 edition = "2018"
+license = "MIT"
+license-file = "LICENSE"
+keywords = ["diff", "ast", "difftool"]
+categories = ["command-line-utilities"]
+build = "build.rs"
+homepage = "https://github.com/afnanenayet/diffsitter"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
