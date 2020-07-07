@@ -1,5 +1,6 @@
 [package]
 name = "diffsitter"
+description = "An AST based difftool for meaningful diffs"
 version = "0.0.1"
 authors = ["Afnan Enayet <afnan@afnan.io>"]
 edition = "2018"
