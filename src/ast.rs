@@ -41,7 +41,7 @@ pub enum Edit<'a> {
     },
 }
 
-/// An entry in the diff vector
+/// A mapping between a tree-sitter node and the text it corresponds to
 #[derive(Debug, Clone, Copy)]
 pub struct Entry<'a> {
     /// The node an entry in the diff vector refers to
