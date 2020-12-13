@@ -14,7 +14,7 @@ homepage = "https://github.com/afnanenayet/diffsitter"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tree-sitter = "0.16.1"
+tree-sitter = "0.17"
 structopt = "0.3"
 anyhow = "1.0"
 phf = { version = "0.8", features = ["macros"] }
@@ -23,6 +23,7 @@ colour = "0.5"
 [build-dependencies]
 cc = { version = "1.0", features = ["parallel"] }
 phf = { version = "0.8", features = ["macros"] }
+anyhow = "1.0"
 
 [profile.release]
 codegen-units = 1
