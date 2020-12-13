@@ -186,7 +186,9 @@ type PredecessorMap<'a> = HashMap<Idx2D, PredEntry<'a>>;
 /// Compute the shortest edit path between two `DiffVector`s
 ///
 /// This method computes the minimum edit distance between two `DiffVector`s, which are the leaf
-/// nodes of an AST.
+/// nodes of an AST, using the standard DP approach to the longest common subsequence problem, the
+/// only twist is that here, instead of operating on raw text, we're operating on the leaves of an
+/// AST.
 ///
 /// This has O(mn) space complexity and uses O(mn) space to compute the minimum edit path, and then
 /// has O(mn) space complexity and uses O(mn) space to backtrack and recreate the path.
