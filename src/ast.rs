@@ -145,7 +145,7 @@ fn build<'a>(vector: &RefCell<Vec<Entry<'a>>>, node: tree_sitter::Node<'a>, text
 ///
 /// This walks back through the predecessors to recreate the path of edits that led to the minimum
 /// edit distance so we can construct a diff
-fn recreate_path<'a>(last_idx: (usize, usize), preds: PredecessorMap<'a>) -> Vec<Edit<'a>> {
+fn recreate_path(last_idx: (usize, usize), preds: PredecessorMap) -> Vec<Edit> {
     let mut curr_idx = last_idx;
     let mut res = Vec::new();
 
