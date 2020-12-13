@@ -1,6 +1,10 @@
 //! Utilities for processing the ASTs provided by `tree_sitter`
 
-use std::{cell::RefCell, collections::HashMap, ops::Index};
+use std::{
+    cell::RefCell,
+    collections::{HashMap, VecDeque},
+    ops::Index,
+};
 use tree_sitter::Node as TSNode;
 use tree_sitter::Tree as TSTree;
 
@@ -145,15 +149,15 @@ fn build<'a>(vector: &RefCell<Vec<Entry<'a>>>, node: tree_sitter::Node<'a>, text
 ///
 /// This walks back through the predecessors to recreate the path of edits that led to the minimum
 /// edit distance so we can construct a diff
-fn recreate_path(last_idx: (usize, usize), preds: PredecessorMap) -> Vec<Edit> {
+fn recreate_path(last_idx: (usize, usize), preds: PredecessorMap) -> VecDeque<Edit> {
     let mut curr_idx = last_idx;
-    let mut res = Vec::new();
+    let mut res = VecDeque::new();
 
     while let Some(&entry) = preds.get(&curr_idx) {
         match entry.edit {
             Edit::Noop => (),
             _ => {
-                res.insert(0, entry.edit);
+                res.push_front(entry.edit);
             }
         }
         curr_idx = entry.previous_idx;
@@ -186,7 +190,7 @@ type PredecessorMap<'a> = HashMap<Idx2D, PredEntry<'a>>;
 ///
 /// This has O(mn) space complexity and uses O(mn) space to compute the minimum edit path, and then
 /// has O(mn) space complexity and uses O(mn) space to backtrack and recreate the path.
-pub fn min_edit<'a>(a: &'a DiffVector, b: &'a DiffVector) -> Vec<Edit<'a>> {
+pub fn min_edit<'a>(a: &'a DiffVector, b: &'a DiffVector) -> VecDeque<Edit<'a>> {
     // The optimal move that led to the edit distance at an index. We use this map to backtrack
     // and build the edit path once we find the optimal edit distance
     let mut predecessors: PredecessorMap<'a> = HashMap::new();
