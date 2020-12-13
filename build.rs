@@ -1,23 +1,29 @@
 use anyhow::Result;
 use cc;
 use std::{
-    env, fs,
+    env,
+    fmt::Display,
+    fs,
     path::{Path, PathBuf},
 };
 
-/// The top level directory for each language that contains the tree sitter source for each
-/// language
-static GRAMMARS_DIR: &'static str = "grammars";
-
-/// Candidate source file names that might be in a tree sitter directory
-static SRC_FILE_CANDS: &'static [&'static str] = &["parser", "scanner"];
-
-/// All of the valid extensions
-static ALL_EXTS: &'static [&'static str] = &["c", "cc", "cpp"];
+/// Compilation information as it pertains to a tree-sitter grammar
+///
+/// This contains information about a parser that is required at build time
+struct GrammarCompileInfo<'a> {
+    /// The language's display name
+    display_name: &'a str,
+    /// The location of the grammar's source relative to `build.rs`
+    path: PathBuf,
+    /// Whether the project should be compiled as a `C++` source
+    compile_cpp: bool,
+    /// The source files in the project that should be compiled
+    source_files: Vec<&'a str>,
+}
 
 /// Generated the code fo the map between the language identifiers and the function to initialize
 /// the language parser
-fn codegen_language_map(languages: &[String]) -> String {
+fn codegen_language_map<T: ToString + Display>(languages: &[T]) -> String {
     // Build a vector of the languages for code gen
     let mut map_decl =
         "\nstatic LANGUAGES: phf::Map<&'static str, unsafe extern \"C\" fn() -> Language> = phf_map! {\n".to_owned();
@@ -53,19 +59,19 @@ fn compile_grammar(
 }
 
 fn main() -> Result<()> {
-    // Create a tuple of (folder name, folder relative path) that we can reference the desired
-    // output name for each compiled grammar and the path to the source code for that compiled unit
-    //let _grammars = fs::read_dir(GRAMMARS_DIR)?
-    //.map(|res| res.map(|e| (String::from(e.file_name().to_string_lossy()), e.path())))
-    //.collect::<Result<Vec<_>, io::Error>>()?;
-    // While we deal with build errors, we will temporarily just hardcode using the Rust parser,
-    // since it seems to work.
     let grammars = [
-        (
-            "tree-sitter-rust",
-            PathBuf::from("grammars/tree-sitter-rust"),
-        ),
-        ("tree-sitter-c", PathBuf::from("grammars/tree-sitter-c")),
+        GrammarCompileInfo {
+            display_name: "rust",
+            path: PathBuf::from("grammars/tree-sitter-rust"),
+            source_files: vec!["parser.c", "scanner.c"],
+            compile_cpp: false,
+        },
+        //GrammarCompileInfo {
+            //display_name: "c",
+            //path: PathBuf::from("grammars/tree-sitter-c"),
+            //source_files: vec!["parser.c"],
+            //compile_cpp: false,
+        //},
     ];
 
     // The string represented the generated code that we get from the tree sitter grammars
@@ -81,57 +87,32 @@ use phf::phf_map;
     // Iterate through each grammar, find the valid source files that are in it, and add them as
     // compilation targets
     for grammar in &grammars {
-        let output_name = grammar.0;
-        //let output_name = &grammar.0;
-        let dir = grammar.1.join("src");
+        // The directory to the source files
+        let dir = grammar.path.join("src");
 
         // The folder names for the grammars are hyphenated, we want to conver those to underscores
         // so we can form valid rust identifiers
-        let language = output_name
-            .trim_start_matches("tree-sitter-")
-            .replace("-", "_");
-
-        let c_sources: Vec<PathBuf> = SRC_FILE_CANDS
-            .iter()
-            .map(|base| PathBuf::from(base.to_owned()).with_extension("c".to_owned()))
-            .map(|f| dir.join(f))
-            .filter(|cand| cand.is_file())
-            .collect();
-
-        // Filter for source files. A source file is valid if it has file name and extension that
-        // is specified by the constants above, and is a valid file
-        let sources: Vec<PathBuf> = SRC_FILE_CANDS
-            .iter()
-            .flat_map(|&base| {
-                ALL_EXTS
-                    .iter()
-                    .map(move |&ext| PathBuf::from(base).with_extension(ext))
-            })
-            .map(|f| dir.join(f))
-            .filter(|cand| cand.is_file())
-            .collect();
+        let language = grammar.display_name;
 
         // If there are no valid source files, don't bother trying to compile
-        if sources.is_empty() {
-            continue;
+        if grammar.source_files.is_empty() {
+            return Err(anyhow::format_err!(
+                "Supplied source files for {} parser is empty",
+                grammar.display_name
+            ));
         }
-
-        // FIXME
-        // The heuristic for determining whether to compile the files with c or c++ has been
-        // disabled until we can get builds working. For now, we just stick to C.
-        /*
-        // If both files have a `.c` extension, then we will compile using the C compiler,
-        // otherwise the grammar supplied C++ sources.
-        // let successful_compilation =
-        if c_sources.len() == 2 {
-            compile_grammar(&dir, &c_sources[..], &output_name, false)?;
-            //false
-        } else {
-            compile_grammar(&dir, &sources[..], &output_name, true)?;
-        }
-        */
-        compile_grammar(&dir, &c_sources[..], &output_name, false)?;
-
+        // Prepend {grammar-repo}/src path to each file
+        let sources: Vec<_> = grammar
+            .source_files
+            .iter()
+            .map(|&filename| dir.join(filename))
+            .collect();
+        compile_grammar(
+            &dir,
+            &sources[..],
+            &grammar.display_name,
+            grammar.compile_cpp,
+        )?;
         // If compilation succeeded with either case, link the language
         //if successful_compilation {
         codegen += &format!(
@@ -140,9 +121,9 @@ use phf::phf_map;
         );
         languages.push(language);
     }
-    codegen += &codegen_language_map(&languages);
+    codegen += &codegen_language_map(&languages[..]);
 
-    // Write the generated code to a file called `grammar.rs`
+    // Write the generated code to a file in the resulting build directory
     let codegen_out_dir = env::var_os("OUT_DIR").unwrap();
     let codegen_path = Path::new(&codegen_out_dir).join("generated_grammar.rs");
     fs::write(&codegen_path, codegen).unwrap();
