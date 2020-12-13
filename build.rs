@@ -60,10 +60,13 @@ fn main() -> Result<()> {
     //.collect::<Result<Vec<_>, io::Error>>()?;
     // While we deal with build errors, we will temporarily just hardcode using the Rust parser,
     // since it seems to work.
-    let grammars = [(
-        "tree-sitter-rust",
-        PathBuf::from("grammars/tree-sitter-rust"),
-    )];
+    let grammars = [
+        (
+            "tree-sitter-rust",
+            PathBuf::from("grammars/tree-sitter-rust"),
+        ),
+        ("tree-sitter-c", PathBuf::from("grammars/tree-sitter-c")),
+    ];
 
     // The string represented the generated code that we get from the tree sitter grammars
     let mut codegen = String::from(
