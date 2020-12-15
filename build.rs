@@ -10,15 +10,19 @@ use std::{
 /// Compilation information as it pertains to a tree-sitter grammar
 ///
 /// This contains information about a parser that is required at build time
+#[derive(Debug, Default)]
 struct GrammarCompileInfo<'a> {
     /// The language's display name
     display_name: &'a str,
     /// The location of the grammar's source relative to `build.rs`
     path: PathBuf,
-    /// Whether the project should be compiled as a `C++` source
-    compile_cpp: bool,
-    /// The source files in the project that should be compiled
-    source_files: Vec<&'a str>,
+    /// The sources to compile with a C compiler
+    c_sources: Vec<&'a str>,
+    /// The sources to compile with a C++ compiler
+    ///
+    /// The files supplied here will be compiled into a library named
+    /// "tree-sitter-{language}-cpp-compile-diffsitter" to avoid clashing with other symbols.
+    cpp_sources: Vec<&'a str>,
 }
 
 /// Generated the code fo the map between the language identifiers and the function to initialize
@@ -38,39 +42,49 @@ fn codegen_language_map<T: ToString + Display>(languages: &[T]) -> String {
 /// Compile a language's grammar
 fn compile_grammar(
     include: &Path,
-    files: &[PathBuf],
+    c_sources: &[PathBuf],
+    cpp_sources: &[PathBuf],
     output_name: &str,
-    compile_cpp: bool,
 ) -> Result<(), cc::Error> {
-    if compile_cpp {
+    if !cpp_sources.is_empty() {
         cc::Build::new()
             .cpp(true)
             .include(include)
-            .files(files)
+            .files(cpp_sources)
             .warnings(false)
-            .try_compile(&output_name)
-    } else {
+            .try_compile(&format!("{}-cpp-compile-diffsiter", &output_name))?;
+    }
+
+    if !c_sources.is_empty() {
         cc::Build::new()
             .include(include)
-            .files(files)
+            .files(c_sources)
             .warnings(false)
-            .try_compile(&output_name)
+            .try_compile(&output_name)?;
     }
+    Ok(())
 }
 
 fn main() -> Result<()> {
-    let grammars = [
+    let grammars = vec![
         GrammarCompileInfo {
             display_name: "rust",
             path: PathBuf::from("grammars/tree-sitter-rust"),
-            source_files: vec!["parser.c", "scanner.c"],
-            compile_cpp: false,
+            c_sources: vec!["parser.c", "scanner.c"],
+            ..GrammarCompileInfo::default()
+        },
+        GrammarCompileInfo {
+            display_name: "cpp",
+            path: PathBuf::from("grammars/tree-sitter-cpp"),
+            c_sources: vec!["parser.c"],
+            cpp_sources: vec!["scanner.cc"],
+            ..GrammarCompileInfo::default()
         },
         //GrammarCompileInfo {
-            //display_name: "c",
-            //path: PathBuf::from("grammars/tree-sitter-c"),
-            //source_files: vec!["parser.c"],
-            //compile_cpp: false,
+        //display_name: "c",
+        //path: PathBuf::from("grammars/tree-sitter-c"),
+        //source_files: vec!["parser.c"],
+        //compile_cpp: false,
         //},
     ];
 
@@ -95,23 +109,28 @@ use phf::phf_map;
         let language = grammar.display_name;
 
         // If there are no valid source files, don't bother trying to compile
-        if grammar.source_files.is_empty() {
+        if grammar.c_sources.is_empty() && grammar.cpp_sources.is_empty() {
             return Err(anyhow::format_err!(
                 "Supplied source files for {} parser is empty",
                 grammar.display_name
             ));
         }
         // Prepend {grammar-repo}/src path to each file
-        let sources: Vec<_> = grammar
-            .source_files
+        let c_sources: Vec<_> = grammar
+            .c_sources
+            .iter()
+            .map(|&filename| dir.join(filename))
+            .collect();
+        let cpp_sources: Vec<_> = grammar
+            .cpp_sources
             .iter()
             .map(|&filename| dir.join(filename))
             .collect();
         compile_grammar(
             &dir,
-            &sources[..],
+            &c_sources[..],
+            &cpp_sources[..],
             &grammar.display_name,
-            grammar.compile_cpp,
         )?;
         // If compilation succeeded with either case, link the language
         //if successful_compilation {
