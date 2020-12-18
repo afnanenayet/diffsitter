@@ -28,14 +28,12 @@ struct GrammarCompileInfo<'a> {
 /// Generated the code fo the map between the language identifiers and the function to initialize
 /// the language parser
 fn codegen_language_map<T: ToString + Display>(languages: &[T]) -> String {
-    // Build a vector of the languages for code gen
-    let mut map_decl =
-        "\nstatic LANGUAGES: phf::Map<&'static str, unsafe extern \"C\" fn() -> Language> = phf_map! {\n".to_owned();
-
-    for language in languages {
-        map_decl += &format!("\"{}\" => tree_sitter_{},\n", language, language);
-    }
-    map_decl += "};\n";
+    let body: String = languages
+        .iter()
+        .map(|lang| format!("\"{}\" => tree_sitter_{},\n", lang, lang))
+        .collect();
+    let map_decl = format!(
+        "\nstatic LANGUAGES: phf::Map<&'static str, unsafe extern \"C\" fn() -> Language> = phf_map! {{\n {}\n }};\n", body);
     map_decl
 }
 
