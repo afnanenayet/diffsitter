@@ -5,7 +5,7 @@ mod parse;
 use anyhow::Result;
 use ast::{DiffVector, Edit};
 use cli::{list_supported_languages, Args};
-use colour::{dark_green, red};
+use console::{style, Term};
 use paw;
 use std::fs;
 
@@ -29,18 +29,41 @@ fn main(args: Args) -> Result<()> {
     let diff_vec_b = DiffVector::from_ts_tree(&ast_b, &text_b);
     let entries = ast::min_edit(&diff_vec_a, &diff_vec_b);
 
+    // Set up terminal output/formatting
+    let term = Term::stdout();
+    // The style to apply to added text
+    let addition_style = console::Style::new().green();
+    // The style to apply to deleted text
+    let deletion_style = console::Style::new().red();
+
     // Iterate through each edit and print it out
     for entry in entries {
         match entry {
-            Edit::Addition(entry) => {
-                dark_green!("+{}\n", entry.text);
+            Edit::Addition(new) => {
+                term.write_line(
+                    &addition_style
+                        .apply_to(format!("> {}", new.text))
+                        .to_string(),
+                )?;
             }
-            Edit::Deletion(entry) => {
-                red!("-{}\n", entry.text);
+            Edit::Deletion(old) => {
+                term.write_line(
+                    &deletion_style
+                        .apply_to(format!("< {}", old.text))
+                        .to_string(),
+                )?;
             }
             Edit::Substitution { old, new } => {
-                red!("-{}\n", old.text);
-                dark_green!("+{}\n", new.text);
+                term.write_line(
+                    &deletion_style
+                        .apply_to(format!("< {}", old.text))
+                        .to_string(),
+                )?;
+                term.write_line(
+                    &addition_style
+                        .apply_to(format!("> {}", new.text))
+                        .to_string(),
+                )?;
             }
             _ => (),
         }
