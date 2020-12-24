@@ -17,7 +17,7 @@ tree-sitter = "0.17"
 structopt = { version = "0.3", features = ["paw"] }
 anyhow = "1.0"
 phf = { version = "0.8", features = ["macros"] }
-colour = "0.5"
+console = "0.13"
 paw = "1.0"
 
 [build-dependencies]
