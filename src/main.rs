@@ -6,12 +6,11 @@ use anyhow::Result;
 use ast::{DiffVector, Edit};
 use cli::{list_supported_languages, Args};
 use colour::{dark_green, red};
+use paw;
 use std::fs;
-use structopt::StructOpt;
 
-fn main() -> Result<()> {
-    let args: Args = Args::from_args();
-
+#[paw::main]
+fn main(args: Args) -> Result<()> {
     if args.list {
         list_supported_languages();
         return Ok(());
