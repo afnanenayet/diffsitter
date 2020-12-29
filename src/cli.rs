@@ -5,7 +5,11 @@ use std::path::PathBuf;
 use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
-#[structopt(name = "diffsitter", about = "AST based diffs")]
+#[structopt(
+    name = "diffsitter",
+    about = "AST based diffs",
+    setting = structopt::clap::AppSettings::ColoredHelp
+)]
 pub struct Args {
     /// List the file types supported by this build
     #[structopt(short, long = "list")]
