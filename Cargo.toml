@@ -19,6 +19,10 @@ anyhow = "1.0"
 phf = { version = "0.8", features = ["macros"] }
 console = "0.14"
 paw = "1.0"
+strum = "0.20"
+strum_macros = "0.20"
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.5"
 
 [build-dependencies]
 cc = { version = "1.0", features = ["parallel"] }

@@ -15,7 +15,7 @@ macro_rules! min {
 }
 
 /// An edit is an addition of deletion of text
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Edit<'a> {
     /// A no-op
     ///
@@ -54,15 +54,18 @@ pub struct Entry<'a> {
     /// surrounding the syntax
     pub reference: TSNode<'a>,
 
-    /// A reference to the text the entry refers to
+    /// A reference to the text the node refers to
+    ///
+    /// This is different from the `source_text` that the [AstVector](AstVector) refers to, as the
+    /// entry only holds a reference to the specific range of text that the node covers.
     pub text: &'a str,
 }
 
-/// A vector that allows for easy traversal through the leafs of an AST
+/// A vector that allows for linear traversal through the leafs of an AST.
 ///
-/// We use a vector so that we can use a dynamic programming approach to calculating the edit
-/// distance between two syntax trees
-pub struct DiffVector<'a> {
+/// This representation of the tree leaves is much more convenient for things like dynamic
+/// programming, and provides useful for formatting.
+pub struct AstVector<'a> {
     /// The leaves of the AST, build with an in-order traversal
     pub leaves: Vec<Entry<'a>>,
 
@@ -70,7 +73,7 @@ pub struct DiffVector<'a> {
     pub source_text: &'a str,
 }
 
-impl<'a> DiffVector<'a> {
+impl<'a> AstVector<'a> {
     /// Create a `DiffVector` from a `tree_sitter` tree
     ///
     /// This method calls a helper function that does an in-order traversal of the tree and adds
@@ -78,7 +81,7 @@ impl<'a> DiffVector<'a> {
     pub fn from_ts_tree(tree: &'a TSTree, text: &'a str) -> Self {
         let leaves = RefCell::new(Vec::new());
         build(&leaves, tree.root_node(), text);
-        DiffVector {
+        AstVector {
             leaves: leaves.into_inner(),
             source_text: text,
         }
@@ -90,7 +93,7 @@ impl<'a> DiffVector<'a> {
     }
 }
 
-impl<'a> Index<usize> for DiffVector<'a> {
+impl<'a> Index<usize> for AstVector<'a> {
     type Output = Entry<'a>;
 
     fn index(&self, index: usize) -> &Self::Output {
@@ -104,8 +107,8 @@ impl<'a> PartialEq for Entry<'a> {
     }
 }
 
-impl<'a> PartialEq for DiffVector<'a> {
-    fn eq(&self, other: &DiffVector) -> bool {
+impl<'a> PartialEq for AstVector<'a> {
+    fn eq(&self, other: &AstVector) -> bool {
         if self.leaves.len() != other.leaves.len() {
             return false;
         }
@@ -129,6 +132,7 @@ impl<'a> PartialEq for DiffVector<'a> {
 /// Every time it encounters a leaf node, it stores the metadata and reference to the node in an
 /// `Entry` struct.
 fn build<'a>(vector: &RefCell<Vec<Entry<'a>>>, node: tree_sitter::Node<'a>, text: &'a str) {
+    // If the node is a leaf, we can stop traversing
     if node.child_count() == 0 {
         let node_text: &'a str = &text[node.byte_range()];
         vector.borrow_mut().push(Entry {
@@ -152,10 +156,13 @@ fn build<'a>(vector: &RefCell<Vec<Entry<'a>>>, node: tree_sitter::Node<'a>, text
 fn recreate_path(last_idx: (usize, usize), preds: PredecessorMap) -> VecDeque<Edit> {
     let mut curr_idx = last_idx;
     let mut res = VecDeque::new();
-
     while let Some(&entry) = preds.get(&curr_idx) {
         match entry.edit {
             Edit::Noop => (),
+            Edit::Substitution { old, new } => {
+                res.push_front(Edit::Addition(new));
+                res.push_front(Edit::Deletion(old));
+            }
             _ => {
                 res.push_front(entry.edit);
             }
@@ -192,7 +199,7 @@ type PredecessorMap<'a> = HashMap<Idx2D, PredEntry<'a>>;
 ///
 /// This has O(mn) space complexity and uses O(mn) space to compute the minimum edit path, and then
 /// has O(mn) space complexity and uses O(mn) space to backtrack and recreate the path.
-pub fn min_edit<'a>(a: &'a DiffVector, b: &'a DiffVector) -> VecDeque<Edit<'a>> {
+pub fn min_edit<'a>(a: &'a AstVector, b: &'a AstVector) -> VecDeque<Edit<'a>> {
     // The optimal move that led to the edit distance at an index. We use this map to backtrack
     // and build the edit path once we find the optimal edit distance
     let mut predecessors: PredecessorMap<'a> = HashMap::new();
