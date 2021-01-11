@@ -11,7 +11,7 @@ use strum_macros::EnumString;
 /// A copy of the [Color](console::Color) enum so we can serialize using serde, and get around the
 /// orphan rule.
 #[derive(Debug, PartialEq, Eq, Copy, Clone, Serialize, Deserialize)]
-#[serde(remote = "Color")]
+#[serde(remote = "Color", rename_all = "snake_case")]
 enum ColorDef {
     Black,
     Red,
@@ -58,7 +58,7 @@ pub struct TextFormatting {
     #[serde(with = "ColorDef")]
     pub emphasized_foreground: Color,
     /// The highlight/background color to use with emphasized text
-    #[serde(with = "opt_color_def")]
+    #[serde(with = "opt_color_def", default = "default_option")]
     pub highlight: Option<Color>,
     /// Whether to bold emphasized text
     pub bold: bool,
@@ -66,6 +66,14 @@ pub struct TextFormatting {
     pub underline: bool,
     /// The prefix to use with the line
     pub prefix: String,
+}
+
+/// A helper function for the serde serializer
+///
+/// Due to the shenanigans we're using to serialize the optional color, we need to supply this
+/// method so serde can infer a default value for an option when its key is missing.
+fn default_option<T>() -> Option<T> {
+    None
 }
 
 impl TextFormatting {
@@ -98,6 +106,7 @@ impl TextFormatting {
 
 /// Formatting options for rendering a diff
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
 pub struct Options {
     /// The formatting options to use with text addition
     pub addition: TextFormatting,
