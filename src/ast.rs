@@ -122,7 +122,7 @@ impl<'a> PartialEq for AstVector<'a> {
             .fold(false, |not_equal, (entry_a, entry_b)| {
                 not_equal | (entry_a != entry_b)
             });
-        return !not_equal;
+        !not_equal
     }
 }
 

@@ -1,5 +1,4 @@
 use anyhow::Result;
-use cc;
 use std::{
     env,
     fmt::Display,
@@ -76,14 +75,7 @@ fn main() -> Result<()> {
             path: PathBuf::from("grammars/tree-sitter-cpp"),
             c_sources: vec!["parser.c"],
             cpp_sources: vec!["scanner.cc"],
-            ..GrammarCompileInfo::default()
         },
-        //GrammarCompileInfo {
-        //display_name: "c",
-        //path: PathBuf::from("grammars/tree-sitter-c"),
-        //source_files: vec!["parser.c"],
-        //compile_cpp: false,
-        //},
     ];
 
     // The string represented the generated code that we get from the tree sitter grammars
