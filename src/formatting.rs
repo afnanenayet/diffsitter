@@ -5,7 +5,7 @@ use crate::ast::{Edit, Entry};
 use anyhow::Result;
 use console::{Color, Style, Term};
 use serde::{Deserialize, Serialize};
-use std::collections::VecDeque;
+use std::{cmp::Ordering, collections::VecDeque};
 use strum_macros::EnumString;
 
 /// A copy of the [Color](console::Color) enum so we can serialize using serde, and get around the
@@ -204,19 +204,22 @@ impl Options {
             let old_line_num = old_node_group[it_old].line_index;
             let new_line_num = new_node_group[it_new].line_index;
 
-            if old_line_num == new_line_num {
-                // TODO we need the lines of both documents
-                self.print_line(term, it_new, &old_print_record, &deletion_fmt)?;
-                self.print_line(term, it_old, &new_print_record, &addition_fmt)?;
-                it_old += 1;
-                it_new += 1;
-            } else if old_line_num < new_line_num {
-                self.print_line(term, it_old, &old_print_record, &deletion_fmt)?;
-                it_old += 1;
-            } else {
-                self.print_line(term, it_new, &new_print_record, &addition_fmt)?;
-                it_new += 1;
-            }
+            match old_line_num.cmp(&new_line_num) {
+                Ordering::Equal => {
+                    self.print_line(term, it_new, &old_print_record, &deletion_fmt)?;
+                    self.print_line(term, it_old, &new_print_record, &addition_fmt)?;
+                    it_old += 1;
+                    it_new += 1;
+                }
+                Ordering::Less => {
+                    self.print_line(term, it_old, &old_print_record, &deletion_fmt)?;
+                    it_old += 1;
+                }
+                Ordering::Greater => {
+                    self.print_line(term, it_new, &new_print_record, &addition_fmt)?;
+                    it_new += 1;
+                }
+            };
         }
 
         while it_old < old_node_group.len() {

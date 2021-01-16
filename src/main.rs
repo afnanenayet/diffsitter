@@ -9,7 +9,6 @@ use cli::{list_supported_languages, Args};
 use console::Term;
 use formatting::DisplayParameters;
 use formatting::Options;
-use paw;
 use std::fs;
 
 #[paw::main]
@@ -24,7 +23,7 @@ fn main(args: Args) -> Result<()> {
 
     let old_text = fs::read_to_string(&path_a)?;
     let new_text = fs::read_to_string(&path_b)?;
-    let file_type: Option<&str> = args.file_type.as_ref().map(|x| x.as_str());
+    let file_type: Option<&str> = args.file_type.as_deref();
     let ast_a = parse::parse_file(&path_a, file_type)?;
     let ast_b = parse::parse_file(&path_b, file_type)?;
 
