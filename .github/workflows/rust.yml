@@ -18,7 +18,6 @@ jobs:
         - ubuntu-latest
         - macos-latest
         - windows-latest
-      fail-fast: true
     steps:
     - uses: actions/checkout@v2
       with:
