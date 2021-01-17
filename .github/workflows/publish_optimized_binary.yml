@@ -34,11 +34,19 @@ jobs:
             ~/.cargo/git
             target
           key: ${{ runner.os }}-cargo-optimized-${{ hashFiles('**/Cargo.lock') }}
+      - name: Create archive
+        uses: master-atul/tar-action@v1.0.2
+        id: compress
+        with:
+          command: c
+          files: |
+            ./target/release/${{ matrix.artifact_name }}
+          outPath: ${{ matrix.asset_name }}.tar.gz
       - name: Upload binary to release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: target/release/${{ matrix.artifact_name }}
-          asset_name: ${{ matrix.asset_name }}
+          file: ${{ matrix.asset_name }}.tar.gz
+          asset_name: ${{ matrix.asset_name }}.tar.gz
           tag: ${{ github.ref }}
           overwrite: true
