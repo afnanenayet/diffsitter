@@ -9,6 +9,7 @@ keywords = ["diff", "ast", "difftool"]
 categories = ["command-line-utilities"]
 build = "build.rs"
 homepage = "https://github.com/afnanenayet/diffsitter"
+include = ["src/**/*", "LICENSE", "README.md", "grammars/*", "build.rs", "!**/*.png", "!**/test/**/*", "!**/*_test.*", "!**/examples/**/*", "!**/target/**/*"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
