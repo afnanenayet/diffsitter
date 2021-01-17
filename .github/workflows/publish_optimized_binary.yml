@@ -23,8 +23,17 @@ jobs:
             artifact_name: diffsitter.exe
     steps:
       - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
       - name: Build optimized binary
         run: cargo build --release --locked
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-optimized-${{ hashFiles('**/Cargo.lock') }}
       - name: Upload binary to release
         uses: svenstaro/upload-release-action@v2
         with:
