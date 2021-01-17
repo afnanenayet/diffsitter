@@ -2,6 +2,8 @@
 
 ![Rust](https://github.com/afnanenayet/diffsitter/workflows/Rust/badge.svg)
 
+![Publish](https://github.com/afnanenayet/diffsitter/workflows/Publish/badge.svg)
+
 [![asciicast](https://asciinema.org/a/383291.svg)](https://asciinema.org/a/383291)
 
 ## Summary
