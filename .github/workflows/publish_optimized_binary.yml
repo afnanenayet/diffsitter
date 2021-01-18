@@ -15,12 +15,16 @@ jobs:
           - os: ubuntu-latest
             asset_name: diffsitter-linux-amd64
             artifact_name: diffsitter
+            archive_ext: .tar.gz
           - os: macOS-latest
             asset_name: diffsitter-darwin-amd64
             artifact_name: diffsitter
+            archive_ext: .tar.gz
           - os: windows-latest
             asset_name: diffsitter-windows-amd64
             artifact_name: diffsitter.exe
+            archive_ext: .zip
+
     steps:
       - uses: actions/checkout@v2
         with:
@@ -34,20 +38,34 @@ jobs:
             ~/.cargo/git
             target
           key: ${{ runner.os }}-cargo-optimized-${{ hashFiles('**/Cargo.lock') }}
-      - name: Create archive
-        uses: master-atul/tar-action@v1.0.2
-        id: compress
+
+      - name: Install zip (Windows)
+        if: matrix.triple.os == 'windows-latest'
+        uses: crazy-max/ghaction-chocolatey@v1.4.0
         with:
-          command: c
-          cwd: target/release
-          files: |
-            ./${{ matrix.artifact_name }}
-          outPath: ${{ matrix.asset_name }}.tar.gz
+          args: install -y zip
+
+      - name: Archive release assets (Windows)
+        id: archive_release_assets_windows
+        if: matrix.os == 'windows-latest'
+        run: |
+          cp target/release/${{ matrix.artifact_name }} ${{ matrix.artifact_name }}
+          zip -r ${{ matrix.asset_name }}${{ matrix.archive_ext }} ${{ matrix.artifact_name }}
+
+      - name: Archive release assets
+        if: matrix.os != 'windows-latest'
+        id: archive_release_assets_unix_like
+        shell: bash
+        run: |
+          mkdir -p ${{ matrix.asset_name }}
+          cp target/release/${{ artifact_name }} ${{ matrix.asset_name }}
+          tar -czvf ${{ matrix.asset_name }}${{ matrix.archive_ext }} ${{ matrix.asset_name }}
+
       - name: Upload binary to release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: target/release/${{ matrix.asset_name }}.tar.gz
-          asset_name: ${{ matrix.asset_name }}.tar.gz
+          file: release.tar.gz
+          asset_name: ${{ matrix.asset_name }}${{ matrix.archive_ext }}
           tag: ${{ github.ref }}
           overwrite: true
