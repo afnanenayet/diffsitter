@@ -58,7 +58,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p ${{ matrix.asset_name }}
-          cp target/release/${{ artifact_name }} ${{ matrix.asset_name }}
+          cp target/release/${{ matrix.artifact_name }} ${{ matrix.asset_name }}
           tar -czvf ${{ matrix.asset_name }}${{ matrix.archive_ext }} ${{ matrix.asset_name }}
 
       - name: Upload binary to release
