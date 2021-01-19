@@ -17,7 +17,7 @@ jobs:
             artifact_name: diffsitter
             archive_ext: .tar.gz
           - os: macOS-latest
-            asset_name: diffsitter-darwin-amd64
+            asset_name: diffsitter-macos-amd64
             artifact_name: diffsitter
             archive_ext: .tar.gz
           - os: windows-latest
@@ -69,3 +69,17 @@ jobs:
           asset_name: ${{ matrix.asset_name }}${{ matrix.archive_ext }}
           tag: ${{ github.ref }}
           overwrite: true
+
+  homebrew_release:
+    runs-on: macos-latest
+    needs: publish
+    steps:
+      - name: Release Homebrew Formula
+        if: github.event.release.prerelease != true
+        uses: garden-io/update-homebrew-action@v1
+        with:
+          packageName: 'diffsitter'
+          templatePath: 'support/homebrew-formula.rb'
+          tapRepo: 'afnanenayet/homebrew-tap'
+          srcRepo: 'afnanenayet/diffsitter'
+          authToken: ${{ secrets.GITHUB_TOKEN }}
