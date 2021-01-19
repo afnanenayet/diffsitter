@@ -40,7 +40,7 @@ jobs:
           key: ${{ runner.os }}-cargo-optimized-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Install zip (Windows)
-        if: matrix.triple.os == 'windows-latest'
+        if: matrix.os == 'windows-latest'
         uses: crazy-max/ghaction-chocolatey@v1.4.0
         with:
           args: install -y zip
