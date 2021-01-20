@@ -69,3 +69,17 @@ jobs:
           asset_name: ${{ matrix.asset_name }}${{ matrix.archive_ext }}
           tag: ${{ github.ref }}
           overwrite: true
+
+  homebrew:
+    name: Bump Homebrew formula
+    runs-on: ubuntu-latest
+    steps:
+      - uses: mislav/bump-homebrew-formula-action@v1
+        with:
+          # A PR will be sent to github.com/Homebrew/homebrew-core to update this formula:
+          formula-name: diffsitter
+          base-branch: master
+          download-url: https://github.com/afnanenayet/diffsitter/releases/download/{{version}}/diffsitter-darwin-amd64.tar.gz
+          homebrew-tap: afnanenayet/homebrew-tap
+        env:
+          COMMITTER_TOKEN: ${{ secrets.COMMITTER_TOKEN }}
