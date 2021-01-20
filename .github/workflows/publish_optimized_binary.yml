@@ -61,11 +61,28 @@ jobs:
           cp target/release/${{ matrix.artifact_name }} ${{ matrix.asset_name }}
           tar -czvf ${{ matrix.asset_name }}${{ matrix.archive_ext }} ${{ matrix.asset_name }}
 
+      - name: Generate SHA256 checksum for binary
+        if: matrix.os != 'windows-latest'
+        id: checksum_archive_unix_like
+        shell: bash
+        run: |
+          sha256sum ${{ matrix.asset_name }}${{ matrix.archive_ext }} > ${{ matrix.asset_name }}${{ matrix.archive_ext }}.sha256sum
+
       - name: Upload binary to release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ${{ matrix.asset_name }}${{ matrix.archive_ext }}
           asset_name: ${{ matrix.asset_name }}${{ matrix.archive_ext }}
+          tag: ${{ github.ref }}
+          overwrite: true
+
+      - name: Upload SHA256 checksum to release
+        if: matrix.os != 'windows-latest'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ matrix.asset_name }}${{ matrix.archive_ext }}.sha256sum
+          asset_name: ${{ matrix.asset_name }}${{ matrix.archive_ext }}.sha256sum
           tag: ${{ github.ref }}
           overwrite: true
