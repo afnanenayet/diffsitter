@@ -39,11 +39,17 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-optimized-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Install zip (Windows)
+      - name: Install packages (Windows)
         if: matrix.os == 'windows-latest'
         uses: crazy-max/ghaction-chocolatey@v1.4.0
         with:
           args: install -y zip
+
+      - name: Install packages (macOS)
+        if: matrix.os == 'macos-latest'
+        shell: bash
+        run: |
+          brew install sha2
 
       - name: Archive release assets (Windows)
         id: archive_release_assets_windows
@@ -66,7 +72,7 @@ jobs:
         id: checksum_archive_unix_like
         shell: bash
         run: |
-          sha256sum ${{ matrix.asset_name }}${{ matrix.archive_ext }} > ${{ matrix.asset_name }}${{ matrix.archive_ext }}.sha256sum
+          sha256sum ${{ matrix.asset_name }}${{ matrix.archive_ext }} > ${{ matrix.asset_name }}${{ matrix.archive_ext }}.sha256
 
       - name: Upload binary to release
         uses: svenstaro/upload-release-action@v2
@@ -83,6 +89,6 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ${{ matrix.asset_name }}${{ matrix.archive_ext }}.sha256sum
-          asset_name: ${{ matrix.asset_name }}${{ matrix.archive_ext }}.sha256sum
+          asset_name: ${{ matrix.asset_name }}${{ matrix.archive_ext }}.sha256
           tag: ${{ github.ref }}
           overwrite: true
