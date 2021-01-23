@@ -14,9 +14,14 @@ macro_rules! min {
     ($x: expr, $($z: expr),+) => (::std::cmp::min($x, min!($($z),*)));
 }
 
-/// An edit is an addition of deletion of text
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum Edit<'a> {
+/// The internal variant of an edit
+///
+/// This is the edit enum that's used for the minimum edit distance algorithm. It features a
+/// variant, `Substitution`, that isn't exposed externally. When recreating the edit path,
+/// [Substitution](InternalEdit::Substitution) variant turns into an
+/// [Addition](InternalEdit::Addition) and [Deletion](Internal::Deletion).
+#[derive(Debug, Copy, Clone, PartialEq)]
+enum InternalEdit<'a> {
     /// A no-op
     ///
     /// There is no edit
@@ -43,6 +48,20 @@ pub enum Edit<'a> {
         /// The new text that took its palce
         new: Entry<'a>,
     },
+}
+
+/// An edit is an addition of deletion of text
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum Edit<'a> {
+    /// Some text was added
+    ///
+    /// An addition refers to the text from a node that was added from b
+    Addition(Entry<'a>),
+
+    /// Some text was deleted
+    ///
+    /// An addition refers to text from a node that was deleted from source a
+    Deletion(Entry<'a>),
 }
 
 /// A mapping between a tree-sitter node and the text it corresponds to
@@ -158,13 +177,12 @@ fn recreate_path(last_idx: (usize, usize), preds: PredecessorMap) -> VecDeque<Ed
     let mut res = VecDeque::new();
     while let Some(&entry) = preds.get(&curr_idx) {
         match entry.edit {
-            Edit::Noop => (),
-            Edit::Substitution { old, new } => {
+            InternalEdit::Noop => (),
+            InternalEdit::Addition(x) => res.push_front(Edit::Addition(x)),
+            InternalEdit::Deletion(x) => res.push_front(Edit::Deletion(x)),
+            InternalEdit::Substitution { old, new } => {
                 res.push_front(Edit::Addition(new));
                 res.push_front(Edit::Deletion(old));
-            }
-            _ => {
-                res.push_front(entry.edit);
             }
         }
         curr_idx = entry.previous_idx;
@@ -178,7 +196,7 @@ fn recreate_path(last_idx: (usize, usize), preds: PredecessorMap) -> VecDeque<Ed
 #[derive(Debug, Clone, Copy)]
 struct PredEntry<'a> {
     /// The edit in question
-    pub edit: Edit<'a>,
+    pub edit: InternalEdit<'a>,
 
     /// The index the edit came from
     pub previous_idx: (usize, usize),
@@ -200,6 +218,8 @@ type PredecessorMap<'a> = HashMap<Idx2D, PredEntry<'a>>;
 /// This has O(mn) space complexity and uses O(mn) space to compute the minimum edit path, and then
 /// has O(mn) space complexity and uses O(mn) space to backtrack and recreate the path.
 pub fn min_edit<'a>(a: &'a AstVector, b: &'a AstVector) -> VecDeque<Edit<'a>> {
+    use InternalEdit as Edit;
+
     // The optimal move that led to the edit distance at an index. We use this map to backtrack
     // and build the edit path once we find the optimal edit distance
     let mut predecessors: PredecessorMap<'a> = HashMap::new();

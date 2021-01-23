@@ -393,7 +393,6 @@ fn generate_lines<'a>(
                 let current_line = upsert_latest_line(&mut lines_old, &entry);
                 current_line.entries.push(&entry);
             }
-            _ => (),
         }
     }
     let old_print_record = LineInfo {
