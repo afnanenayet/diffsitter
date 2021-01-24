@@ -88,7 +88,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ${{ matrix.asset_name }}${{ matrix.archive_ext }}.sha256sum
+          file: ${{ matrix.asset_name }}${{ matrix.archive_ext }}.sha256
           asset_name: ${{ matrix.asset_name }}${{ matrix.archive_ext }}.sha256
           tag: ${{ github.ref }}
           overwrite: true
