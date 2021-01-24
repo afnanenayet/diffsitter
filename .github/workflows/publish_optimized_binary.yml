@@ -49,7 +49,7 @@ jobs:
         if: matrix.os == 'macos-latest'
         shell: bash
         run: |
-          brew install sha2
+          brew install coreutils
 
       - name: Archive release assets (Windows)
         id: archive_release_assets_windows
