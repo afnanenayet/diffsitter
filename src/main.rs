@@ -1,5 +1,6 @@
 mod ast;
 mod cli;
+mod diff;
 mod formatting;
 mod parse;
 
@@ -53,18 +54,17 @@ fn run_diff(args: &Args) -> Result<()> {
     }
     let ast_a = parse::parse_file(&path_a, file_type)?;
     let ast_b = parse::parse_file(&path_b, file_type)?;
-
     let diff_vec_a = AstVector::from_ts_tree(&ast_a, &old_text);
     let diff_vec_b = AstVector::from_ts_tree(&ast_b, &new_text);
-    let entries = ast::min_edit(&diff_vec_a, &diff_vec_b);
-
+    let (old_hunks, new_hunks) = ast::edit_hunks(&diff_vec_a, &diff_vec_b)?;
     let params = DisplayParameters {
-        diff: &entries,
+        old_hunks: &old_hunks,
+        new_hunks: &new_hunks,
         old_text: &old_text,
         new_text: &new_text,
     };
     let mut term = Term::stdout();
-    options.line_by_line(&mut term, &params)?;
+    options.print(&mut term, &params)?;
     Ok(())
 }
 

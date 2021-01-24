@@ -4,6 +4,7 @@ include!(concat!(env!("OUT_DIR"), "/generated_grammar.rs"));
 
 use anyhow::{format_err, Result};
 use log::info;
+use logging_timer::time;
 use std::{fs, path::Path};
 use tree_sitter::{Parser, Tree};
 
@@ -55,6 +56,7 @@ pub fn language_from_ext(ext: &str) -> Result<Language> {
 ///
 /// The user may optionally supply the language to use. If the language is not supplied, it will be
 /// inferrred from the file's extension.
+#[time("info", "parse::{}")]
 pub fn parse_file(p: &Path, language: Option<&str>) -> Result<Tree> {
     let text = fs::read_to_string(p)?;
     let mut parser = Parser::new();

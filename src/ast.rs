@@ -1,12 +1,11 @@
 //! Utilities for processing the ASTs provided by `tree_sitter`
 
-use std::{
-    cell::RefCell,
-    collections::{HashMap, VecDeque},
-    ops::Index,
-};
+use crate::diff::Hunks;
+use anyhow::Result;
+use std::{cell::RefCell, collections::HashMap, ops::Index};
 use tree_sitter::Node as TSNode;
 use tree_sitter::Tree as TSTree;
+use logging_timer::time;
 
 /// Get the minium of an arbitrary number of elements
 macro_rules! min {
@@ -18,10 +17,10 @@ macro_rules! min {
 ///
 /// This is the edit enum that's used for the minimum edit distance algorithm. It features a
 /// variant, `Substitution`, that isn't exposed externally. When recreating the edit path,
-/// [Substitution](InternalEdit::Substitution) variant turns into an
-/// [Addition](InternalEdit::Addition) and [Deletion](Internal::Deletion).
+/// [Substitution](Edit::Substitution) variant turns into an
+/// [Addition](Edit::Addition) and [Deletion](Internal::Deletion).
 #[derive(Debug, Copy, Clone, PartialEq)]
-enum InternalEdit<'a> {
+enum Edit<'a> {
     /// A no-op
     ///
     /// There is no edit
@@ -48,20 +47,6 @@ enum InternalEdit<'a> {
         /// The new text that took its palce
         new: Entry<'a>,
     },
-}
-
-/// An edit is an addition of deletion of text
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum Edit<'a> {
-    /// Some text was added
-    ///
-    /// An addition refers to the text from a node that was added from b
-    Addition(Entry<'a>),
-
-    /// Some text was deleted
-    ///
-    /// An addition refers to text from a node that was deleted from source a
-    Deletion(Entry<'a>),
 }
 
 /// A mapping between a tree-sitter node and the text it corresponds to
@@ -168,26 +153,30 @@ fn build<'a>(vector: &RefCell<Vec<Entry<'a>>>, node: tree_sitter::Node<'a>, text
     }
 }
 
-/// Recreate a path given the precedecessors for the minimum edit and the ending index
+/// Recreate the paths for additions and deletions given a [PredecessorMap]
 ///
-/// This walks back through the predecessors to recreate the path of edits that led to the minimum
-/// edit distance so we can construct a diff
-fn recreate_path(last_idx: (usize, usize), preds: PredecessorMap) -> VecDeque<Edit> {
+/// This will generate the hunks for both documents in one shot as we reconstruct the path.
+#[time("info", "ast::{}")]
+fn recreate_path(last_idx: (usize, usize), preds: PredecessorMap) -> Result<(Hunks, Hunks)> {
+    // The hunks for the old document. Deletions correspond to this.
+    let mut hunks_old = Hunks::new();
+    // The hunks for the new document. Additions correspond to this.
+    let mut hunks_new = Hunks::new();
     let mut curr_idx = last_idx;
-    let mut res = VecDeque::new();
+
     while let Some(&entry) = preds.get(&curr_idx) {
         match entry.edit {
-            InternalEdit::Noop => (),
-            InternalEdit::Addition(x) => res.push_front(Edit::Addition(x)),
-            InternalEdit::Deletion(x) => res.push_front(Edit::Deletion(x)),
-            InternalEdit::Substitution { old, new } => {
-                res.push_front(Edit::Addition(new));
-                res.push_front(Edit::Deletion(old));
+            Edit::Noop => (),
+            Edit::Addition(x) => hunks_new.push_front(x)?,
+            Edit::Deletion(x) => hunks_old.push_front(x)?,
+            Edit::Substitution { old, new } => {
+                hunks_new.push_front(new)?;
+                hunks_old.push_front(old)?;
             }
         }
         curr_idx = entry.previous_idx;
     }
-    res
+    Ok((hunks_old, hunks_new))
 }
 
 /// An entry in the precedecessor table
@@ -196,7 +185,7 @@ fn recreate_path(last_idx: (usize, usize), preds: PredecessorMap) -> VecDeque<Ed
 #[derive(Debug, Clone, Copy)]
 struct PredEntry<'a> {
     /// The edit in question
-    pub edit: InternalEdit<'a>,
+    pub edit: Edit<'a>,
 
     /// The index the edit came from
     pub previous_idx: (usize, usize),
@@ -208,18 +197,9 @@ type Idx2D = (usize, usize);
 /// A type alias for the precedessor map used to backtrack the edit path
 type PredecessorMap<'a> = HashMap<Idx2D, PredEntry<'a>>;
 
-/// Compute the shortest edit path between two `DiffVector`s
-///
-/// This method computes the minimum edit distance between two `DiffVector`s, which are the leaf
-/// nodes of an AST, using the standard DP approach to the longest common subsequence problem, the
-/// only twist is that here, instead of operating on raw text, we're operating on the leaves of an
-/// AST.
-///
-/// This has O(mn) space complexity and uses O(mn) space to compute the minimum edit path, and then
-/// has O(mn) space complexity and uses O(mn) space to backtrack and recreate the path.
-pub fn min_edit<'a>(a: &'a AstVector, b: &'a AstVector) -> VecDeque<Edit<'a>> {
-    use InternalEdit as Edit;
-
+/// Helper function to use the minimum edit distance algorithm on two [AstVectors](AstVector)
+#[time("info", "ast::{}")]
+fn min_edit<'a>(a: &'a AstVector, b: &'a AstVector) -> PredecessorMap<'a> {
     // The optimal move that led to the edit distance at an index. We use this map to backtrack
     // and build the edit path once we find the optimal edit distance
     let mut predecessors: PredecessorMap<'a> = HashMap::new();
@@ -303,5 +283,22 @@ pub fn min_edit<'a>(a: &'a AstVector, b: &'a AstVector) -> VecDeque<Edit<'a>> {
             }
         }
     }
+    predecessors
+}
+
+/// Compute the hunks corresponding to the minimum edit path between two documents
+///
+/// This method computes the minimum edit distance between two `DiffVector`s, which are the leaf
+/// nodes of an AST, using the standard DP approach to the longest common subsequence problem, the
+/// only twist is that here, instead of operating on raw text, we're operating on the leaves of an
+/// AST.
+///
+/// This has O(mn) space complexity and uses O(mn) space to compute the minimum edit path, and then
+/// has O(mn) space complexity and uses O(mn) space to backtrack and recreate the path.
+///
+/// This will return two groups of [hunks](diff::Hunks) in a tuple of the form
+/// `(old_hunks, new_hunks)`.
+pub fn edit_hunks<'a>(a: &'a AstVector, b: &'a AstVector) -> Result<(Hunks<'a>, Hunks<'a>)> {
+    let predecessors = min_edit(a, b);
     recreate_path((a.len(), b.len()), predecessors)
 }
