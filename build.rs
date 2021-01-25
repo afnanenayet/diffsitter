@@ -49,6 +49,7 @@ fn compile_grammar(
             .include(include)
             .files(cpp_sources)
             .warnings(false)
+            .flag_if_supported("-std=c++14")
             .try_compile(&format!("{}-cpp-compile-diffsiter", &output_name))?;
     }
 
