@@ -88,6 +88,12 @@ fn main() -> Result<()> {
             c_sources: vec!["parser.c"],
             cpp_sources: vec!["scanner.cc"],
         },
+        GrammarCompileInfo {
+            display_name: "ocaml",
+            path: PathBuf::from("grammars/tree-sitter-ocaml/ocaml"),
+            c_sources: vec!["parser.c"],
+            cpp_sources: vec!["scanner.cc"],
+        },
     ];
 
     // The string represented the generated code that we get from the tree sitter grammars
