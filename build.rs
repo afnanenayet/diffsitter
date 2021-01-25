@@ -82,6 +82,12 @@ fn main() -> Result<()> {
             c_sources: vec!["parser.c"],
             cpp_sources: vec!["scanner.cc"],
         },
+        GrammarCompileInfo {
+            display_name: "bash",
+            path: PathBuf::from("grammars/tree-sitter-bash"),
+            c_sources: vec!["parser.c"],
+            cpp_sources: vec!["scanner.cc"],
+        },
     ];
 
     // The string represented the generated code that we get from the tree sitter grammars
