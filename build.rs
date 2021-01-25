@@ -101,6 +101,12 @@ fn main() -> Result<()> {
             c_sources: vec!["parser.c"],
             ..GrammarCompileInfo::default()
         },
+        GrammarCompileInfo {
+            display_name: "ruby",
+            path: PathBuf::from("grammars/tree-sitter-ruby"),
+            c_sources: vec!["parser.c"],
+            cpp_sources: vec!["scanner.cc"],
+        },
     ];
 
     // The string represented the generated code that we get from the tree sitter grammars
