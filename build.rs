@@ -119,6 +119,12 @@ fn main() -> Result<()> {
             c_sources: vec!["parser.c", "scanner.c"],
             ..GrammarCompileInfo::default()
         },
+        GrammarCompileInfo {
+            display_name: "css",
+            path: PathBuf::from("grammars/tree-sitter-css"),
+            c_sources: vec!["parser.c", "scanner.c"],
+            ..GrammarCompileInfo::default()
+        },
     ];
 
     // The string represented the generated code that we get from the tree sitter grammars
