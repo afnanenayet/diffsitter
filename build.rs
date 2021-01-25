@@ -4,6 +4,7 @@ use std::{
     fmt::Display,
     fs,
     path::{Path, PathBuf},
+    vec,
 };
 
 /// Compilation information as it pertains to a tree-sitter grammar
@@ -124,6 +125,12 @@ fn main() -> Result<()> {
             path: PathBuf::from("grammars/tree-sitter-css"),
             c_sources: vec!["parser.c", "scanner.c"],
             ..GrammarCompileInfo::default()
+        },
+        GrammarCompileInfo {
+            display_name: "php",
+            path: PathBuf::from("grammars/tree-sitter-php"),
+            c_sources: vec!["parser.c"],
+            cpp_sources: vec!["scanner.cc"],
         },
     ];
 
