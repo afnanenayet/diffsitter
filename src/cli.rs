@@ -1,14 +1,18 @@
 //! Code related to the CLI
 
 use crate::parse::supported_languages;
-use std::{env, path::PathBuf};
+use std::path::PathBuf;
 use structopt::StructOpt;
 use strum_macros::{EnumString, ToString};
+
+#[cfg(target_os = "macos")]
+use std::env;
 
 #[cfg(not(target_os = "macos"))]
 use directories;
 
 /// The environment variable for XDG_CONFIG
+#[cfg(target_os = "macos")]
 const XDG_CONFIG: &str = "XDG_CONFIG";
 /// The directory inside the config base where the config file is stored
 const CFG_DIRECTORY: &str = "diffsitter";
