@@ -56,7 +56,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           cp target/release/${{ matrix.artifact_name }} ${{ matrix.artifact_name }}
-          zip -r ${{ matrix.asset_name }}${{ matrix.archive_ext }} ${{ matrix.artifact_name }}
+          zip -r ${{ matrix.asset_name }}${{ matrix.archive_ext }} ${{ matrix.artifact_name }} assets/git-diffsitter
 
       - name: Archive release assets
         if: matrix.os != 'windows-latest'
@@ -65,7 +65,7 @@ jobs:
         run: |
           mkdir -p ${{ matrix.asset_name }}
           cp target/release/${{ matrix.artifact_name }} ${{ matrix.asset_name }}
-          tar -czvf ${{ matrix.asset_name }}${{ matrix.archive_ext }} ${{ matrix.asset_name }}
+          tar -czvf ${{ matrix.asset_name }}${{ matrix.archive_ext }} ${{ matrix.asset_name }} assets/git-diffsitter
 
       - name: Generate SHA256 checksum for binary
         if: matrix.os != 'windows-latest'
