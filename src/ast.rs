@@ -3,7 +3,7 @@
 use crate::diff::Hunks;
 use anyhow::Result;
 use logging_timer::time;
-use std::{cell::RefCell, collections::HashMap, ops::Index};
+use std::{cell::RefCell, ops::Index};
 use tree_sitter::Node as TSNode;
 use tree_sitter::Tree as TSTree;
 
@@ -158,14 +158,14 @@ fn build<'a>(vector: &RefCell<Vec<Entry<'a>>>, node: tree_sitter::Node<'a>, text
 ///
 /// This will generate the hunks for both documents in one shot as we reconstruct the path.
 #[time("info", "ast::{}")]
-fn recreate_path(last_idx: (usize, usize), preds: PredecessorMap) -> Result<(Hunks, Hunks)> {
+fn recreate_path(last_idx: (usize, usize), preds: PredecessorVec) -> Result<(Hunks, Hunks)> {
     // The hunks for the old document. Deletions correspond to this.
     let mut hunks_old = Hunks::new();
     // The hunks for the new document. Additions correspond to this.
     let mut hunks_new = Hunks::new();
     let mut curr_idx = last_idx;
 
-    while let Some(&entry) = preds.get(&curr_idx) {
+    while let Some(entry) = preds[curr_idx.0][curr_idx.1] {
         match entry.edit {
             Edit::Noop => (),
             Edit::Addition(x) => hunks_new.push_front(x)?,
@@ -192,18 +192,14 @@ struct PredEntry<'a> {
     pub previous_idx: (usize, usize),
 }
 
-/// A type alias for an index in a two dimensional vector
-type Idx2D = (usize, usize);
-
-/// A type alias for the precedessor map used to backtrack the edit path
-type PredecessorMap<'a> = HashMap<Idx2D, PredEntry<'a>>;
+type PredecessorVec<'a> = Vec<Vec<Option<PredEntry<'a>>>>;
 
 /// Helper function to use the minimum edit distance algorithm on two [AstVectors](AstVector)
 #[time("info", "ast::{}")]
-fn min_edit<'a>(a: &'a AstVector, b: &'a AstVector) -> PredecessorMap<'a> {
-    // The optimal move that led to the edit distance at an index. We use this map to backtrack
-    // and build the edit path once we find the optimal edit distance
-    let mut predecessors: PredecessorMap<'a> = HashMap::new();
+fn min_edit<'a>(a: &'a AstVector, b: &'a AstVector) -> PredecessorVec<'a> {
+    // The optimal move that led to the edit distance at an index. We use this 2D vector to
+    // backtrack and build the edit path once we find the optimal edit distance
+    let mut predecessors: PredecessorVec<'a> = vec![vec![None; b.len() + 1]; a.len() + 1];
 
     // Initialize the dynamic programming array
     // dp[i][j] is the edit distance between a[:i] and b[:j]
@@ -226,7 +222,7 @@ fn min_edit<'a>(a: &'a AstVector, b: &'a AstVector) -> PredecessorMap<'a> {
                         edit: Edit::Addition(b[j - 1]),
                         previous_idx: (i, j - 1),
                     };
-                    predecessors.insert((i, j), pred_entry);
+                    predecessors[i][j] = Some(pred_entry);
                 }
             } else if j == 0 {
                 dp[i][j] = i as u32;
@@ -236,7 +232,7 @@ fn min_edit<'a>(a: &'a AstVector, b: &'a AstVector) -> PredecessorMap<'a> {
                         edit: Edit::Deletion(b[i - 1]),
                         previous_idx: (i - 1, j),
                     };
-                    predecessors.insert((i, j), pred_entry);
+                    predecessors[i][j] = Some(pred_entry);
                 }
             }
             // If the current letter for each string matches, there is no change
@@ -246,7 +242,7 @@ fn min_edit<'a>(a: &'a AstVector, b: &'a AstVector) -> PredecessorMap<'a> {
                     edit: Edit::Noop,
                     previous_idx: (i - 1, j - 1),
                 };
-                predecessors.insert((i, j), pred_entry);
+                predecessors[i][j] = Some(pred_entry);
             }
             // Otherwise, there is either a substitution, a deletion, or an addition
             else {
@@ -275,7 +271,7 @@ fn min_edit<'a>(a: &'a AstVector, b: &'a AstVector) -> PredecessorMap<'a> {
                 };
                 // Store the precedecessor so we can backtrack and recreate the path that led to
                 // the minimum edit path
-                predecessors.insert((i, j), pred_entry);
+                predecessors[i][j] = Some(pred_entry);
 
                 // Store the current minimum edit distance for a[:i] <-> b[:j]. An addition,
                 // deletion, and substitution all have an edit cost of 1, which is why we're adding
