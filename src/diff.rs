@@ -100,7 +100,7 @@ impl<'a> Hunk<'a> {
             // Only add a new line here if the the incoming line index is one after the last entry
             // If this isn't the case, the incoming line index must be the same as the last line
             // index, so we don't have to add a new line.
-            if incoming_line_idx - first_line_idx == 1 {
+            if first_line_idx - incoming_line_idx == 1 {
                 self.0.push_front(Line::new(incoming_line_idx));
             }
         } else {
