@@ -2,10 +2,10 @@
 
 use crate::diff::Hunks;
 use anyhow::Result;
+use logging_timer::time;
 use std::{cell::RefCell, collections::HashMap, ops::Index};
 use tree_sitter::Node as TSNode;
 use tree_sitter::Tree as TSTree;
-use logging_timer::time;
 
 /// Get the minium of an arbitrary number of elements
 macro_rules! min {
@@ -82,6 +82,7 @@ impl<'a> AstVector<'a> {
     ///
     /// This method calls a helper function that does an in-order traversal of the tree and adds
     /// leaf nodes to a vector
+    #[time("info")]
     pub fn from_ts_tree(tree: &'a TSTree, text: &'a str) -> Self {
         let leaves = RefCell::new(Vec::new());
         build(&leaves, tree.root_node(), text);
