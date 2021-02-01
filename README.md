@@ -15,7 +15,7 @@ formatting differences, for example.
 `diffstter` uses the parsers from the
 [tree-sitter](https://tree-sitter.github.io/tree-sitter/) project to parse
 source code. As such, the languages supported by this tool are limited by the
-languages supported by the tree-sitter project. 
+languages supported by the tree-sitter project.
 
 ## Examples
 
@@ -32,7 +32,7 @@ fn main() {
 `b.rs`
 
 ```rust
-fn 
+fn
 
 
 
@@ -95,6 +95,27 @@ it doesn't show up in the diff.
 `diffsitter` has some nice (terminal aware) formatting too:
 
 ![screenshot of rust diff](assets/rust_example.png)
+
+## Installation
+
+### Published binaries
+
+This project uses Github actions to build and publish binaries for each tagged
+release. You can download binaries from there if your platform is listed.
+
+### Cargo
+
+You can install using `cargo` the standard way with `cargo install diffsitter`.
+
+### Homebrew
+
+You can use my tap to install diffsitter:
+
+```sh
+brew tap afnanenayet/tap
+brew install diffsitter
+# brew install afnanenayet/tap/diffsitter
+```
 
 ## Development
 
