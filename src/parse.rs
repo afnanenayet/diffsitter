@@ -85,3 +85,18 @@ pub fn supported_languages() -> Vec<&'static str> {
     keys.sort_unstable();
     keys
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Test that every parser that this program was compiled to support can be loaded by the tree
+    /// sitter [parser](tree_sitter::Parser)
+    #[test]
+    fn test_loading_languages() {
+        for (_, lang) in &LANGUAGES {
+            let mut parser = tree_sitter::Parser::new();
+            parser.set_language(unsafe { lang() }).unwrap();
+        }
+    }
+}
