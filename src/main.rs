@@ -6,7 +6,7 @@ mod parse;
 
 use anyhow::{anyhow, Result};
 use ast::AstVector;
-use cli::{default_config_file, list_supported_languages, Args};
+use cli::{default_config_file, list_supported_languages, set_term_colors, Args};
 use console::Term;
 use formatting::DisplayParameters;
 use formatting::Options;
@@ -79,6 +79,7 @@ fn dump_default_config() -> Result<()> {
 #[paw::main]
 fn main(args: Args) -> Result<()> {
     use cli::Command;
+
     let log_level = if args.debug {
         LevelFilter::Trace
     } else {
@@ -94,6 +95,7 @@ fn main(args: Args) -> Result<()> {
             Command::DumpDefaultConfig => dump_default_config()?,
         }
     } else {
+        set_term_colors(args.color_output);
         run_diff(&args)?;
     }
     Ok(())

@@ -3,4 +3,4 @@
 # Diff is called by git with 7 parameters, but we only need the two files
 # args: path old-file old-hex old-mode new-file new-hex new-mode
 # ref: https://stackoverflow.com/questions/255202/how-do-i-view-git-diff-output-with-my-preferred-diff-tool-viewer
-diffsitter "$2" "$5"
+diffsitter --color on "$2" "$5"
