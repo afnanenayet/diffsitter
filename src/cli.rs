@@ -142,3 +142,14 @@ impl Default for ColorOutputPolicy {
         ColorOutputPolicy::Auto
     }
 }
+
+/// Set whether the terminal should display colors based on the user's preferences
+///
+/// This method will set the terminal output policy *for the current thread*.
+pub fn set_term_colors(color_opt: ColorOutputPolicy) {
+    match color_opt {
+        ColorOutputPolicy::Off => (console::set_colors_enabled(false)),
+        ColorOutputPolicy::On => (console::set_colors_enabled(true)),
+        _ => (),
+    };
+}
