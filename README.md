@@ -1,7 +1,7 @@
 # diffsitter
 
-![Rust](https://github.com/afnanenayet/diffsitter/workflows/Rust/badge.svg)
-![Publish](https://github.com/afnanenayet/diffsitter/workflows/Publish/badge.svg)
+![CI](https://github.com/afnanenayet/diffsitter/workflows/CI/badge.svg)
+![release](https://github.com/afnanenayet/diffsitter/workflows/release/badge.svg)
 
 [![asciicast](https://asciinema.org/a/383291.svg)](https://asciinema.org/a/383291)
 
