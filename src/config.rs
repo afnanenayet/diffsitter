@@ -106,3 +106,15 @@ fn default_config_file_path() -> PathBuf {
     config_file.push(CFG_FILE_NAME);
     config_file
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_sample_config() {
+        let mut sample_config_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        sample_config_path.push("assets/sample_config.json");
+        Config::try_from_file(Some(sample_config_path).as_ref()).unwrap();
+    }
+}

@@ -121,6 +121,21 @@ brew install diffsitter
 # brew install afnanenayet/tap/diffsitter
 ```
 
+## Usage
+
+For detailed help you can run `diffsitter --help` (`diffsitter -h` provides
+brief help messages).
+
+You can configure file associations and formatting options for `diffsitter`
+using a config file. If a config is not supplied, the app will use the default
+config, which you can see with `diffsitter --cmd dump_default_config`. It will
+look for a config at `$XDG_HOME/.config` on macOS and Linux, and the standard
+directory for Windows. You can also refer to the
+[sample config](/assets/sample_config.json).
+
+*Note: the tests for this crate check to make sure the provided sample config
+is a valid config.*
+
 ## Development
 
 In order to develop for this project, you need to clone the project and
