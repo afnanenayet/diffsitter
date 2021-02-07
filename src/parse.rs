@@ -5,6 +5,7 @@ include!(concat!(env!("OUT_DIR"), "/generated_grammar.rs"));
 use anyhow::{format_err, Result};
 use log::info;
 use logging_timer::time;
+use std::collections::HashMap;
 use std::{fs, path::Path};
 use tree_sitter::{Parser, Tree};
 
@@ -41,13 +42,28 @@ fn generate_language(lang: &str) -> Result<Language> {
 }
 
 /// Create an instance of a language from a file extension
-pub fn language_from_ext(ext: &str) -> Result<Language> {
+///
+/// The user may optionally provide a hashmap with overrides
+pub fn language_from_ext(
+    ext: &str,
+    overrides: Option<&HashMap<String, String>>,
+) -> Result<Language> {
+    if let Some(Some(language_str)) = overrides.map(|x| x.get(ext)) {
+        info!(
+            "Deduced language \"{}\" from extension \"{}\" provided from user mappings",
+            language_str, ext
+        );
+        return generate_language(language_str);
+    };
     let language_str = match FILE_EXTS.get(ext) {
         Some(&language_str) => {
-            info!("Deduced language {} from extension {}", language_str, ext);
+            info!(
+                "Deduced language \"{}\" from extension \"{}\" from default mappings",
+                language_str, ext
+            );
             Ok(language_str)
         }
-        None => Err(format_err!("Unsupported filetype {}", ext)),
+        None => Err(format_err!("Unsupported filetype \"{}\"", ext)),
     }?;
     generate_language(language_str)
 }
@@ -57,14 +73,18 @@ pub fn language_from_ext(ext: &str) -> Result<Language> {
 /// The user may optionally supply the language to use. If the language is not supplied, it will be
 /// inferrred from the file's extension.
 #[time("info", "parse::{}")]
-pub fn parse_file(p: &Path, language: Option<&str>) -> Result<Tree> {
+pub fn parse_file(
+    p: &Path,
+    language: Option<&str>,
+    overrides: Option<&HashMap<String, String>>,
+) -> Result<Tree> {
     let text = fs::read_to_string(p)?;
     let mut parser = Parser::new();
     let language = match language {
         Some(x) => generate_language(x),
         None => {
             let ext = p.extension().unwrap_or_default().to_string_lossy();
-            language_from_ext(&ext)
+            language_from_ext(&ext, overrides)
         }
     }?;
     parser.set_language(language).unwrap();
