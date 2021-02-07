@@ -14,6 +14,7 @@ use strum_macros::EnumString;
 #[derive(Debug, PartialEq, Eq, Copy, Clone, Serialize, Deserialize)]
 #[serde(remote = "Color", rename_all = "snake_case")]
 enum ColorDef {
+    Color256(u8),
     Black,
     Red,
     Green,
@@ -22,7 +23,6 @@ enum ColorDef {
     Magenta,
     Cyan,
     White,
-    Color256(u8),
 }
 
 impl From<ColorDef> for Color {
@@ -53,15 +53,15 @@ impl Default for ColorDef {
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Clone)]
 #[serde(rename_all = "kebab-case")]
 pub struct TextFormatting {
+    /// The highlight/background color to use with emphasized text
+    #[serde(with = "opt_color_def", default = "default_option")]
+    pub highlight: Option<Color>,
     /// The foreground color to use with un-emphasized text
     #[serde(with = "ColorDef")]
     pub regular_foreground: Color,
     /// The foreground color to use with emphasized text
     #[serde(with = "ColorDef")]
     pub emphasized_foreground: Color,
-    /// The highlight/background color to use with emphasized text
-    #[serde(with = "opt_color_def", default = "default_option")]
-    pub highlight: Option<Color>,
     /// Whether to bold emphasized text
     pub bold: bool,
     /// Whether to underline emphasized text
@@ -108,8 +108,7 @@ impl TextFormatting {
 
 /// Formatting options for rendering a diff
 #[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
-#[serde(default)]
-#[serde(rename_all = "kebab-case")]
+#[serde(default, rename_all = "kebab-case")]
 pub struct Options {
     /// The formatting options to use with text addition
     pub addition: TextFormatting,

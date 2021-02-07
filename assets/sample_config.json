@@ -1,0 +1,24 @@
+{
+    "file-associations": {
+        "rs": "rust"
+    },
+    "formatting": {
+        "addition": {
+            "highlight": null,
+            "regular-foreground": "green",
+            "emphasized-foreground": {
+                "color256": 0
+            },
+            "bold": true,
+            "underline": false,
+            "prefix": "+ "
+        },
+        "deletion": {
+            "regular-foreground": "red",
+            "emphasized-foreground": "red",
+            "bold": true,
+            "underline": false,
+            "prefix": "- "
+        }
+    }
+}
