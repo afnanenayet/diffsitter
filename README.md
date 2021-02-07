@@ -2,6 +2,10 @@
 
 ![CI](https://github.com/afnanenayet/diffsitter/workflows/CI/badge.svg)
 ![release](https://github.com/afnanenayet/diffsitter/workflows/release/badge.svg)
+![crates version](https://img.shields.io/crates/v/diffsitter)
+![latest tag](https://img.shields.io/github/v/tag/afnanenayet/diffsitter?label=release)
+![downloads](https://img.shields.io/crates/d/diffsitter)
+![license](https://img.shields.io/github/license/afnanenayet/diffsitter)
 
 [![asciicast](https://asciinema.org/a/383291.svg)](https://asciinema.org/a/383291)
 
