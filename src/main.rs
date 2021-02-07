@@ -66,6 +66,8 @@ fn run_diff(args: &Args) -> Result<()> {
         new_hunks: &new_hunks,
         old_text: &old_text,
         new_text: &new_text,
+        old_text_filename: &path_a.to_string_lossy(),
+        new_text_filename: &path_b.to_string_lossy(),
     };
     let mut term = Term::stdout();
     config.formatting.print(&mut term, &params)?;
