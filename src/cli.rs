@@ -42,7 +42,7 @@ pub struct Args {
     pub file_type: Option<String>,
     /// Use the config provided at the given path
     ///
-    /// By default, diffsitter attempts to find the config at $XDG_CONFIG/diffsitter.toml
+    /// By default, diffsitter attempts to find the config at $XDG_CONFIG/diffsitter.json
     #[structopt(short, long, env = "DIFFSITTER_CONFIG")]
     pub config: Option<PathBuf>,
     /// Set the color output policy. Valid values are: "auto", "on", "off".
