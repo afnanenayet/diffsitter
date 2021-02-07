@@ -134,3 +134,6 @@ git submodule --init --recursive
 
 This uses `cargo` with the `cc` crate, so you need to install rust and have a
 working C and C++ compiler.
+
+This project targets the latest stable version of rustc, it may work on older
+versions, but I only guarantee support for the latest stable release.
