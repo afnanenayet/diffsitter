@@ -12,6 +12,7 @@ use config::{Config, ConfigReadError};
 use console::Term;
 use formatting::DisplayParameters;
 use log::{error, info, warn, LevelFilter};
+use serde_json as json;
 use std::fs;
 
 /// Return an instance of [Config] from a config file path (or the inferred default path)
@@ -71,11 +72,10 @@ fn run_diff(args: &Args) -> Result<()> {
     Ok(())
 }
 
-/// Serialize the default options struct to a TOML file and print that to stdout
+/// Serialize the default options struct to a json file and print that to stdout
 fn dump_default_config() -> Result<()> {
     let config = Config::default();
-    let s = toml::to_string_pretty(&config)?;
-    println!("{}", s);
+    println!("{}", json::to_string_pretty(&config)?);
     Ok(())
 }
 

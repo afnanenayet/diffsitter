@@ -4,6 +4,7 @@ use crate::formatting::Options as FormattingOptions;
 use anyhow::{Context, Result};
 use log::info;
 use serde::{Deserialize, Serialize};
+use serde_json as json;
 use std::{
     collections::HashMap,
     fs, io,
@@ -23,7 +24,7 @@ const XDG_CONFIG: &str = "XDG_CONFIG";
 /// The directory inside the config base where the config file is stored
 const CFG_DIRECTORY: &str = "diffsitter";
 /// The expected filename for the config file
-const CFG_FILE_NAME: &str = "config.toml";
+const CFG_FILE_NAME: &str = "config.json";
 
 /// The config struct for the application
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -69,7 +70,7 @@ impl Config {
         let config_fp: &Path = path.map(|x| x.as_ref()).unwrap_or(&default_config_fp);
         info!("Reading config at {}", config_fp.to_string_lossy());
         let config_contents = fs::read_to_string(config_fp)?;
-        let config = toml::from_str(&config_contents).with_context(|| {
+        let config = json::from_str(&config_contents).with_context(|| {
             format!("Failed to parse config at {}", config_fp.to_string_lossy())
         })?;
         Ok(config)
