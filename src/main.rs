@@ -1,50 +1,53 @@
 mod ast;
 mod cli;
+mod config;
 mod diff;
 mod formatting;
 mod parse;
 
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use ast::AstVector;
-use cli::{default_config_file, list_supported_languages, set_term_colors, Args};
+use cli::{list_supported_languages, set_term_colors, Args};
+use config::{Config, ConfigReadError};
 use console::Term;
 use formatting::DisplayParameters;
-use formatting::Options;
-use log::{info, LevelFilter};
+use log::{error, info, warn, LevelFilter};
 use std::fs;
 
-/// Return an instance of [Options] froma config file path
+/// Return an instance of [Config] from a config file path (or the inferred default path)
 ///
-/// If a config path isn't provided, then this will use the [default
-/// path](cli::default_config_file).
-fn derive_options(args: &Args) -> Result<Options> {
+/// If a config path isn't provided or otherwise fails, fall back to the default config
+fn derive_config(args: &Args) -> Result<Config> {
     if args.no_config {
-        info!("`no_config` specified -- falling back to optional config");
-        return Ok(Options::default());
+        info!("`no_config` specified, falling back to default config");
+        return Ok(Config::default());
     }
-    let config_fp = if let Some(path) = args.config.as_ref() {
-        path.clone()
-    } else {
-        default_config_file()
+    let config = match Config::try_from_file(args.config.as_ref()) {
+        Ok(config) => config,
+        Err(e) => match e {
+            ConfigReadError::ReadFileFailure(e) => {
+                warn!("{}, falling back to default config", e);
+                Config::default()
+            }
+            ConfigReadError::DeserializationFailure(e) => {
+                error!("Failed to deserialize config file: {}", e);
+                return Err(anyhow::anyhow!(e));
+            }
+        },
     };
-    info!("Reading config at {:#?}", config_fp);
-
-    if let Ok(config_str) = fs::read_to_string(config_fp) {
-        return toml::from_str(&config_str).map_err(|e| anyhow!(e));
-    }
-    Ok(Options::default())
+    Ok(config)
 }
 
 /// Take the diff of two files
 fn run_diff(args: &Args) -> Result<()> {
-    let options = derive_options(args)?;
+    let config = derive_config(args)?;
     let path_a = args.old.as_ref().unwrap();
     let path_b = args.new.as_ref().unwrap();
 
     let old_text = fs::read_to_string(&path_a)?;
-    info!("Reading {:#?} to string", &path_a);
+    info!("Reading {} to string", &path_a.to_string_lossy());
     let new_text = fs::read_to_string(&path_b)?;
-    info!("Reading {:#?} to string", &path_b);
+    info!("Reading {} to string", &path_b.to_string_lossy());
     let file_type: Option<&str> = args.file_type.as_deref();
 
     if let Some(file_type) = file_type {
@@ -52,8 +55,8 @@ fn run_diff(args: &Args) -> Result<()> {
     } else {
         info!("Will deduce filetype from file extension");
     }
-    let ast_a = parse::parse_file(&path_a, file_type)?;
-    let ast_b = parse::parse_file(&path_b, file_type)?;
+    let ast_a = parse::parse_file(&path_a, file_type, config.file_associations.as_ref())?;
+    let ast_b = parse::parse_file(&path_b, file_type, config.file_associations.as_ref())?;
     let diff_vec_a = AstVector::from_ts_tree(&ast_a, &old_text);
     let diff_vec_b = AstVector::from_ts_tree(&ast_b, &new_text);
     let (old_hunks, new_hunks) = ast::edit_hunks(&diff_vec_a, &diff_vec_b)?;
@@ -64,13 +67,13 @@ fn run_diff(args: &Args) -> Result<()> {
         new_text: &new_text,
     };
     let mut term = Term::stdout();
-    options.print(&mut term, &params)?;
+    config.formatting.print(&mut term, &params)?;
     Ok(())
 }
 
 /// Serialize the default options struct to a TOML file and print that to stdout
 fn dump_default_config() -> Result<()> {
-    let config = Options::default();
+    let config = Config::default();
     let s = toml::to_string_pretty(&config)?;
     println!("{}", s);
     Ok(())

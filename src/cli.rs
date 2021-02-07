@@ -5,20 +5,6 @@ use std::path::PathBuf;
 use structopt::StructOpt;
 use strum_macros::{EnumString, ToString};
 
-#[cfg(target_os = "macos")]
-use std::env;
-
-#[cfg(not(target_os = "macos"))]
-use directories;
-
-/// The environment variable for XDG_CONFIG
-#[cfg(target_os = "macos")]
-const XDG_CONFIG: &str = "XDG_CONFIG";
-/// The directory inside the config base where the config file is stored
-const CFG_DIRECTORY: &str = "diffsitter";
-/// The expected filename for the config file
-const CFG_FILE_NAME: &str = "config.toml";
-
 #[derive(Debug, Eq, PartialEq, Clone, StructOpt)]
 #[structopt(
     name = "diffsitter",
@@ -93,36 +79,6 @@ pub fn list_supported_languages() {
     for language in languages {
         println!("- {}", language);
     }
-}
-
-/// Return the default location for the config file (for *nix, Linux and MacOS), this will use
-/// $XDG_CONFIG/.config, where `$XDG_CONFIG` is `$HOME/.config` by default.
-#[cfg(target_os = "macos")]
-pub fn default_config_file() -> PathBuf {
-    // First we check to see if $XDG_CONfIG is set
-    let mut config_dir = if let Ok(dir) = env::var(XDG_CONFIG) {
-        PathBuf::from(dir)
-    } else {
-        let base_dirs = directories::BaseDirs::new().unwrap();
-        let home_dir = base_dirs.home_dir();
-        let mut path = PathBuf::from(home_dir);
-        path.push(".config");
-        path
-    };
-    config_dir.push(CFG_DIRECTORY);
-    config_dir.push(CFG_FILE_NAME);
-    config_dir
-}
-
-/// Return the default location for the config file (for windows), this will use
-/// $XDG_CONFIG/.config, where `$XDG_CONFIG` is `$HOME/.config` by default.
-#[cfg(not(target_os = "macos"))]
-pub fn default_config_file() -> PathBuf {
-    let base_dirs = directories::BaseDirs::new().unwrap();
-    let mut config_file: PathBuf = base_dirs.config_dir().into();
-    config_file.push(CFG_DIRECTORY);
-    config_file.push(CFG_FILE_NAME);
-    config_file
 }
 
 /// Whether the output to the terminal should be colored

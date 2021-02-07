@@ -50,7 +50,8 @@ impl Default for ColorDef {
 /// Formatting directives for text
 ///
 /// This was abstracted out because the exact same settings apply for both additions and deletions
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Clone)]
+#[serde(rename_all = "kebab-case")]
 pub struct TextFormatting {
     /// The foreground color to use with un-emphasized text
     #[serde(with = "ColorDef")]
@@ -106,8 +107,9 @@ impl TextFormatting {
 }
 
 /// Formatting options for rendering a diff
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
 #[serde(default)]
+#[serde(rename_all = "kebab-case")]
 pub struct Options {
     /// The formatting options to use with text addition
     pub addition: TextFormatting,
