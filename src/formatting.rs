@@ -6,7 +6,7 @@ use anyhow::Result;
 use console::{Color, Style, Term};
 use log::debug;
 use serde::{Deserialize, Serialize};
-use std::cmp::Ordering;
+use std::{cmp::Ordering, io::Write};
 use strum_macros::EnumString;
 
 /// A copy of the [Color](console::Color) enum so we can serialize using serde, and get around the
@@ -150,6 +150,10 @@ pub struct DisplayParameters<'text> {
     pub old_text: &'text str,
     /// The full text of the new document
     pub new_text: &'text str,
+    /// The file name of the old document
+    pub old_text_filename: &'text str,
+    /// The file name of the new document
+    pub new_text_filename: &'text str,
 }
 
 /// The formatting directives to use with different types of text
@@ -176,6 +180,8 @@ impl Options {
             new_text,
             old_hunks,
             new_hunks,
+            old_text_filename,
+            new_text_filename,
         } = params;
         let old_fmt = FormattingDirectives {
             regular: &self.deletion.to_regular_style(),
@@ -193,6 +199,14 @@ impl Options {
         // have to re-do that when we print out each line/hunk.
         let old_lines: Vec<_> = old_text.lines().collect();
         let new_lines: Vec<_> = new_text.lines().collect();
+
+        self.print_title(
+            term,
+            old_text_filename,
+            new_text_filename,
+            &old_fmt,
+            &new_fmt,
+        )?;
 
         // Iterate through the edits on both documents. We know that both of the vectors are
         // sorted, and we can use that property to iterate through the entries in O(n). Basic
@@ -242,7 +256,25 @@ impl Options {
             self.print_hunk(term, &new_lines, hunk, &new_fmt)?;
             it_new += 1;
         }
+        // add an extra newline after the last line for better separation in the terminal
+        write!(term, "\n")?;
         Ok(())
+    }
+
+    /// Print the title for the diff
+    fn print_title(
+        &self,
+        term: &mut Term,
+        old_fname: &str,
+        new_fname: &str,
+        old_fmt: &FormattingDirectives,
+        new_fmt: &FormattingDirectives,
+    ) -> std::io::Result<()> {
+        term.write_str(&format!(
+            "{} -> {}\n\n",
+            old_fmt.regular.apply_to(old_fname),
+            new_fmt.regular.apply_to(new_fname)
+        ))
     }
 
     /// Print a [hunk](Hunk) to `stdout`
