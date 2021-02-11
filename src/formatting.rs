@@ -256,8 +256,6 @@ impl Options {
             self.print_hunk(term, &new_lines, hunk, &new_fmt)?;
             it_new += 1;
         }
-        // add an extra newline after the last line for better separation in the terminal
-        write!(term, "\n")?;
         Ok(())
     }
 
@@ -270,11 +268,19 @@ impl Options {
         old_fmt: &FormattingDirectives,
         new_fmt: &FormattingDirectives,
     ) -> std::io::Result<()> {
-        term.write_str(&format!(
-            "{} -> {}\n\n",
+        let divider = " -> ";
+        write!(
+            term,
+            "{}{}{}\n",
             old_fmt.regular.apply_to(old_fname),
+            divider,
             new_fmt.regular.apply_to(new_fname)
-        ))
+        )?;
+        // We get the sizes of the individual strings rather than just take the size of the string
+        // that we pass into the write method above
+        let sep_size = old_fname.len() + divider.len() + new_fname.len();
+        write!(term, "{}\n", "-".repeat(sep_size))?;
+        Ok(())
     }
 
     /// Print a [hunk](Hunk) to `stdout`
