@@ -15,12 +15,11 @@ use thiserror::Error;
 #[cfg(target_os = "macos")]
 use std::env;
 
-#[cfg(not(target_os = "macos"))]
-use directories;
+use directories_next::BaseDirs;
 
 /// The environment variable for XDG_CONFIG
 #[cfg(target_os = "macos")]
-const XDG_CONFIG: &str = "XDG_CONFIG";
+const XDG_CONFIG: &str = "XDG_CONFIG_HOME";
 /// The directory inside the config base where the config file is stored
 const CFG_DIRECTORY: &str = "diffsitter";
 /// The expected filename for the config file
@@ -85,7 +84,7 @@ fn default_config_file_path() -> PathBuf {
     let mut config_dir = if let Ok(dir) = env::var(XDG_CONFIG) {
         PathBuf::from(dir)
     } else {
-        let base_dirs = directories::BaseDirs::new().unwrap();
+        let base_dirs = BaseDirs::new().unwrap();
         let home_dir = base_dirs.home_dir();
         let mut path = PathBuf::from(home_dir);
         path.push(".config");
@@ -97,10 +96,10 @@ fn default_config_file_path() -> PathBuf {
 }
 
 /// Return the default location for the config file (for windows), this will use
-/// $XDG_CONFIG/.config, where `$XDG_CONFIG` is `$HOME/.config` by default.
+/// $XDG_CONFIG_HOME/.config, where `$XDG_CONFIG_HOME` is `$HOME/.config` by default.
 #[cfg(not(target_os = "macos"))]
 fn default_config_file_path() -> PathBuf {
-    let base_dirs = directories::BaseDirs::new().unwrap();
+    let base_dirs = BaseDirs::new().unwrap();
     let mut config_file: PathBuf = base_dirs.config_dir().into();
     config_file.push(CFG_DIRECTORY);
     config_file.push(CFG_FILE_NAME);
