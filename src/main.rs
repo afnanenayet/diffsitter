@@ -10,7 +10,7 @@ use ast::AstVector;
 use cli::{list_supported_languages, set_term_colors, Args};
 use config::{Config, ConfigReadError};
 use console::Term;
-use formatting::DisplayParameters;
+use formatting::{DisplayParameters, DocumentDiffData};
 use log::{error, info, warn, LevelFilter};
 use serde_json as json;
 use std::fs;
@@ -42,13 +42,15 @@ fn derive_config(args: &Args) -> Result<Config> {
 /// Take the diff of two files
 fn run_diff(args: &Args) -> Result<()> {
     let config = derive_config(args)?;
-    let path_a = args.old.as_ref().unwrap();
-    let path_b = args.new.as_ref().unwrap();
+    let path_old = args.old.as_ref().unwrap();
+    let path_old_name = path_old.to_string_lossy();
+    let path_new = args.new.as_ref().unwrap();
+    let path_new_name = path_new.to_string_lossy();
 
-    let old_text = fs::read_to_string(&path_a)?;
-    info!("Reading {} to string", &path_a.to_string_lossy());
-    let new_text = fs::read_to_string(&path_b)?;
-    info!("Reading {} to string", &path_b.to_string_lossy());
+    let old_text = fs::read_to_string(&path_old)?;
+    info!("Reading {} to string", &path_old_name);
+    let new_text = fs::read_to_string(&path_new)?;
+    info!("Reading {} to string", &path_new_name);
     let file_type: Option<&str> = args.file_type.as_deref();
 
     if let Some(file_type) = file_type {
@@ -56,18 +58,22 @@ fn run_diff(args: &Args) -> Result<()> {
     } else {
         info!("Will deduce filetype from file extension");
     }
-    let ast_a = parse::parse_file(&path_a, file_type, config.file_associations.as_ref())?;
-    let ast_b = parse::parse_file(&path_b, file_type, config.file_associations.as_ref())?;
+    let ast_a = parse::parse_file(&path_old, file_type, config.file_associations.as_ref())?;
+    let ast_b = parse::parse_file(&path_new, file_type, config.file_associations.as_ref())?;
     let diff_vec_a = AstVector::from_ts_tree(&ast_a, &old_text);
     let diff_vec_b = AstVector::from_ts_tree(&ast_b, &new_text);
     let (old_hunks, new_hunks) = ast::edit_hunks(&diff_vec_a, &diff_vec_b)?;
     let params = DisplayParameters {
-        old_hunks: &old_hunks,
-        new_hunks: &new_hunks,
-        old_text: &old_text,
-        new_text: &new_text,
-        old_text_filename: &path_a.to_string_lossy(),
-        new_text_filename: &path_b.to_string_lossy(),
+        old: DocumentDiffData {
+            filename: &path_old_name,
+            hunks: &old_hunks,
+            text: &old_text,
+        },
+        new: DocumentDiffData {
+            filename: &path_new_name,
+            hunks: &new_hunks,
+            text: &new_text,
+        },
     };
     let mut term = Term::stdout();
     config.formatting.print(&mut term, &params)?;

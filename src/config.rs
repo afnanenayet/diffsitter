@@ -1,6 +1,6 @@
 //! Utilities and definitions for config handling
 
-use crate::formatting::Options as FormattingOptions;
+use crate::formatting::DiffWriter;
 use anyhow::{Context, Result};
 use log::info;
 use serde::{Deserialize, Serialize};
@@ -37,14 +37,14 @@ pub struct Config {
     pub file_associations: Option<HashMap<String, String>>,
 
     /// Formatting options for display
-    pub formatting: FormattingOptions,
+    pub formatting: DiffWriter,
 }
 
 impl Default for Config {
     fn default() -> Self {
         Config {
             file_associations: None,
-            formatting: FormattingOptions::default(),
+            formatting: DiffWriter::default(),
         }
     }
 }

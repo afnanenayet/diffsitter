@@ -78,47 +78,57 @@ fn default_option<T>() -> Option<T> {
     None
 }
 
-impl TextFormatting {
-    /// Generate a [Style] for regular text
-    pub fn to_regular_style(&self) -> Style {
+/// The style that applies to regular text in a diff
+#[derive(Clone, Debug, PartialEq, Eq)]
+struct RegularStyle(Style);
+
+/// The style that applies to emphasized text in a diff
+#[derive(Clone, Debug, PartialEq, Eq)]
+struct EmphasizedStyle(Style);
+
+impl From<&TextFormatting> for RegularStyle {
+    fn from(fmt: &TextFormatting) -> Self {
         let mut style = Style::default();
-        style = style.fg(self.regular_foreground);
-        style
-    }
-
-    /// Generate a [Style] for emphasized text
-    pub fn to_emphasized_style(&self) -> Style {
-        let mut style = Style::default();
-        style = style.fg(self.emphasized_foreground);
-
-        if self.bold {
-            style = style.bold();
-        }
-
-        if self.underline {
-            style = style.underlined();
-        }
-
-        if let Some(color) = self.highlight {
-            style = style.bg(color);
-        }
-        style
+        style = style.fg(fmt.regular_foreground);
+        RegularStyle(style)
     }
 }
 
-/// Formatting options for rendering a diff
+impl From<&TextFormatting> for EmphasizedStyle {
+    fn from(fmt: &TextFormatting) -> Self {
+        let mut style = Style::default();
+        style = style.fg(fmt.emphasized_foreground);
+
+        if fmt.bold {
+            style = style.bold();
+        }
+
+        if fmt.underline {
+            style = style.underlined();
+        }
+
+        if let Some(color) = fmt.highlight {
+            style = style.bg(color);
+        }
+        EmphasizedStyle(style)
+    }
+}
+
+/// A writer that can render a diff to a terminal
+///
+/// This struct contains the formatting options for the diff
 #[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
 #[serde(default, rename_all = "kebab-case")]
-pub struct Options {
+pub struct DiffWriter {
     /// The formatting options to use with text addition
     pub addition: TextFormatting,
     /// The formatting options to use with text addition
     pub deletion: TextFormatting,
 }
 
-impl Default for Options {
+impl Default for DiffWriter {
     fn default() -> Self {
-        Options {
+        DiffWriter {
             addition: TextFormatting {
                 regular_foreground: Color::Green,
                 emphasized_foreground: Color::Green,
@@ -140,73 +150,62 @@ impl Default for Options {
 }
 
 /// User supplied parameters that are required to display a diff
-#[derive(Debug)]
-pub struct DisplayParameters<'text> {
-    /// The hunks corresponding to the old document
-    pub old_hunks: &'text Hunks<'text>,
-    /// The hunks corresponding to the old document
-    pub new_hunks: &'text Hunks<'text>,
-    /// The full text of the old document
-    pub old_text: &'text str,
-    /// The full text of the new document
-    pub new_text: &'text str,
-    /// The file name of the old document
-    pub old_text_filename: &'text str,
-    /// The file name of the new document
-    pub new_text_filename: &'text str,
+#[derive(Debug, Clone, PartialEq)]
+pub struct DisplayParameters<'a> {
+    /// The parameters that correspond to the old document
+    pub old: DocumentDiffData<'a>,
+    /// The parameters that correspond to the new document
+    pub new: DocumentDiffData<'a>,
 }
 
-/// The formatting directives to use with different types of text
-///
-/// This struct defines the different types of text to use with `print_line`.
+/// The parameters required to display a diff for a particular document
+#[derive(Debug, Clone, PartialEq)]
+pub struct DocumentDiffData<'a> {
+    /// The filename of the document
+    pub filename: &'a str,
+    /// The edit hunks for the document
+    pub hunks: &'a Hunks<'a>,
+    /// The full text of the document
+    pub text: &'a str,
+}
+
+/// The formatting directives to use with different types of text in a diff
 struct FormattingDirectives<'a> {
     /// The formatting to use with normal unchanged text in a diff line
-    pub regular: &'a Style,
+    pub regular: RegularStyle,
     /// The formatting to use with emphasized text in a diff line
-    pub emphasis: &'a Style,
+    pub emphasis: EmphasizedStyle,
     /// The prefix (if any) to use with the line
-    pub prefix: &'a str,
+    pub prefix: &'a dyn AsRef<str>,
 }
 
-impl Options {
+impl<'a> From<&'a TextFormatting> for FormattingDirectives<'a> {
+    fn from(fmt_opts: &'a TextFormatting) -> Self {
+        Self {
+            regular: fmt_opts.into(),
+            emphasis: fmt_opts.into(),
+            prefix: &fmt_opts.prefix,
+        }
+    }
+}
+
+impl DiffWriter {
     /// A helper function for printing a line-by-line diff
     ///
     /// This will process the "raw" [diff vector](AstVector) and turn extract the differences
     /// between lines.
-    // TODO(afnan) make this function private and use `print` to dispatch
     pub fn print(&self, term: &mut Term, params: &DisplayParameters) -> Result<()> {
-        let &DisplayParameters {
-            old_text,
-            new_text,
-            old_hunks,
-            new_hunks,
-            old_text_filename,
-            new_text_filename,
-        } = params;
-        let old_fmt = FormattingDirectives {
-            regular: &self.deletion.to_regular_style(),
-            emphasis: &self.deletion.to_emphasized_style(),
-            prefix: &self.deletion.prefix,
-        };
-        let new_fmt = FormattingDirectives {
-            regular: &self.addition.to_regular_style(),
-            emphasis: &self.addition.to_emphasized_style(),
-            prefix: &self.addition.prefix,
-        };
+        let DisplayParameters { old, new } = &params;
+        let old_fmt = FormattingDirectives::from(&self.deletion);
+        let new_fmt = FormattingDirectives::from(&self.addition);
 
         // We need access to specific line numbers in the text so we can print out text ranges
         // within a line. It's more efficient to break up the text by line up-front so we don't
-        // have to re-do that when we print out each line/hunk.
-        let old_lines: Vec<_> = old_text.lines().collect();
-        let new_lines: Vec<_> = new_text.lines().collect();
+        // have to redo that when we print out each line/hunk.
+        let old_lines: Vec<_> = old.text.lines().collect();
+        let new_lines: Vec<_> = new.text.lines().collect();
 
-        self.print_title(
-            term,
-            old_text_filename,
-            new_text_filename,
-            &old_fmt,
-            &new_fmt,
-        )?;
+        self.print_title(term, old.filename, new.filename, &old_fmt, &new_fmt)?;
 
         // Iterate through the edits on both documents. We know that both of the vectors are
         // sorted, and we can use that property to iterate through the entries in O(n). Basic
@@ -214,9 +213,9 @@ impl Options {
         let mut it_old = 0;
         let mut it_new = 0;
 
-        while it_old < old_hunks.0.len() && it_new < new_hunks.0.len() {
-            let old_hunk = &old_hunks.0[it_old];
-            let new_hunk = &new_hunks.0[it_new];
+        while it_old < old.hunks.0.len() && it_new < new.hunks.0.len() {
+            let old_hunk = &old.hunks.0[it_old];
+            let new_hunk = &new.hunks.0[it_new];
 
             // We can unwrap here because the loop invariant enforces that there is at least one
             // element in the deque, otherwise the loop wouldn't run at all.
@@ -243,16 +242,16 @@ impl Options {
 
         debug!("Printing remaining old hunks");
 
-        while it_old < old_hunks.0.len() {
-            let hunk = &old_hunks.0[it_old];
+        while it_old < old.hunks.0.len() {
+            let hunk = &old.hunks.0[it_old];
             self.print_hunk(term, &old_lines, hunk, &old_fmt)?;
             it_old += 1;
         }
 
         debug!("Printing remaining new hunks");
 
-        while it_new < new_hunks.0.len() {
-            let hunk = &new_hunks.0[it_new];
+        while it_new < new.hunks.0.len() {
+            let hunk = &new.hunks.0[it_new];
             self.print_hunk(term, &new_lines, hunk, &new_fmt)?;
             it_new += 1;
         }
@@ -269,17 +268,17 @@ impl Options {
         new_fmt: &FormattingDirectives,
     ) -> std::io::Result<()> {
         let divider = " -> ";
-        write!(
+        writeln!(
             term,
-            "{}{}{}\n",
-            old_fmt.regular.apply_to(old_fname),
+            "{}{}{}",
+            old_fmt.regular.0.apply_to(old_fname),
             divider,
-            new_fmt.regular.apply_to(new_fname)
+            new_fmt.regular.0.apply_to(new_fname)
         )?;
         // We get the sizes of the individual strings rather than just take the size of the string
         // that we pass into the write method above
         let sep_size = old_fname.len() + divider.len() + new_fname.len();
-        write!(term, "{}\n", "-".repeat(sep_size))?;
+        writeln!(term, "{}", "-".repeat(sep_size))?;
         Ok(())
     }
 
@@ -324,8 +323,11 @@ impl Options {
         line: &Line,
         fmt: &FormattingDirectives,
     ) -> Result<()> {
+        let regular = &fmt.regular.0;
+        let emphasis = &fmt.emphasis.0;
+
         // First, we print the prefix to stdout
-        term.write_str(&fmt.regular.apply_to(fmt.prefix).to_string())?;
+        write!(term, "{}", regular.apply_to(fmt.prefix.as_ref()))?;
 
         // The number of characters that have been printed out to stdout already. These aren't
         // *actually* chars because UTF-8, but you get the gist.
@@ -342,23 +344,22 @@ impl Options {
             // zero this is a no-op
             let regular_range = printed_chars..emphasis_range.start;
             let regular_text: String = text[regular_range].into();
-            term.write_str(&fmt.regular.apply_to(regular_text).to_string())?;
+            write!(term, "{}", regular.apply_to(&regular_text))?;
 
             // Need to set the printed_chars marker here because emphasized_text moves the range
             printed_chars = emphasis_range.end;
             let emphasized_text: String = text[emphasis_range].into();
-            term.write_str(&fmt.emphasis.apply_to(emphasized_text).to_string())?;
+            write!(term, "{}", emphasis.apply_to(emphasized_text))?;
         }
         // Finally, print any normal text after the last entry
         let remaining_range = printed_chars..text.len();
         let remaining_text: String = text[remaining_range].into();
-        term.write_str(&fmt.regular.apply_to(remaining_text).to_string())?;
-        term.write_str("\n")?;
+        writeln!(term, "{}", regular.apply_to(remaining_text))?;
         Ok(())
     }
 }
 
-/// The method to use when emphasizing diffs within a line
+/// The formatting directives to use with emphasized text in the line of a diff
 ///
 /// `Bold` is used as the default emphasis strategy between two lines.
 #[derive(Debug, PartialEq, EnumString, Serialize, Deserialize)]
