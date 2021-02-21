@@ -6,8 +6,17 @@ use anyhow::Result;
 use console::{Color, Style, Term};
 use log::debug;
 use serde::{Deserialize, Serialize};
-use std::{cmp::Ordering, io::Write};
+use std::{
+    cmp::{max, Ordering},
+    io::Write,
+};
 use strum_macros::EnumString;
+
+/// The ascii separator used after the diff title
+const TITLE_SEPARATOR: &str = "=";
+
+/// The ascii separator used after the hunk title
+const HUNK_TITLE_SEPARATOR: &str = "-";
 
 /// A copy of the [Color](console::Color) enum so we can serialize using serde, and get around the
 /// orphan rule.
@@ -268,18 +277,80 @@ impl DiffWriter {
         new_fmt: &FormattingDirectives,
     ) -> std::io::Result<()> {
         let divider = " -> ";
-        writeln!(
-            term,
-            "{}{}{}",
-            old_fmt.regular.0.apply_to(old_fname),
-            divider,
-            new_fmt.regular.0.apply_to(new_fname)
-        )?;
-        // We get the sizes of the individual strings rather than just take the size of the string
-        // that we pass into the write method above
-        let sep_size = old_fname.len() + divider.len() + new_fname.len();
-        writeln!(term, "{}", "-".repeat(sep_size))?;
+
+        // The different ways we can stack the title
+        enum TitleStack {
+            Vertical,
+            Horizontal,
+        };
+
+        // We construct the fully horizontal title string. If wider than the terminal, then we
+        // format another title string that's vertically stacked
+        let title_len = format!("{}{}{}", old_fname, divider, new_fname).len();
+
+        // We only display the horizontal title format if we know we have enough horizontal space
+        // to display it
+        let stack_style = if let Some((_, term_width)) = term.size_checked() {
+            if title_len <= term_width as usize {
+                TitleStack::Horizontal
+            } else {
+                TitleStack::Vertical
+            }
+        } else {
+            TitleStack::Vertical
+        };
+
+        // Generate a title string and separator based on the stacking style we determined from
+        // the terminal width
+        let (styled_title_str, title_sep) = match stack_style {
+            TitleStack::Horizontal => {
+                let title_len = old_fname.len() + divider.len() + new_fname.len();
+                let styled_title_str = format!(
+                    "{}{}{}",
+                    old_fmt.regular.0.apply_to(old_fname),
+                    divider,
+                    new_fmt.regular.0.apply_to(new_fname)
+                );
+                let title_sep = TITLE_SEPARATOR.repeat(title_len);
+                (styled_title_str, title_sep)
+            }
+            TitleStack::Vertical => {
+                let title_len = max(old_fname.len(), new_fname.len());
+                let styled_title_str = format!(
+                    "{}\n{}",
+                    old_fmt.regular.0.apply_to(old_fname),
+                    new_fmt.regular.0.apply_to(new_fname)
+                );
+                let title_sep = TITLE_SEPARATOR.repeat(title_len);
+                (styled_title_str, title_sep)
+            }
+        };
+        writeln!(term, "{}", styled_title_str)?;
+        writeln!(term, "{}", title_sep)?;
         term.flush()?;
+        Ok(())
+    }
+
+    fn print_hunk_title(
+        &self,
+        term: &mut Term,
+        hunk: &Hunk,
+        fmt: &FormattingDirectives,
+    ) -> Result<()> {
+        let first_line = hunk.first_line().unwrap();
+        let last_line = hunk.last_line().unwrap();
+
+        // We don't need to display a range `x - x:` since `x:` is terser and clearer
+        let title_str = if last_line - first_line == 0 {
+            format!("\n{}:", first_line)
+        } else {
+            format!("\n{} - {}:", first_line, last_line)
+        };
+        // Note that we need to get rid of whitespace (including newlines) before we can take the
+        // length of the string, which is why we call `trim()`
+        let separator = HUNK_TITLE_SEPARATOR.repeat(title_str.trim().len());
+        writeln!(term, "{}", fmt.regular.0.apply_to(title_str))?;
+        writeln!(term, "{}", separator)?;
         Ok(())
     }
 
@@ -296,6 +367,7 @@ impl DiffWriter {
             hunk.first_line().unwrap(),
             hunk.last_line().unwrap()
         );
+        self.print_hunk_title(term, hunk, fmt)?;
 
         for line in &hunk.0 {
             let text = lines[line.line_index];
