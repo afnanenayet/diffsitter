@@ -75,8 +75,14 @@ fn run_diff(args: &Args) -> Result<()> {
             text: &new_text,
         },
     };
-    let mut term = Term::stdout();
+    // Use a buffered terminal instead of a normal unbuffered terminal so we can amortize the cost of printing. It
+    // doesn't really how frequently the terminal prints to stdout because the user just cares about the output at the
+    // end, we don't care about how frequently the terminal does partial updates or anything like that. If the user is
+    // curious about progress, they can enable logging and see when hunks are processed and written to the buffer.
+    let mut term = Term::buffered_stdout();
     config.formatting.print(&mut term, &params)?;
+    // Just in case we forgot to flush anything in the `print` function
+    term.flush()?;
     Ok(())
 }
 
