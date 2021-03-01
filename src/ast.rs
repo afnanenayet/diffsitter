@@ -69,6 +69,7 @@ pub struct Entry<'a> {
 ///
 /// This representation of the tree leaves is much more convenient for things like dynamic
 /// programming, and provides useful for formatting.
+#[derive(Debug)]
 pub struct AstVector<'a> {
     /// The leaves of the AST, build with an in-order traversal
     pub leaves: Vec<Entry<'a>>,
@@ -139,11 +140,16 @@ impl<'a> PartialEq for AstVector<'a> {
 fn build<'a>(vector: &RefCell<Vec<Entry<'a>>>, node: tree_sitter::Node<'a>, text: &'a str) {
     // If the node is a leaf, we can stop traversing
     if node.child_count() == 0 {
-        let node_text: &'a str = &text[node.byte_range()];
-        vector.borrow_mut().push(Entry {
-            reference: node,
-            text: node_text,
-        });
+        // We only push an entry if the referenced text range isn't empty, since there's no point
+        // in having an empty text range. This also fixes a bug where the program would panic
+        // because it would attempt to access the 0th index in an empty text range.
+        if !node.byte_range().is_empty() {
+            let node_text: &'a str = &text[node.byte_range()];
+            vector.borrow_mut().push(Entry {
+                reference: node,
+                text: node_text,
+            });
+        }
         return;
     }
 
