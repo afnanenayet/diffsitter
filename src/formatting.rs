@@ -279,6 +279,7 @@ impl DiffWriter {
         // that we pass into the write method above
         let sep_size = old_fname.len() + divider.len() + new_fname.len();
         writeln!(term, "{}", "-".repeat(sep_size))?;
+        term.flush()?;
         Ok(())
     }
 
@@ -307,6 +308,7 @@ impl DiffWriter {
             hunk.first_line().unwrap(),
             hunk.last_line().unwrap()
         );
+        term.flush()?;
         Ok(())
     }
 
