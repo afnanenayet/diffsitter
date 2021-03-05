@@ -4,7 +4,7 @@ use crate::formatting::DiffWriter;
 use anyhow::{Context, Result};
 use log::info;
 use serde::{Deserialize, Serialize};
-use serde_json as json;
+use json5 as json;
 use std::{
     collections::HashMap,
     fs, io,
@@ -113,7 +113,7 @@ mod tests {
     #[test]
     fn test_sample_config() {
         let mut sample_config_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        sample_config_path.push("assets/sample_config.json");
+        sample_config_path.push("assets/sample_config.json5");
         Config::try_from_file(Some(sample_config_path).as_ref()).unwrap();
     }
 }
