@@ -114,9 +114,19 @@ mod tests {
     /// sitter [parser](tree_sitter::Parser)
     #[test]
     fn test_loading_languages() {
-        for (_, lang) in &LANGUAGES {
+        // Collect all of the test failures in a vector so we can show a comprehensive error with
+        // all of the failed languages instead of panicking one at a time
+        let mut failures = Vec::new();
+
+        for (&name, lang) in &LANGUAGES {
             let mut parser = tree_sitter::Parser::new();
-            parser.set_language(unsafe { lang() }).unwrap();
+            let result = parser.set_language(unsafe { lang() });
+
+            if let Err(e) = result {
+                failures.push((name, e));
+            }
         }
+
+        assert!(failures.is_empty(), "{:#?}", failures);
     }
 }
