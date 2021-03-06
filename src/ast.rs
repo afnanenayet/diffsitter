@@ -209,9 +209,7 @@ fn min_edit<'a>(a: &'a AstVector, b: &'a AstVector) -> PredecessorVec<'a> {
 
     // Initialize the dynamic programming array
     // dp[i][j] is the edit distance between a[:i] and b[:j]
-    let mut dp: Vec<Vec<u32>> = (0..a.len() + 1)
-        .map(|_| (0..b.len() + 1).map(|_| 0).collect())
-        .collect();
+    let mut dp: Vec<Vec<u32>> = vec![vec![0; b.len() + 1]; a.len() + 1];
 
     // Sanity check that the dimensions of the DP table are correct
     debug_assert!(dp.len() == a.len() + 1);
@@ -235,7 +233,7 @@ fn min_edit<'a>(a: &'a AstVector, b: &'a AstVector) -> PredecessorVec<'a> {
 
                 if i > 0 {
                     let pred_entry = PredEntry {
-                        edit: Edit::Deletion(b[i - 1]),
+                        edit: Edit::Deletion(a[i - 1]),
                         previous_idx: (i - 1, j),
                     };
                     predecessors[i][j] = Some(pred_entry);

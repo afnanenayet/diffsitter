@@ -2,9 +2,9 @@
 
 use crate::formatting::DiffWriter;
 use anyhow::{Context, Result};
+use json5 as json;
 use log::info;
 use serde::{Deserialize, Serialize};
-use json5 as json;
 use std::{
     collections::HashMap,
     fs, io,
