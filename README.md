@@ -7,7 +7,7 @@
 ![downloads](https://img.shields.io/crates/d/diffsitter)
 ![license](https://img.shields.io/github/license/afnanenayet/diffsitter)
 
-[![asciicast](https://asciinema.org/a/383291.svg)](https://asciinema.org/a/383291)
+[![asciicast](https://asciinema.org/a/joEIfP8XoxUhZKXEqUD8CEP7j.svg)](https://asciinema.org/a/joEIfP8XoxUhZKXEqUD8CEP7j)
 
 ## Summary
 
