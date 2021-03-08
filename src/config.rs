@@ -12,18 +12,11 @@ use std::{
 };
 use thiserror::Error;
 
-#[cfg(target_os = "macos")]
-use std::env;
+#[cfg(target_os = "windows")]
+use directories_next::ProjectDirs;
 
-use directories_next::BaseDirs;
-
-/// The environment variable for XDG_CONFIG
-#[cfg(target_os = "macos")]
-const XDG_CONFIG: &str = "XDG_CONFIG_HOME";
-/// The directory inside the config base where the config file is stored
-const CFG_DIRECTORY: &str = "diffsitter";
 /// The expected filename for the config file
-const CFG_FILE_NAME: &str = "config.json";
+const CFG_FILE_NAME: &str = "config.json5";
 
 /// The config struct for the application
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -63,7 +56,7 @@ impl Config {
     pub fn try_from_file<P: AsRef<Path>>(path: Option<&P>) -> Result<Self, ConfigReadError> {
         // We Have to store the default config here so we can use it as a reference later
         // (otherwise we would have a dangling reference to a temporary)
-        let default_config_fp = default_config_file_path();
+        let default_config_fp = default_config_file_path()?;
         // If the user provided a path, we can just unwrap that, otherwise we fall back to the
         // default file path
         let config_fp: &Path = path.map(|x| x.as_ref()).unwrap_or(&default_config_fp);
@@ -78,32 +71,25 @@ impl Config {
 
 /// Return the default location for the config file (for *nix, Linux and MacOS), this will use
 /// $XDG_CONFIG/.config, where `$XDG_CONFIG` is `$HOME/.config` by default.
-#[cfg(target_os = "macos")]
-fn default_config_file_path() -> PathBuf {
-    // First we check to see if $XDG_CONfIG is set
-    let mut config_dir = if let Ok(dir) = env::var(XDG_CONFIG) {
-        PathBuf::from(dir)
-    } else {
-        let base_dirs = BaseDirs::new().unwrap();
-        let home_dir = base_dirs.home_dir();
-        let mut path = PathBuf::from(home_dir);
-        path.push(".config");
-        path
-    };
-    config_dir.push(CFG_DIRECTORY);
-    config_dir.push(CFG_FILE_NAME);
-    config_dir
+#[cfg(not(target_os = "windows"))]
+fn default_config_file_path() -> Result<PathBuf> {
+    let xdg_dirs = xdg::BaseDirectories::with_prefix("diffsitter")?;
+    let file_path = xdg_dirs.place_config_file(CFG_FILE_NAME)?;
+    Ok(file_path)
 }
 
 /// Return the default location for the config file (for windows), this will use
 /// $XDG_CONFIG_HOME/.config, where `$XDG_CONFIG_HOME` is `$HOME/.config` by default.
-#[cfg(not(target_os = "macos"))]
-fn default_config_file_path() -> PathBuf {
-    let base_dirs = BaseDirs::new().unwrap();
-    let mut config_file: PathBuf = base_dirs.config_dir().into();
-    config_file.push(CFG_DIRECTORY);
+#[cfg(target_os = "windows")]
+fn default_config_file_path() -> Result<PathBuf> {
+    use anyhow::ensure;
+
+    let proj_dirs = ProjectDirs::from("io", "afnan", "diffsitter");
+    ensure!(proj_dirs.is_some(), "Was not able to retrieve config path");
+    let proj_dirs = proj_dirs.unwrap();
+    let mut config_file: PathBuf = proj_dirs.config_dir().into();
     config_file.push(CFG_FILE_NAME);
-    config_file
+    Ok(config_file)
 }
 
 #[cfg(test)]
