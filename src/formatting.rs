@@ -4,7 +4,7 @@
 use crate::diff::{Hunk, Hunks, Line};
 use anyhow::Result;
 use console::{Color, Style, Term};
-use log::debug;
+use log::{debug, info};
 use serde::{Deserialize, Serialize};
 use std::{
     cmp::{max, Ordering},
@@ -279,6 +279,7 @@ impl DiffWriter {
         let divider = " -> ";
 
         // The different ways we can stack the title
+        #[derive(Debug, Eq, PartialEq, PartialOrd, Ord)]
         enum TitleStack {
             Vertical,
             Horizontal,
@@ -291,6 +292,8 @@ impl DiffWriter {
         // We only display the horizontal title format if we know we have enough horizontal space
         // to display it
         let stack_style = if let Some((_, term_width)) = term.size_checked() {
+            info!("Detected terminal width: {} columns", term_width);
+
             if title_len <= term_width as usize {
                 TitleStack::Horizontal
             } else {
@@ -299,6 +302,8 @@ impl DiffWriter {
         } else {
             TitleStack::Vertical
         };
+
+        info!("Using stack style {:#?} for title", stack_style);
 
         // Generate a title string and separator based on the stacking style we determined from
         // the terminal width
@@ -346,6 +351,9 @@ impl DiffWriter {
         } else {
             format!("\n{} - {}:", first_line, last_line)
         };
+
+        debug!("Title string has length of {}", title_str.len());
+
         // Note that we need to get rid of whitespace (including newlines) before we can take the
         // length of the string, which is why we call `trim()`
         let separator = HUNK_TITLE_SEPARATOR.repeat(title_str.trim().len());

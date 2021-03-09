@@ -3,7 +3,7 @@
 include!(concat!(env!("OUT_DIR"), "/generated_grammar.rs"));
 
 use anyhow::{format_err, Result};
-use log::info;
+use log::{debug, info};
 use logging_timer::time;
 use std::collections::HashMap;
 use std::{fs, path::Path};
@@ -81,18 +81,21 @@ pub fn parse_file(
     let text = fs::read_to_string(p)?;
     let mut parser = Parser::new();
     let language = match language {
-        Some(x) => generate_language(x),
+        Some(x) => {
+            info!("Using language {} with parser", x);
+            generate_language(x)
+        }
         None => {
             let ext = p.extension().unwrap_or_default().to_string_lossy();
             language_from_ext(&ext, overrides)
         }
     }?;
     parser.set_language(language).unwrap();
-    info!("Constructed parser");
+    debug!("Constructed parser");
 
     match parser.parse(&text, None) {
         Some(ast) => {
-            info!("Parsed AST");
+            debug!("Parsed AST");
             Ok(ast)
         }
         None => Err(format_err!("Failed to parse file: {}", p.to_string_lossy())),
