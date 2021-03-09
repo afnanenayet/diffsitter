@@ -11,7 +11,7 @@ use cli::{list_supported_languages, set_term_colors, Args};
 use config::{Config, ConfigReadError};
 use console::Term;
 use formatting::{DisplayParameters, DocumentDiffData};
-use log::{error, info, warn, LevelFilter};
+use log::{debug, error, info, warn, LevelFilter};
 use serde_json as json;
 use std::fs;
 
@@ -33,7 +33,7 @@ fn derive_config(args: &Args) -> Result<Config> {
             // not finding a file at all isn't a hard error, it makes sense for us to use the
             // default config.
             ConfigReadError::ReadFileFailure(_) | ConfigReadError::NoDefault => {
-                warn!("{:#?} - falling back to default config", e);
+                warn!("{} - falling back to default config", e);
                 Ok(Config::default())
             }
             // If we *do* find a config file and it doesn't parse correctly, we should return an
@@ -56,9 +56,9 @@ fn run_diff(args: &Args) -> Result<()> {
     let path_new_name = path_new.to_string_lossy();
 
     let old_text = fs::read_to_string(&path_old)?;
-    info!("Reading {} to string", &path_old_name);
+    debug!("Reading {} to string", &path_old_name);
     let new_text = fs::read_to_string(&path_new)?;
-    info!("Reading {} to string", &path_new_name);
+    debug!("Reading {} to string", &path_new_name);
     let file_type: Option<&str> = args.file_type.as_deref();
 
     if let Some(file_type) = file_type {
@@ -69,7 +69,17 @@ fn run_diff(args: &Args) -> Result<()> {
     let ast_a = parse::parse_file(&path_old, file_type, config.file_associations.as_ref())?;
     let ast_b = parse::parse_file(&path_new, file_type, config.file_associations.as_ref())?;
     let diff_vec_a = AstVector::from_ts_tree(&ast_a, &old_text);
+    info!(
+        "Constructed a diff vector with {} nodes for {}",
+        diff_vec_a.len(),
+        path_old.to_string_lossy()
+    );
     let diff_vec_b = AstVector::from_ts_tree(&ast_b, &new_text);
+    info!(
+        "Constructed a diff vector with {} nodes for {}",
+        diff_vec_b.len(),
+        path_new.to_string_lossy()
+    );
     let (old_hunks, new_hunks) = ast::edit_hunks(&diff_vec_a, &diff_vec_b)?;
     let params = DisplayParameters {
         old: DocumentDiffData {
