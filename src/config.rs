@@ -49,6 +49,8 @@ pub enum ConfigReadError {
     DeserializationFailure(#[from] anyhow::Error),
     #[error("Failed to read the config file")]
     ReadFileFailure(#[from] io::Error),
+    #[error("Unable to compute the default config file path")]
+    NoDefault,
 }
 
 impl Config {
@@ -56,15 +58,16 @@ impl Config {
     pub fn try_from_file<P: AsRef<Path>>(path: Option<&P>) -> Result<Self, ConfigReadError> {
         // We Have to store the default config here so we can use it as a reference later
         // (otherwise we would have a dangling reference to a temporary)
-        let default_config_fp = default_config_file_path()?;
+        let default_config_fp =
+            default_config_file_path().map_err(|_| ConfigReadError::NoDefault)?;
         // If the user provided a path, we can just unwrap that, otherwise we fall back to the
         // default file path
         let config_fp: &Path = path.map(|x| x.as_ref()).unwrap_or(&default_config_fp);
         info!("Reading config at {}", config_fp.to_string_lossy());
         let config_contents = fs::read_to_string(config_fp)?;
-        let config = json::from_str(&config_contents).with_context(|| {
-            format!("Failed to parse config at {}", config_fp.to_string_lossy())
-        })?;
+        let config = json::from_str(&config_contents)
+            .with_context(|| format!("Failed to parse config at {}", config_fp.to_string_lossy()))
+            .map_err(ConfigReadError::DeserializationFailure)?;
         Ok(config)
     }
 }
