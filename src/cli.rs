@@ -14,7 +14,8 @@ use strum_macros::{EnumString, ToString};
 pub struct Args {
     /// Print debug output
     ///
-    /// This will print debug output
+    /// This will print debug logs at the trace level. This is useful for debugging and bug reports
+    /// should contain debug logging info.
     #[structopt(short, long)]
     pub debug: bool,
     /// Run a subcommand that doesn't perform a diff. Valid options are: "list",
@@ -42,20 +43,21 @@ pub struct Args {
     pub file_type: Option<String>,
     /// Use the config provided at the given path
     ///
-    /// By default, diffsitter attempts to find the config at $XDG_CONFIG/diffsitter.json
+    /// By default, diffsitter attempts to find the config at `$XDG_CONFIG_HOME/diffsitter.json5`.
+    /// On Windows the app will look in the standard config path.
     #[structopt(short, long, env = "DIFFSITTER_CONFIG")]
     pub config: Option<PathBuf>,
     /// Set the color output policy. Valid values are: "auto", "on", "off".
     ///
     /// "auto" will automatically detect whether colors should be applied by trying to determine
-    /// whether the process is outputting to a TTY. "on" will force color output. "off" will
-    /// forcibly disable color output.
+    /// whether the process is outputting to a TTY. "on" will enable output and "off" will
+    /// disable color output regardless of whether the process detects a TTY.
     #[structopt(long = "color", default_value)]
     pub color_output: ColorOutputPolicy,
-    /// Don't read any configs and use the default settings
+    /// Ignore any config files and use the default config
     ///
-    /// This will cause the app to ignore any configs and all values will pull from the default
-    /// settings. This cannot be
+    /// This will cause the app to ignore any configs and all config values will use the their
+    /// default settings.
     #[structopt(short, long)]
     pub no_config: bool,
 }
