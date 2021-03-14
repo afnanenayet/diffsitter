@@ -268,6 +268,9 @@ impl DiffWriter {
     }
 
     /// Print the title for the diff
+    ///
+    /// This will print the two files being compared. This will also attempt to modify the layout
+    /// (stacking horizontally or vertically) based on the terminal width.
     fn print_title(
         &self,
         term: &mut Term,
@@ -279,7 +282,8 @@ impl DiffWriter {
         let divider = " -> ";
 
         // The different ways we can stack the title
-        #[derive(Debug, Eq, PartialEq, PartialOrd, Ord)]
+        #[derive(Debug, Eq, PartialEq, PartialOrd, Ord, strum_macros::Display)]
+        #[strum(serialize_all = "snake_case")]
         enum TitleStack {
             Vertical,
             Horizontal,
@@ -290,7 +294,8 @@ impl DiffWriter {
         let title_len = format!("{}{}{}", old_fname, divider, new_fname).len();
 
         // We only display the horizontal title format if we know we have enough horizontal space
-        // to display it
+        // to display it. If we can't determine the terminal width, play it safe and default to
+        // vertical stacking.
         let stack_style = if let Some((_, term_width)) = term.size_checked() {
             info!("Detected terminal width: {} columns", term_width);
 
@@ -303,7 +308,7 @@ impl DiffWriter {
             TitleStack::Vertical
         };
 
-        info!("Using stack style {:#?} for title", stack_style);
+        info!("Using stack style {} for title", stack_style);
 
         // Generate a title string and separator based on the stacking style we determined from
         // the terminal width
@@ -336,6 +341,10 @@ impl DiffWriter {
         Ok(())
     }
 
+    /// Print the title of a hunk to stdout
+    ///
+    /// This will print the line numbers that correspond to the hunk using the color directive for
+    /// that file, so the user has some context for the text that's being displayed.
     fn print_hunk_title(
         &self,
         term: &mut Term,
@@ -466,7 +475,7 @@ impl Default for Emphasis {
     }
 }
 
-/// Specify the colors to use when highlighting differences
+/// The colors to use when highlighting additions and deletions
 // TODO(afnan) implement the proper defaults for this struct
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct HighlightColors {
@@ -487,7 +496,7 @@ impl Default for HighlightColors {
     }
 }
 
-// Workaround so we can use the `ColorDef` remote serialization mechanism with optional types
+/// Workaround so we can use the `ColorDef` remote serialization mechanism with optional types
 mod opt_color_def {
     use super::{Color, ColorDef};
     use serde::{Deserialize, Deserializer, Serialize, Serializer};

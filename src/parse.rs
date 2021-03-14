@@ -33,6 +33,9 @@ static FILE_EXTS: phf::Map<&'static str, &'static str> = phf_map! {
     "swift" => "swift",
 };
 
+/// Generate a [tree sitter language](Language) from a language string
+///
+/// This will return an error if an unknown string is provided
 fn generate_language(lang: &str) -> Result<Language> {
     info!("Using tree-sitter parser for language {}", lang);
     match LANGUAGES.get(lang) {

@@ -17,7 +17,8 @@ use std::fs;
 
 /// Return an instance of [Config] from a config file path (or the inferred default path)
 ///
-/// If a config path isn't provided or otherwise fails, fall back to the default config
+/// If a config path isn't provided or there is some other failure, fall back to the default
+/// config. This will error out if a config is found but is found to be an invalid config.
 fn derive_config(args: &Args) -> Result<Config> {
     if args.no_config {
         info!("`no_config` specified, falling back to default config");
@@ -124,6 +125,7 @@ fn main(args: Args) -> Result<()> {
         .filter_level(log_level)
         .init();
 
+    // Users can supply a command that will *not* run a diff, which we handle here
     if let Some(cmd) = args.cmd {
         match cmd {
             Command::List => list_supported_languages(),
