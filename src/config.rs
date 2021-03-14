@@ -55,6 +55,11 @@ pub enum ConfigReadError {
 
 impl Config {
     /// Read a config from a given filepath, or fall back to the default file paths
+    ///
+    /// If a path is supplied, this method will attempt to read the contents of that path and parse
+    /// it to a string. If a path isn't supplied, the function will attempt to figure out what the
+    /// default config file path is supposed to be (based on OS conventions, see
+    /// [default_config_file_path]).
     pub fn try_from_file<P: AsRef<Path>>(path: Option<&P>) -> Result<Self, ConfigReadError> {
         // We Have to store the default config here so we can use it as a reference later
         // (otherwise we would have a dangling reference to a temporary)
