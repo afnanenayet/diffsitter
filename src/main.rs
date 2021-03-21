@@ -6,14 +6,14 @@ mod formatting;
 mod parse;
 
 use anyhow::Result;
-use ast::AstVector;
+use ast::{AstVector, AstVectorData};
 use cli::{list_supported_languages, set_term_colors, Args};
 use config::{Config, ConfigReadError};
 use console::Term;
 use formatting::{DisplayParameters, DocumentDiffData};
 use log::{debug, error, info, warn, LevelFilter};
 use serde_json as json;
-use std::fs;
+use std::{collections::HashMap, fs, path::PathBuf};
 
 /// Return an instance of [Config] from a config file path (or the inferred default path)
 ///
@@ -48,50 +48,77 @@ fn derive_config(args: &Args) -> Result<Config> {
     }
 }
 
+/// Create an AST vector from a path
+///
+/// This returns an AstVector and a pinned struct with the owned data, which the AstVector
+/// references.
+///
+/// `data` is used as an out-parameter. We need some external struct we can reference because the
+/// return type references the data in that struct.
+fn generate_ast_vector_data(
+    path: PathBuf,
+    file_type: Option<&str>,
+    file_associations: Option<&HashMap<String, String>>,
+) -> Result<AstVectorData> {
+    let text = fs::read_to_string(&path)?;
+    let file_name = path.to_string_lossy();
+    debug!("Reading {} to string", file_name);
+
+    if let Some(file_type) = file_type {
+        info!(
+            "Using user-set filetype \"{}\" for {}",
+            file_type, file_name
+        );
+    } else {
+        info!("Will deduce filetype from file extension");
+    };
+    let tree = parse::parse_file(&path, file_type, file_associations)?;
+    Ok(AstVectorData { tree, text, path })
+}
+
+/// Generate an AST vector from the underlying data
+///
+/// This is split off into a function so we can handle things like logging and keep the code DRY
+fn generate_ast_vector(data: &AstVectorData) -> AstVector<'_> {
+    let ast_vec = AstVector::from_ts_tree(&data.tree, &data.text);
+    info!(
+        "Constructed a diff vector with {} nodes for {}",
+        ast_vec.len(),
+        data.path.to_string_lossy(),
+    );
+    ast_vec
+}
+
 /// Take the diff of two files
 fn run_diff(args: &Args) -> Result<()> {
     let config = derive_config(args)?;
-    let path_old = args.old.as_ref().unwrap();
-    let path_old_name = path_old.to_string_lossy();
-    let path_new = args.new.as_ref().unwrap();
-    let path_new_name = path_new.to_string_lossy();
 
-    let old_text = fs::read_to_string(&path_old)?;
-    debug!("Reading {} to string", &path_old_name);
-    let new_text = fs::read_to_string(&path_new)?;
-    debug!("Reading {} to string", &path_new_name);
-    let file_type: Option<&str> = args.file_type.as_deref();
+    let file_type = args.file_type.as_deref();
+    let file_associations = config.file_associations.as_ref();
+    let path_a = args.old.as_ref().unwrap();
+    let path_b = args.new.as_ref().unwrap();
 
-    if let Some(file_type) = file_type {
-        info!("Using user-set filetype: {}", file_type);
-    } else {
-        info!("Will deduce filetype from file extension");
-    }
-    let ast_a = parse::parse_file(&path_old, file_type, config.file_associations.as_ref())?;
-    let ast_b = parse::parse_file(&path_new, file_type, config.file_associations.as_ref())?;
-    let diff_vec_a = AstVector::from_ts_tree(&ast_a, &old_text);
-    info!(
-        "Constructed a diff vector with {} nodes for {}",
-        diff_vec_a.len(),
-        path_old.to_string_lossy()
-    );
-    let diff_vec_b = AstVector::from_ts_tree(&ast_b, &new_text);
-    info!(
-        "Constructed a diff vector with {} nodes for {}",
-        diff_vec_b.len(),
-        path_new.to_string_lossy()
-    );
+    // This looks a bit weird because a the ast vectors and some other data reference data in the
+    // AstVectorData structs. Because of that, we can't make a function that generates the ast vectors in
+    // one shot.
+
+    let ast_data_a = generate_ast_vector_data(path_a.to_path_buf(), file_type, file_associations)?;
+    let ast_data_b = generate_ast_vector_data(path_b.to_path_buf(), file_type, file_associations)?;
+
+    let diff_vec_a = generate_ast_vector(&ast_data_a);
+    let diff_vec_b = generate_ast_vector(&ast_data_b);
+
     let (old_hunks, new_hunks) = ast::edit_hunks(&diff_vec_a, &diff_vec_b)?;
     let params = DisplayParameters {
         old: DocumentDiffData {
-            filename: &path_old_name,
+            filename: &ast_data_a.path.to_string_lossy(),
             hunks: &old_hunks,
-            text: &old_text,
+            text: &ast_data_a.text,
         },
         new: DocumentDiffData {
-            filename: &path_new_name,
+            filename: &ast_data_b.path.to_string_lossy(),
             hunks: &new_hunks,
-            text: &new_text,
+            text: &ast_data_b.text,
         },
     };
     // Use a buffered terminal instead of a normal unbuffered terminal so we can amortize the cost of printing. It
