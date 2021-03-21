@@ -3,7 +3,7 @@
 use crate::diff::Hunks;
 use anyhow::Result;
 use logging_timer::time;
-use std::{cell::RefCell, ops::Index};
+use std::{cell::RefCell, ops::Index, path::PathBuf};
 use tree_sitter::Node as TSNode;
 use tree_sitter::Tree as TSTree;
 
@@ -76,6 +76,24 @@ pub struct AstVector<'a> {
 
     /// The full source text that the AST refers to
     pub source_text: &'a str,
+}
+
+/// A wrapper struct for AST vector data that owns the data that the AST vector references
+///
+/// Ideally we would just have the AST vector own the actual string and tree, but it makes things
+/// extremely messy with the borrow checker, so we have this wrapper struct that holds the owned
+/// data that the vector references. This gets tricky because the tree sitter library uses FFI so
+/// the lifetime references get even more mangled.
+#[derive(Debug)]
+pub struct AstVectorData {
+    /// The text in the file
+    pub text: String,
+
+    /// The tree that was parsed using the text
+    pub tree: TSTree,
+
+    /// The file path that the text corresponds to
+    pub path: PathBuf,
 }
 
 impl<'a> AstVector<'a> {
