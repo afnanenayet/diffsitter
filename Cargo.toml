@@ -54,10 +54,6 @@ directories-next = "2.0"
 # We use XDG for everything else
 xdg = "2.2"
 
-[dev-dependencies.cargo-husky]
-version = "1"
-features = ["prepush-hook", "run-cargo-test", "run-cargo-clippy", "run-cargo-fmt"]
-
 [build-dependencies]
 cc = { version = "1.0", features = ["parallel"] }
 phf = { version = "0.8", features = ["macros"] }

@@ -1,0 +1,125 @@
+name: CD
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  publish:
+    name: Publish for ${{ matrix.job.target }}
+    runs-on: ${{ matrix.job.os }}
+    strategy:
+      matrix:
+        job:
+          - os: ubuntu-latest
+            artifact_name: diffsitter
+            target: x86_64-unknown-linux-gnu
+            use-cross: false
+          - os: ubuntu-latest
+            artifact_name: diffsitter
+            target: i686-unknown-linux-gnu
+            use-cross: true
+          - os: ubuntu-latest
+            artifact_name: diffsitter
+            target: arm-unknown-linux-gnueabihf
+            use-cross: true
+          - os: ubuntu-latest
+            artifact_name: diffsitter
+            target: aarch64-unknown-linux-gnu
+            use-cross: true
+          - os: macOS-latest
+            artifact_name: diffsitter
+            target: x86_64-apple-darwin
+            use-cross: false
+          - os: windows-latest
+            artifact_name: diffsitter.exe
+            target: x86_64-pc-windows-msvc
+            use-cross: false
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: Build optimized binary
+        env:
+          MACOS_DEPLOYMENT_TARGET: 10.7
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          use-cross: ${{ matrix.job.use-cross }}
+          args: --release --locked --target ${{ matrix.job.target }}
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ matrix.job.target }}-cargo-optimized-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install packages (Windows)
+        if: matrix.job.os == 'windows-latest'
+        uses: crazy-max/ghaction-chocolatey@v1.4.0
+        with:
+          args: install -y zip
+
+      - name: Install packages (macOS)
+        if: matrix.job.os == 'macos-latest'
+        shell: bash
+        run: |
+          brew install coreutils
+
+      - name: Archive release assets (Windows)
+        id: archive_release_assets_windows
+        if: matrix.job.os == 'windows-latest'
+        run: |
+          cp .\target\${{ matrix.job.target }}\release\${{ matrix.job.artifact_name }} ${{ matrix.job.artifact_name }}
+          cp .\assets\git-diffsitter .\git-diffsitter
+          zip -r diffsitter-${{ matrix.job.target }}.zip ${{ matrix.job.artifact_name }} git-diffsitter
+
+      - name: Archive release assets
+        if: matrix.job.os != 'windows-latest'
+        id: archive_release_assets_unix_like
+        shell: bash
+        run: |
+          mkdir -p diffsitter-${{ matrix.job.target }}
+          cp target/${{ matrix.job.target }}/release/${{ matrix.job.artifact_name }} diffsitter-${{ matrix.job.target }}
+          cp assets/git-diffsitter diffsitter-${{ matrix.job.target }}
+          tar -czvf diffsitter-${{ matrix.job.target }}.tar.gz diffsitter-${{ matrix.job.target }}
+
+      - name: Generate SHA256 checksum for binary
+        if: matrix.job.os != 'windows-latest'
+        id: checksum_archive_unix_like
+        shell: bash
+        run: |
+          sha256sum diffsitter-${{ matrix.job.target }}.tar.gz > diffsitter-${{ matrix.job.target }}.tar.gz.sha256
+
+      - name: Upload binary to release
+        if: matrix.job.os != 'windows-latest'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: diffsitter-${{ matrix.job.target }}.tar.gz
+          asset_name: diffsitter-${{ matrix.job.target }}.tar.gz
+          tag: ${{ github.ref }}
+          overwrite: true
+
+      - name: Upload binary to release (Windows)
+        if: matrix.job.os == 'windows-latest'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: diffsitter-${{ matrix.job.target }}.zip
+          asset_name: diffsitter-${{ matrix.job.target }}.zip
+          tag: ${{ github.ref }}
+          overwrite: true
+
+      - name: Upload SHA256 checksum to release
+        if: matrix.job.os != 'windows-latest'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: diffsitter-${{ matrix.job.target }}.tar.gz.sha256
+          asset_name: diffsitter-${{ matrix.job.target }}.tar.gz.sha256
+          tag: ${{ github.ref }}
+          overwrite: true
