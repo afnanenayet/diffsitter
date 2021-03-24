@@ -103,11 +103,17 @@ fn default_config_file_path() -> Result<PathBuf> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::env;
 
     #[test]
     fn test_sample_config() {
-        let mut sample_config_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        sample_config_path.push("assets/sample_config.json5");
+        let repo_root = env::var("CARGO_MANIFEST_DIR").unwrap_or_default();
+
+        // Don't do the test if Cargo manifest dir isn't present, which will happen if this is being built with cross
+        if repo_root.is_empty() {
+            return;
+        }
+        let sample_config_path = PathBuf::from(format!("{}/assets/sample_config.json5", repo_root));
         Config::try_from_file(Some(sample_config_path).as_ref()).unwrap();
     }
 }
