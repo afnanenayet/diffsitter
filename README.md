@@ -100,6 +100,10 @@ it doesn't show up in the diff.
 
 ![screenshot of rust diff](assets/rust_example.png)
 
+It also has extensive logging if you want to debug or see timing information:
+
+![screenshot of rust diff with logs](assets/rust_example_logs.png)
+
 ## Installation
 
 ### Published binaries
