@@ -85,10 +85,27 @@ function, even though they aren't semantically different.
 Check out the output from `diffsitter`:
 
 ```text
+test_data/test_1_a.rs -> test_data/test_1_b.rs
+==============================================
+
+1:
+--
 -     let x = 1;
+
+4:
+--
 - fn add_one {
+
+9:
+--
 + }
+
+11:
+---
 + fn addition() {
+
+14:
+---
 + fn add_two() {
 ```
 
@@ -99,6 +116,10 @@ it doesn't show up in the diff.
 `diffsitter` has some nice (terminal aware) formatting too:
 
 ![screenshot of rust diff](assets/rust_example.png)
+
+It also has extensive logging if you want to debug or see timing information:
+
+![screenshot of rust diff with logs](assets/rust_example_logs.png)
 
 ## Installation
 
