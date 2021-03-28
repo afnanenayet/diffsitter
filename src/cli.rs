@@ -7,37 +7,28 @@ use strum_macros::{EnumString, ToString};
 
 #[derive(Debug, Eq, PartialEq, Clone, StructOpt)]
 #[structopt(
-    name = "diffsitter",
-    about = "AST based diffs",
     settings = &[
         structopt::clap::AppSettings::ColoredHelp,
         structopt::clap::AppSettings::ColorAuto,
-        structopt::clap::AppSettings::GlobalVersion,
     ]
 )]
-pub struct Args {
+pub struct Diff {
     /// Print debug output
     ///
     /// This will print debug logs at the trace level. This is useful for debugging and bug reports
     /// should contain debug logging info.
     #[structopt(short, long)]
     pub debug: bool,
-    /// Run a subcommand that doesn't perform a diff. Valid options are: "list",
-    /// "dump_default_config".
-    ///
-    /// "list" will list all of the filetypes/languages that this program was compiled with support
-    /// for. "dump_default_config" will dump the default configuration to stdout.
-    #[structopt(long)]
-    pub cmd: Option<Command>,
+
     /// The first file to compare against
     ///
     /// Text that is in this file but is not in the new file is considered a deletion
-    #[structopt(name = "OLD", parse(from_os_str), required_unless = "cmd")]
+    #[structopt(name = "OLD", parse(from_os_str))]
     pub old: Option<PathBuf>,
     /// The file that the old file is compared against
     ///
     /// Text that is in this file but is not in the old file is considered an addition
-    #[structopt(name = "NEW", parse(from_os_str), required_unless = "cmd")]
+    #[structopt(name = "NEW", parse(from_os_str))]
     pub new: Option<PathBuf>,
     /// Manually set the file type for the given files
     ///
@@ -66,9 +57,7 @@ pub struct Args {
     pub no_config: bool,
 }
 
-/// Commands related to the configuration
-#[derive(Debug, Eq, PartialEq, Clone, Copy, StructOpt, EnumString)]
-#[strum(serialize_all = "snake_case")]
+#[derive(Debug, Eq, PartialEq, Clone, StructOpt)]
 #[structopt(
     settings = &[
         structopt::clap::AppSettings::ColoredHelp,
@@ -76,10 +65,13 @@ pub struct Args {
         structopt::clap::AppSettings::GlobalVersion,
     ]
 )]
-pub enum Command {
+pub enum Args {
+    /// Run the diff
+    #[structopt(flatten)]
+    Diff(Diff),
     /// List the languages that this program was compiled for
     List,
-    /// Dump the default config to stdout
+    /// Print the default config to stdout
     DumpDefaultConfig,
 }
 

@@ -7,7 +7,7 @@ mod parse;
 
 use anyhow::Result;
 use ast::{AstVector, AstVectorData};
-use cli::{list_supported_languages, set_term_colors, Args};
+use cli::{list_supported_languages, set_term_colors, Args, Diff};
 use config::{Config, ConfigReadError};
 use console::Term;
 use formatting::{DisplayParameters, DocumentDiffData};
@@ -19,7 +19,7 @@ use std::{collections::HashMap, fs, path::PathBuf};
 ///
 /// If a config path isn't provided or there is some other failure, fall back to the default
 /// config. This will error out if a config is found but is found to be an invalid config.
-fn derive_config(args: &Args) -> Result<Config> {
+fn derive_config(args: &Diff) -> Result<Config> {
     if args.no_config {
         info!("`no_config` specified, falling back to default config");
         return Ok(Config::default());
@@ -90,7 +90,7 @@ fn generate_ast_vector(data: &AstVectorData) -> AstVector<'_> {
 }
 
 /// Take the diff of two files
-fn run_diff(args: &Args) -> Result<()> {
+fn run_diff(args: &Diff) -> Result<()> {
     let config = derive_config(args)?;
 
     let file_type = args.file_type.as_deref();
@@ -141,25 +141,21 @@ fn dump_default_config() -> Result<()> {
 
 #[paw::main]
 fn main(args: Args) -> Result<()> {
-    use cli::Command;
-
-    // Users can supply a command that will *not* run a diff, which we handle here
-    if let Some(cmd) = args.cmd {
-        match cmd {
-            Command::List => list_supported_languages(),
-            Command::DumpDefaultConfig => dump_default_config()?,
+    match args {
+        Args::List => list_supported_languages(),
+        Args::DumpDefaultConfig => dump_default_config()?,
+        Args::Diff(diff) => {
+            let log_level = if diff.debug {
+                LevelFilter::Trace
+            } else {
+                LevelFilter::Off
+            };
+            pretty_env_logger::formatted_timed_builder()
+                .filter_level(log_level)
+                .init();
+            set_term_colors(diff.color_output);
+            run_diff(&diff)?;
         }
-    } else {
-        let log_level = if args.debug {
-            LevelFilter::Trace
-        } else {
-            LevelFilter::Off
-        };
-        pretty_env_logger::formatted_timed_builder()
-            .filter_level(log_level)
-            .init();
-        set_term_colors(args.color_output);
-        run_diff(&args)?;
-    }
+    };
     Ok(())
 }
