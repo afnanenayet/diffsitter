@@ -143,15 +143,6 @@ fn dump_default_config() -> Result<()> {
 fn main(args: Args) -> Result<()> {
     use cli::Command;
 
-    let log_level = if args.debug {
-        LevelFilter::Trace
-    } else {
-        LevelFilter::Off
-    };
-    pretty_env_logger::formatted_timed_builder()
-        .filter_level(log_level)
-        .init();
-
     // Users can supply a command that will *not* run a diff, which we handle here
     if let Some(cmd) = args.cmd {
         match cmd {
@@ -159,6 +150,14 @@ fn main(args: Args) -> Result<()> {
             Command::DumpDefaultConfig => dump_default_config()?,
         }
     } else {
+        let log_level = if args.debug {
+            LevelFilter::Trace
+        } else {
+            LevelFilter::Off
+        };
+        pretty_env_logger::formatted_timed_builder()
+            .filter_level(log_level)
+            .init();
         set_term_colors(args.color_output);
         run_diff(&args)?;
     }

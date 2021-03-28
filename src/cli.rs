@@ -9,7 +9,11 @@ use strum_macros::{EnumString, ToString};
 #[structopt(
     name = "diffsitter",
     about = "AST based diffs",
-    setting = structopt::clap::AppSettings::ColoredHelp
+    settings = &[
+        structopt::clap::AppSettings::ColoredHelp,
+        structopt::clap::AppSettings::ColorAuto,
+        structopt::clap::AppSettings::GlobalVersion,
+    ]
 )]
 pub struct Args {
     /// Print debug output
@@ -65,6 +69,13 @@ pub struct Args {
 /// Commands related to the configuration
 #[derive(Debug, Eq, PartialEq, Clone, Copy, StructOpt, EnumString)]
 #[strum(serialize_all = "snake_case")]
+#[structopt(
+    settings = &[
+        structopt::clap::AppSettings::ColoredHelp,
+        structopt::clap::AppSettings::ColorAuto,
+        structopt::clap::AppSettings::GlobalVersion,
+    ]
+)]
 pub enum Command {
     /// List the languages that this program was compiled for
     List,
