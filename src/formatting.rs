@@ -287,7 +287,7 @@ impl DiffWriter {
         enum TitleStack {
             Vertical,
             Horizontal,
-        };
+        }
 
         // We construct the fully horizontal title string. If wider than the terminal, then we
         // format another title string that's vertically stacked
