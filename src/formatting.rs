@@ -8,7 +8,7 @@ use log::{debug, info};
 use serde::{Deserialize, Serialize};
 use std::{
     cmp::{max, Ordering},
-    io::Write,
+    io::{BufWriter, Write},
 };
 use strum_macros::EnumString;
 
@@ -203,7 +203,7 @@ impl DiffWriter {
     ///
     /// This will process the "raw" [diff vector](AstVector) and turn extract the differences
     /// between lines.
-    pub fn print(&self, term: &mut Term, params: &DisplayParameters) -> Result<()> {
+    pub fn print(&self, term: &mut BufWriter<Term>, params: &DisplayParameters) -> Result<()> {
         let DisplayParameters { old, new } = &params;
         let old_fmt = FormattingDirectives::from(&self.deletion);
         let new_fmt = FormattingDirectives::from(&self.addition);
@@ -273,7 +273,7 @@ impl DiffWriter {
     /// (stacking horizontally or vertically) based on the terminal width.
     fn print_title(
         &self,
-        term: &mut Term,
+        term: &mut BufWriter<Term>,
         old_fname: &str,
         new_fname: &str,
         old_fmt: &FormattingDirectives,
@@ -296,7 +296,7 @@ impl DiffWriter {
         // We only display the horizontal title format if we know we have enough horizontal space
         // to display it. If we can't determine the terminal width, play it safe and default to
         // vertical stacking.
-        let stack_style = if let Some((_, term_width)) = term.size_checked() {
+        let stack_style = if let Some((_, term_width)) = term.get_ref().size_checked() {
             info!("Detected terminal width: {} columns", term_width);
 
             if title_len <= term_width as usize {
@@ -337,7 +337,6 @@ impl DiffWriter {
         };
         writeln!(term, "{}", styled_title_str)?;
         writeln!(term, "{}", title_sep)?;
-        term.flush()?;
         Ok(())
     }
 
@@ -347,7 +346,7 @@ impl DiffWriter {
     /// that file, so the user has some context for the text that's being displayed.
     fn print_hunk_title(
         &self,
-        term: &mut Term,
+        term: &mut dyn Write,
         hunk: &Hunk,
         fmt: &FormattingDirectives,
     ) -> Result<()> {
@@ -374,7 +373,7 @@ impl DiffWriter {
     /// Print a [hunk](Hunk) to `stdout`
     fn print_hunk(
         &self,
-        term: &mut Term,
+        term: &mut dyn Write,
         lines: &[&str],
         hunk: &Hunk,
         fmt: &FormattingDirectives,
@@ -397,7 +396,6 @@ impl DiffWriter {
             hunk.first_line().unwrap(),
             hunk.last_line().unwrap()
         );
-        term.flush()?;
         Ok(())
     }
 
@@ -409,7 +407,7 @@ impl DiffWriter {
     /// `text` refers to the text that corresponds line number of the given [line](Line).
     fn print_line(
         &self,
-        term: &mut Term,
+        term: &mut dyn Write,
         text: &str,
         line: &Line,
         fmt: &FormattingDirectives,
