@@ -13,6 +13,7 @@ use strum_macros::{EnumString, ToString};
         structopt::clap::AppSettings::ColoredHelp,
         structopt::clap::AppSettings::ColorAuto,
         structopt::clap::AppSettings::GlobalVersion,
+        structopt::clap::AppSettings::InferSubcommands,
     ]
 )]
 pub struct Args {
@@ -43,7 +44,7 @@ pub struct Args {
     ///
     /// This will dictate which parser is used with the difftool. You can list all of the valid
     /// file type strings with `diffsitter --cmd list`
-    #[structopt(short = "t", long = "filetype")]
+    #[structopt(short = "t", long)]
     pub file_type: Option<String>,
     /// Use the config provided at the given path
     ///
@@ -74,6 +75,7 @@ pub struct Args {
         structopt::clap::AppSettings::ColoredHelp,
         structopt::clap::AppSettings::ColorAuto,
         structopt::clap::AppSettings::GlobalVersion,
+        structopt::clap::AppSettings::InferSubcommands,
     ]
 )]
 pub enum Command {
