@@ -13,7 +13,12 @@ use console::Term;
 use formatting::{DisplayParameters, DocumentDiffData};
 use log::{debug, error, info, warn, LevelFilter};
 use serde_json as json;
-use std::{collections::HashMap, fs, path::PathBuf};
+use std::{
+    collections::HashMap,
+    fs,
+    io::{BufWriter, Write},
+    path::PathBuf,
+};
 
 /// Return an instance of [Config] from a config file path (or the inferred default path)
 ///
@@ -125,10 +130,10 @@ fn run_diff(args: &Args) -> Result<()> {
     // doesn't really how frequently the terminal prints to stdout because the user just cares about the output at the
     // end, we don't care about how frequently the terminal does partial updates or anything like that. If the user is
     // curious about progress, they can enable logging and see when hunks are processed and written to the buffer.
-    let mut term = Term::buffered_stdout();
-    config.formatting.print(&mut term, &params)?;
+    let mut buf_writer = BufWriter::new(Term::stdout());
+    config.formatting.print(&mut buf_writer, &params)?;
     // Just in case we forgot to flush anything in the `print` function
-    term.flush()?;
+    buf_writer.flush()?;
     Ok(())
 }
 
