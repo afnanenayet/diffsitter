@@ -61,13 +61,19 @@ impl Config {
     /// default config file path is supposed to be (based on OS conventions, see
     /// [default_config_file_path]).
     pub fn try_from_file<P: AsRef<Path>>(path: Option<&P>) -> Result<Self, ConfigReadError> {
-        // We Have to store the default config here so we can use it as a reference later
-        // (otherwise we would have a dangling reference to a temporary)
-        let default_config_fp =
-            default_config_file_path().map_err(|_| ConfigReadError::NoDefault)?;
-        // If the user provided a path, we can just unwrap that, otherwise we fall back to the
-        // default file path
-        let config_fp: &Path = path.map(|x| x.as_ref()).unwrap_or(&default_config_fp);
+        // rustc will emit an incorrect warning that this variable isn't used, which is untrue.
+        // While the variable isn't read *directly*, it is used to store the owned PathBuf from
+        // `default_config_file_path` so we can use the reference to the variable in `config_fp`.
+        #[allow(unused_assignments)]
+        let mut default_config_fp = PathBuf::new();
+
+        let config_fp = if let Some(p) = path {
+            p.as_ref()
+        } else {
+            default_config_fp =
+                default_config_file_path().map_err(|_| ConfigReadError::NoDefault)?;
+            default_config_fp.as_ref()
+        };
         info!("Reading config at {}", config_fp.to_string_lossy());
         let config_contents = fs::read_to_string(config_fp)?;
         let config = json::from_str(&config_contents)
@@ -107,13 +113,13 @@ mod tests {
 
     #[test]
     fn test_sample_config() {
-        let repo_root = env::var("CARGO_MANIFEST_DIR").unwrap_or_default();
-
-        // Don't do the test if Cargo manifest dir isn't present, which will happen if this is being built with cross
-        if repo_root.is_empty() {
-            return;
-        }
-        let sample_config_path = PathBuf::from(format!("{}/assets/sample_config.json5", repo_root));
+        let repo_root =
+            env::var("CARGO_MANIFEST_DIR").unwrap_or_else(|_| env::var("BUILD_DIR").unwrap());
+        assert!(!repo_root.is_empty());
+        let sample_config_path = [repo_root, "assets".into(), "sample_config.json5".into()]
+            .iter()
+            .collect::<PathBuf>();
+        assert!(sample_config_path.exists());
         Config::try_from_file(Some(sample_config_path).as_ref()).unwrap();
     }
 }
