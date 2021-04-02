@@ -1,0 +1,4 @@
+[target]
+volumes = [
+    "BUILD_DIR",
+]
