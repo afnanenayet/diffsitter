@@ -89,11 +89,20 @@ pub fn parse_file(
             generate_language(x)
         }
         None => {
-            let ext = p.extension().unwrap_or_default().to_string_lossy();
-            language_from_ext(&ext, overrides)
+            if let Some(ext) = p.extension() {
+                let ext_str = ext.to_string_lossy();
+                language_from_ext(&ext_str, overrides)
+            } else {
+                Err(format_err!(
+                    "Could not deduce an extension for file name \"{}\"",
+                    p.to_string_lossy()
+                ))
+            }
         }
     }?;
-    parser.set_language(language).unwrap();
+    parser
+        .set_language(language)
+        .map_err(|e| anyhow::format_err!(e))?;
     debug!("Constructed parser");
 
     match parser.parse(&text, None) {
