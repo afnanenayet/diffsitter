@@ -1,7 +1,7 @@
 # diffsitter
 
-![CI](https://github.com/afnanenayet/diffsitter/workflows/CI/badge.svg)
-![release](https://github.com/afnanenayet/diffsitter/workflows/release/badge.svg)
+[![CI](https://github.com/afnanenayet/diffsitter/actions/workflows/CI.yml/badge.svg)](https://github.com/afnanenayet/diffsitter/actions/workflows/CI.yml)
+[![CD](https://github.com/afnanenayet/diffsitter/actions/workflows/CD.yml/badge.svg)](https://github.com/afnanenayet/diffsitter/actions/workflows/CD.yml)
 ![crates version](https://img.shields.io/crates/v/diffsitter)
 ![latest tag](https://img.shields.io/github/v/tag/afnanenayet/diffsitter?label=release)
 ![downloads](https://img.shields.io/crates/d/diffsitter)
