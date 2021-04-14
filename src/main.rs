@@ -12,6 +12,8 @@ use config::{Config, ConfigReadError};
 use console::Term;
 use formatting::{DisplayParameters, DocumentDiffData};
 use log::{debug, error, info, warn, LevelFilter};
+use rayon::iter::ParallelIterator;
+use rayon::prelude::*;
 use serde_json as json;
 use std::{
     collections::HashMap,
@@ -102,28 +104,32 @@ fn run_diff(args: &Args) -> Result<()> {
     let file_associations = config.file_associations.as_ref();
     let path_a = args.old.as_ref().unwrap();
     let path_b = args.new.as_ref().unwrap();
+    let paths = vec![path_a, path_b];
+    let ast_data: Result<Vec<AstVectorData>> = paths
+        .par_iter()
+        .map(|p| generate_ast_vector_data(p.to_path_buf(), file_type, file_associations))
+        .collect();
+    let ast_data = ast_data.map_err(|e| anyhow::format_err!(e))?;
+    let diff_vec: Vec<_> = ast_data
+        .iter()
+        .map(|data| generate_ast_vector(data))
+        .collect();
 
     // This looks a bit weird because a the ast vectors and some other data reference data in the
     // AstVectorData structs. Because of that, we can't make a function that generates the ast vectors in
     // one shot.
 
-    let ast_data_a = generate_ast_vector_data(path_a.to_path_buf(), file_type, file_associations)?;
-    let ast_data_b = generate_ast_vector_data(path_b.to_path_buf(), file_type, file_associations)?;
-
-    let diff_vec_a = generate_ast_vector(&ast_data_a);
-    let diff_vec_b = generate_ast_vector(&ast_data_b);
-
-    let (old_hunks, new_hunks) = ast::edit_hunks(&diff_vec_a, &diff_vec_b)?;
+    let (old_hunks, new_hunks) = ast::edit_hunks(&diff_vec[0], &diff_vec[1])?;
     let params = DisplayParameters {
         old: DocumentDiffData {
-            filename: &ast_data_a.path.to_string_lossy(),
+            filename: &ast_data[0].path.to_string_lossy(),
             hunks: &old_hunks,
-            text: &ast_data_a.text,
+            text: &ast_data[0].text,
         },
         new: DocumentDiffData {
-            filename: &ast_data_b.path.to_string_lossy(),
+            filename: &ast_data[1].path.to_string_lossy(),
             hunks: &new_hunks,
-            text: &ast_data_b.text,
+            text: &ast_data[1].text,
         },
     };
     // Use a buffered terminal instead of a normal unbuffered terminal so we can amortize the cost of printing. It
