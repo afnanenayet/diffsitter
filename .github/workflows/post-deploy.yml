@@ -31,6 +31,6 @@ jobs:
       - name: Trigger homebrew
         run: |
           curl -X POST https://api.github.com/repos/afnanenayet/homebrew-tap/dispatches \
-          -H 'Accept: application/vnd.github.everest-preview+json' \
+          -H 'Accept: application/vnd.github.v3+json' \
           -u ${{ secrets.DIFFSITTER_BREW_PACKAGE_DEPLOYMENT }} \
           --data '{ "event_type": "update-diffsitter", "client_payload": { "version": "'"$RELEASE_VERSION"'" } }'
