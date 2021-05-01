@@ -1,6 +1,11 @@
 name: CD
 
 on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Which tag to deploy as:"
+        required: true
   push:
     tags:
       - "*"
@@ -82,6 +87,16 @@ jobs:
           else
             echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
           fi
+
+      - name: Create GitHub release
+        id: release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          draft: true
+          tag_name: ${{ env.VERSION }}
+          release_name: ${{ env.VERSION }} Release
 
       - name: Archive release assets (Windows)
         id: archive_release_assets_windows
