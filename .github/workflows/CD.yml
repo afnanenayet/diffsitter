@@ -119,16 +119,6 @@ jobs:
         with:
           version: "3.9"
 
-      - name: Get the release version from the tag
-        if: env.VERSION == '' && matrix.job.os != 'windows-latest'
-        run: |
-          if [[ -n "${{ github.event.inputs.tag }}" ]]; then
-            echo "Manual run against a tag; overriding actual tag in the environment..."
-            echo "VERSION=${{ github.event.inputs.tag }}" >> $GITHUB_ENV
-          else
-            echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-          fi
-
       - name: Get release download URL
         uses: actions/download-artifact@v2
         with:
@@ -205,7 +195,7 @@ jobs:
         if: matrix.job.os == 'macos-latest'
         shell: bash
         run: |
-          python deployment/brew_packager.py deployment/macos/homebrew/homebrew_formula.rb.template diffsitter.rb ${{ env.VERSION }} ${{ env.CHECKSUM }}
+          python deployment/brew_packager.py deployment/macos/homebrew/homebrew_formula.rb.template diffsitter.rb ${{ env.RELEASE_VERSION }} ${{ env.CHECKSUM }}
 
       - name: Upload Homebrew file to release
         if: matrix.job.os == 'macos-latest'
