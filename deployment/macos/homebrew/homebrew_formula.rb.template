@@ -1,0 +1,12 @@
+class Diffsitter < Formula
+  desc "Tree-sitter based AST difftool to get meaningful semantic diffs"
+  homepage "https://github.com/afnanenayet/diffsitter"
+  url "https://github.com/afnanenayet/diffsitter/releases/download/$version/diffsitter-darwin-amd64.tar.gz"
+  sha256 "$shachecksum"
+  license "MIT"
+
+  def install
+    bin.install "diffsitter"
+    bin.install "git-diffsitter"
+  end
+end

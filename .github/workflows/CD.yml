@@ -69,6 +69,20 @@ jobs:
         run: |
           brew install coreutils
 
+      - uses: actions/setup-python@v2
+        with:
+          version: "3.9"
+
+      - name: Get the release version from the tag
+        if: env.VERSION == '' && matrix.job.os != 'windows-latest'
+        run: |
+          if [[ -n "${{ github.event.inputs.tag }}" ]]; then
+            echo "Manual run against a tag; overriding actual tag in the environment..."
+            echo "VERSION=${{ github.event.inputs.tag }}" >> $GITHUB_ENV
+          else
+            echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          fi
+
       - name: Archive release assets (Windows)
         id: archive_release_assets_windows
         if: matrix.job.os == 'windows-latest'
@@ -93,6 +107,9 @@ jobs:
         shell: bash
         run: |
           sha256sum diffsitter-${{ matrix.job.target }}.tar.gz > diffsitter-${{ matrix.job.target }}.tar.gz.sha256
+          checksum=$(cat diffsitter-${{ matrix.job.target }}.tar.gz.sha256)
+          echo "CHECKSUM=$checksum"
+          echo "CHECKSUM=$checksum" >> $GITHUB_ENV
 
       - name: Upload binary to release
         if: matrix.job.os != 'windows-latest'
@@ -121,5 +138,21 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: diffsitter-${{ matrix.job.target }}.tar.gz.sha256
           asset_name: diffsitter-${{ matrix.job.target }}.tar.gz.sha256
+          tag: ${{ github.ref }}
+          overwrite: true
+
+      - name: Generate Homebrew file
+        if: matrix.job.os == 'macos-latest'
+        shell: bash
+        run: |
+          python deployment/brew_packager.py deployment/macos/homebrew/homebrew_formula.rb.template diffsitter.rb ${{ env.VERSION }} ${{ env.CHECKSUM }}
+
+      - name: Upload Homebrew file to release
+        if: matrix.job.os == 'macos-latest'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: diffsitter.rb
+          asset_name: diffsitter.rb
           tag: ${{ github.ref }}
           overwrite: true

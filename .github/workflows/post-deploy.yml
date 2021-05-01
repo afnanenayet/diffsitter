@@ -1,0 +1,36 @@
+name: post-deploy script
+
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  post-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set env
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+
+      - name: Test env
+        run: |
+          echo $RELEASE_VERSION
+      - name: Make sure you're not on master...
+        run: |
+          if [[ $RELEASE_VERSION == "master" ]]; then
+            exit 1
+          fi
+      - name: Make sure you're not on nightly...
+        run: |
+          if [[ $RELEASE_VERSION == "nightly" ]]; then
+            exit 1
+          fi
+
+      - name: Trigger homebrew
+        run: |
+          curl -X POST https://api.github.com/repos/afnanenayet/homebrew-tap/dispatches \
+          -H 'Accept: application/vnd.github.everest-preview+json' \
+          -u ${{ secrets.DIFFSITTER_BREW_PACKAGE_DEPLOYMENT }} \
+          --data '{ "event_type": "update-diffsitter", "client_payload": { "version": "'"$RELEASE_VERSION"'" } }'
