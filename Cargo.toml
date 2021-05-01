@@ -58,6 +58,7 @@ xdg = "2.2"
 cc = { version = "1.0", features = ["parallel"] }
 phf = { version = "0.8", features = ["macros"] }
 anyhow = "1.0"
+cargo-emit = "0.1"
 
 [profile.release]
 lto = "thin"

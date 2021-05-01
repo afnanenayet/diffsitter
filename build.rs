@@ -1,4 +1,5 @@
 use anyhow::Result;
+use cargo_emit::rerun_if_changed;
 use std::{
     env,
     fmt::Display,
@@ -172,19 +173,27 @@ use phf::phf_map;
             .iter()
             .map(|&filename| dir.join(filename))
             .collect();
+
         compile_grammar(
             &dir,
             &c_sources[..],
             &cpp_sources[..],
             &grammar.display_name,
         )?;
-        // If compilation succeeded with either case, link the language
-        //if successful_compilation {
+
+        // If compilation succeeded with either case, link the language. If it failed, we'll never
+        // get to this step.
         codegen += &format!(
             "extern \"C\" {{ pub fn tree_sitter_{}() -> Language; }}\n",
             language
         );
         languages.push(language);
+
+        // We recompile the libraries if any grammar sources or this build file change, since Cargo
+        // will cache based on the Rust modules and isn't aware of the linked C libraries.
+        for source in c_sources.iter().chain(cpp_sources.iter()) {
+            rerun_if_changed!(&source.as_path().to_string_lossy());
+        }
     }
     codegen += &codegen_language_map(&languages[..]);
 
@@ -192,6 +201,5 @@ use phf::phf_map;
     let codegen_out_dir = env::var_os("OUT_DIR").unwrap();
     let codegen_path = Path::new(&codegen_out_dir).join("generated_grammar.rs");
     fs::write(&codegen_path, codegen).unwrap();
-    println!("cargo:rerun-if-changed=build.rs");
     Ok(())
 }
