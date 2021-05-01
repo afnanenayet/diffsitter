@@ -55,6 +55,7 @@ jobs:
   publish:
     name: Publish for ${{ matrix.job.target }}
     runs-on: ${{ matrix.job.os }}
+    needs: [ create-github-release ]
     strategy:
       matrix:
         job:
