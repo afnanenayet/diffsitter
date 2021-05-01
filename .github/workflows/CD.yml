@@ -164,33 +164,37 @@ jobs:
 
       - name: Upload binary to release
         if: matrix.job.os != 'windows-latest'
-        uses: svenstaro/upload-release-action@v2
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: diffsitter-${{ matrix.job.target }}.tar.gz
+          asset_path: diffsitter-${{ matrix.job.target }}.tar.gz
           asset_name: diffsitter-${{ matrix.job.target }}.tar.gz
-          tag: ${{ github.ref }}
-          overwrite: true
+          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
+          asset_content_type: application/octet-stream
 
       - name: Upload binary to release (Windows)
         if: matrix.job.os == 'windows-latest'
-        uses: svenstaro/upload-release-action@v2
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: diffsitter-${{ matrix.job.target }}.zip
+          asset_path: diffsitter-${{ matrix.job.target }}.zip
           asset_name: diffsitter-${{ matrix.job.target }}.zip
-          tag: ${{ github.ref }}
-          overwrite: true
+          asset_content_type: application/octet-stream
 
       - name: Upload SHA256 checksum to release
         if: matrix.job.os != 'windows-latest'
-        uses: svenstaro/upload-release-action@v2
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: diffsitter-${{ matrix.job.target }}.tar.gz.sha256
+          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
+          asset_path: diffsitter-${{ matrix.job.target }}.tar.gz.sha256
           asset_name: diffsitter-${{ matrix.job.target }}.tar.gz.sha256
-          tag: ${{ github.ref }}
-          overwrite: true
+          asset_content_type: application/octet-stream
 
       - name: Generate Homebrew file
         if: matrix.job.os == 'macos-latest'
@@ -200,10 +204,11 @@ jobs:
 
       - name: Upload Homebrew file to release
         if: matrix.job.os == 'macos-latest'
-        uses: svenstaro/upload-release-action@v2
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: diffsitter.rb
+          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
+          asset_path: diffsitter.rb
           asset_name: diffsitter.rb
-          tag: ${{ github.ref }}
-          overwrite: true
+          asset_content_type: application/octet-stream
