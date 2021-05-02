@@ -127,7 +127,7 @@ dependencies = [
 
 [[package]]
 name = "diffsitter"
-version = "0.6.6-alpha.0"
+version = "0.6.6"
 dependencies = [
  "anyhow",
  "cargo-emit",
