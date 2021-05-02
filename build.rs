@@ -1,5 +1,5 @@
 use anyhow::Result;
-use cargo_emit::rerun_if_changed;
+use cargo_emit::{rerun_if_changed, rerun_if_env_changed};
 use std::{
     env,
     fmt::Display,
@@ -25,6 +25,11 @@ struct GrammarCompileInfo<'a> {
     /// "tree-sitter-{language}-cpp-compile-diffsitter" to avoid clashing with other symbols.
     cpp_sources: Vec<&'a str>,
 }
+
+/// Environment variables that the build system relies on
+///
+/// If any of these are changed, Cargo will rebuild the project.
+const BUILD_ENV_VARS: &'static [&'static str] = &["CC", "CXX", "LD_LIBRARY_PATH", "PATH"];
 
 /// Generated the code fo the map between the language identifiers and the function to initialize
 /// the language parser
@@ -63,6 +68,13 @@ fn compile_grammar(
             .try_compile(&output_name)?;
     }
     Ok(())
+}
+
+/// Print any other cargo-emit directives
+fn extra_cargo_directives() {
+    for &env_var in BUILD_ENV_VARS {
+        rerun_if_env_changed!(env_var);
+    }
 }
 
 fn main() -> Result<()> {
@@ -195,6 +207,7 @@ use phf::phf_map;
             rerun_if_changed!(&source.as_path().to_string_lossy());
         }
     }
+    extra_cargo_directives();
     codegen += &codegen_language_map(&languages[..]);
 
     // Write the generated code to a file in the resulting build directory
