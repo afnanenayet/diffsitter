@@ -1,6 +1,7 @@
 [package]
 name = "diffsitter"
 description = "An AST based difftool for meaningful diffs"
+readme = "README.md"
 version = "0.6.7-alpha.0"
 authors = ["Afnan Enayet <afnan@afnan.io>"]
 edition = "2018"
@@ -9,6 +10,7 @@ keywords = ["diff", "ast", "difftool"]
 categories = ["command-line-utilities"]
 build = "build.rs"
 homepage = "https://github.com/afnanenayet/diffsitter"
+repository = "https://github.com/afnanenayet/diffsitter"
 include = [
     "src/**/*",
     "LICENSE",
