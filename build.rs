@@ -1,5 +1,6 @@
 use anyhow::Result;
 use cargo_emit::{rerun_if_changed, rerun_if_env_changed};
+use rayon::prelude::*;
 use std::{
     env,
     fmt::Display,
@@ -24,6 +25,17 @@ struct GrammarCompileInfo<'a> {
     /// The files supplied here will be compiled into a library named
     /// "tree-sitter-{language}-cpp-compile-diffsitter" to avoid clashing with other symbols.
     cpp_sources: Vec<&'a str>,
+}
+
+/// The compilation parameters that are passed into the `compile_grammar` function
+///
+/// This is a convenience method that was created so we can store parameters in a vector and use
+/// a parallel iterator to compile all of the grammars at once over a threadpool.
+struct CompileParams {
+    pub dir: PathBuf,
+    pub c_sources: Vec<PathBuf>,
+    pub cpp_sources: Vec<PathBuf>,
+    pub display_name: String,
 }
 
 /// Environment variables that the build system relies on
@@ -154,44 +166,59 @@ use tree_sitter::Language;
 use phf::phf_map;
 "#,
     );
+
+    // A vector of language strings that are used later for codegen, so we can dynamically created
+    // the unsafe functions that load the grammar for each language
     let mut languages = Vec::new();
     languages.reserve(grammars.len());
 
-    // Iterate through each grammar, find the valid source files that are in it, and add them as
-    // compilation targets
-    for grammar in &grammars {
-        // The directory to the source files
-        let dir = grammar.path.join("src");
+    // We create a vector of parameters so we can use Rayon's parallel iterators to compile
+    // grammars in parallel
+    let compile_params: Vec<CompileParams> = grammars
+        .iter()
+        .map(|grammar| {
+            // The directory to the source files
+            let dir = grammar.path.join("src");
 
-        // The folder names for the grammars are hyphenated, we want to conver those to underscores
-        // so we can form valid rust identifiers
-        let language = grammar.display_name;
+            // Prepend {grammar-repo}/src path to each file
+            let c_sources: Vec<_> = grammar
+                .c_sources
+                .iter()
+                .map(|&filename| dir.join(filename))
+                .collect();
+            let cpp_sources: Vec<_> = grammar
+                .cpp_sources
+                .iter()
+                .map(|&filename| dir.join(filename))
+                .collect();
+            CompileParams {
+                dir,
+                c_sources,
+                cpp_sources,
+                display_name: grammar.display_name.into(),
+            }
+        })
+        .collect();
 
-        // If there are no valid source files, don't bother trying to compile
-        if grammar.c_sources.is_empty() && grammar.cpp_sources.is_empty() {
-            return Err(anyhow::format_err!(
-                "Supplied source files for {} parser is empty",
-                grammar.display_name
-            ));
-        }
-        // Prepend {grammar-repo}/src path to each file
-        let c_sources: Vec<_> = grammar
-            .c_sources
-            .iter()
-            .map(|&filename| dir.join(filename))
-            .collect();
-        let cpp_sources: Vec<_> = grammar
-            .cpp_sources
-            .iter()
-            .map(|&filename| dir.join(filename))
-            .collect();
+    // Any of the compilation steps failing will short circuit the entire `collect` function
+    let results: Result<Vec<_>, _> = compile_params
+        .par_iter()
+        .map(|p| {
+            compile_grammar(
+                &p.dir,
+                &p.c_sources[..],
+                &p.cpp_sources[..],
+                &p.display_name,
+            )
+        })
+        .collect();
 
-        compile_grammar(
-            &dir,
-            &c_sources[..],
-            &cpp_sources[..],
-            &grammar.display_name,
-        )?;
+    // Fail the build if any of the grammars failed to compile.
+    results?;
+
+    // Run the follow up tasks for the compiled sources
+    for params in &compile_params {
+        let language = &params.display_name;
 
         // If compilation succeeded with either case, link the language. If it failed, we'll never
         // get to this step.
@@ -203,16 +230,17 @@ use phf::phf_map;
 
         // We recompile the libraries if any grammar sources or this build file change, since Cargo
         // will cache based on the Rust modules and isn't aware of the linked C libraries.
-        for source in c_sources.iter().chain(cpp_sources.iter()) {
+        for source in params.c_sources.iter().chain(params.cpp_sources.iter()) {
             rerun_if_changed!(&source.as_path().to_string_lossy());
         }
     }
+
     extra_cargo_directives();
     codegen += &codegen_language_map(&languages[..]);
 
     // Write the generated code to a file in the resulting build directory
     let codegen_out_dir = env::var_os("OUT_DIR").unwrap();
     let codegen_path = Path::new(&codegen_out_dir).join("generated_grammar.rs");
-    fs::write(&codegen_path, codegen).unwrap();
+    fs::write(&codegen_path, codegen)?;
     Ok(())
 }
