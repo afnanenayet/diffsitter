@@ -41,7 +41,7 @@ struct CompileParams {
 /// Environment variables that the build system relies on
 ///
 /// If any of these are changed, Cargo will rebuild the project.
-const BUILD_ENV_VARS: &'static [&'static str] = &["CC", "CXX", "LD_LIBRARY_PATH", "PATH"];
+const BUILD_ENV_VARS: &[&str] = &["CC", "CXX", "LD_LIBRARY_PATH", "PATH"];
 
 /// Generated the code fo the map between the language identifiers and the function to initialize
 /// the language parser
