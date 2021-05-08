@@ -78,7 +78,7 @@ fn generate_ast_vector_data(
         info!("Will deduce filetype from file extension");
     };
     let tree = parse::parse_file(&path, file_type, file_associations)?;
-    Ok(AstVectorData { tree, text, path })
+    Ok(AstVectorData { text, tree, path })
 }
 
 /// Generate an AST vector from the underlying data
