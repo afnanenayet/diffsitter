@@ -200,8 +200,9 @@ use phf::phf_map;
         })
         .collect();
 
-    // Any of the compilation steps failing will short circuit the entire `collect` function
-    let results: Result<Vec<_>, _> = compile_params
+    // Any of the compilation steps failing will short circuit the entire `collect` function and
+    // error out
+    compile_params
         .par_iter()
         .map(|p| {
             compile_grammar(
@@ -211,10 +212,7 @@ use phf::phf_map;
                 &p.display_name,
             )
         })
-        .collect();
-
-    // Fail the build if any of the grammars failed to compile.
-    results?;
+        .collect::<Result<Vec<_>, _>>()?;
 
     // Run the follow up tasks for the compiled sources
     for params in &compile_params {
