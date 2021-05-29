@@ -2,10 +2,10 @@
 
 [![CI](https://github.com/afnanenayet/diffsitter/actions/workflows/CI.yml/badge.svg)](https://github.com/afnanenayet/diffsitter/actions/workflows/CI.yml)
 [![CD](https://github.com/afnanenayet/diffsitter/actions/workflows/CD.yml/badge.svg)](https://github.com/afnanenayet/diffsitter/actions/workflows/CD.yml)
-![crates version](https://img.shields.io/crates/v/diffsitter)
-![latest tag](https://img.shields.io/github/v/tag/afnanenayet/diffsitter?label=release)
+[![crates version](https://img.shields.io/crates/v/diffsitter)](https://crates.io/crates/diffsitter)
+[![latest tag](https://img.shields.io/github/v/tag/afnanenayet/diffsitter?label=release)](https://github.com/afnanenayet/diffsitter/releases/latest)
 ![downloads](https://img.shields.io/crates/d/diffsitter)
-![license](https://img.shields.io/github/license/afnanenayet/diffsitter)
+[![license](https://img.shields.io/github/license/afnanenayet/diffsitter)](./LICENSE)
 
 [![asciicast](https://asciinema.org/a/joEIfP8XoxUhZKXEqUD8CEP7j.svg)](https://asciinema.org/a/joEIfP8XoxUhZKXEqUD8CEP7j)
 
