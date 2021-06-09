@@ -81,8 +81,12 @@ pub struct Args {
 pub enum Command {
     /// List the languages that this program was compiled for
     List,
+
     /// Dump the default config to stdout
     DumpDefaultConfig,
+
+    /// Print extended build information
+    BuildInfo,
 }
 
 /// Print a list of the languages that this instance of diffsitter was compiled with
