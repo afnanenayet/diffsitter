@@ -20,6 +20,8 @@ use std::{
     path::PathBuf,
 };
 
+build_info::build_info!(fn build_info);
+
 /// Return an instance of [Config] from a config file path (or the inferred default path)
 ///
 /// If a config path isn't provided or there is some other failure, fall back to the default
@@ -144,6 +146,20 @@ fn dump_default_config() -> Result<()> {
     Ok(())
 }
 
+/// Print extended version information to the terminal
+fn print_build_info() {
+    println!(
+        "{}",
+        build_info::format!("{} v{} ({} {}) built with {}",
+            $.crate_info.name,
+            $.crate_info.version,
+            $.version_control?.git()?.commit_short_id,
+            $.timestamp,
+            $.compiler
+        )
+    );
+}
+
 #[paw::main]
 fn main(args: Args) -> Result<()> {
     use cli::Command;
@@ -153,6 +169,7 @@ fn main(args: Args) -> Result<()> {
         match cmd {
             Command::List => list_supported_languages(),
             Command::DumpDefaultConfig => dump_default_config()?,
+            Command::BuildInfo => print_build_info(),
         }
     } else {
         let log_level = if args.debug {

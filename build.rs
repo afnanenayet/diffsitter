@@ -240,5 +240,7 @@ use phf::phf_map;
     let codegen_out_dir = env::var_os("OUT_DIR").unwrap();
     let codegen_path = Path::new(&codegen_out_dir).join("generated_grammar.rs");
     fs::write(&codegen_path, codegen)?;
+
+    build_info_build::build_script();
     Ok(())
 }

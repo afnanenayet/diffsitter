@@ -47,6 +47,7 @@ pretty_env_logger = "0.4"
 log = { version = "0.4", features = ["std"] }
 thiserror = "1.0"
 logging_timer = "1.0"
+build-info = "0.0.23"
 
 [target.'cfg(target_os = "windows")'.dependencies]
 # We use directories next to get the windows config path
@@ -62,6 +63,7 @@ phf = { version = "0.8", features = ["macros"] }
 anyhow = "1.0"
 cargo-emit = "0.1"
 rayon = "1.5"
+build-info-build = "0.0.23"
 
 [profile.release]
 lto = "thin"
