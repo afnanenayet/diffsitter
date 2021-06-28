@@ -22,6 +22,13 @@ use std::{
 
 build_info::build_info!(fn build_info);
 
+#[cfg(feature = "jemallocator")]
+use jemallocator::Jemalloc;
+
+#[cfg(feature = "jemallocator")]
+#[global_allocator]
+static GLOBAL: Jemalloc = Jemalloc;
+
 /// Return an instance of [Config] from a config file path (or the inferred default path)
 ///
 /// If a config path isn't provided or there is some other failure, fall back to the default

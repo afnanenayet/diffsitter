@@ -48,6 +48,7 @@ log = { version = "0.4", features = ["std"] }
 thiserror = "1.0"
 logging_timer = "1.0"
 build-info = "0.0.23"
+jemallocator = { version = "0.3", optional = true }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 # We use directories next to get the windows config path
