@@ -64,7 +64,7 @@ phf = { version = "0.9", features = ["macros"] }
 anyhow = "1.0"
 cargo-emit = "0.1"
 rayon = "1.5"
-build-info-build = "0.0.23"
+build-info-build = "0.0.24"
 
 [profile.release]
 lto = "thin"
