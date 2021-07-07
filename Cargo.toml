@@ -47,7 +47,7 @@ pretty_env_logger = "0.4.0"
 log = { version = "0.4.14", features = ["std"] }
 thiserror = "1.0.26"
 logging_timer = "1.0.0"
-build-info = "0.0.24"
+build-info = { version = "0.0.24", optional = true }
 jemallocator = { version = "0.3.2", optional = true }
 
 [target.'cfg(target_os = "windows")'.dependencies]
@@ -64,7 +64,10 @@ phf = { version = "0.9.0", features = ["macros"] }
 anyhow = "1.0.41"
 cargo-emit = "0.1.1"
 rayon = "1.5.1"
-build-info-build = "0.0.24"
+build-info-build = { version = "0.0.24", optional = true }
 
 [profile.release]
 lto = "thin"
+
+[features]
+better-build-info = ["build-info", "build-info-build"]

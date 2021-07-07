@@ -241,6 +241,7 @@ use phf::phf_map;
     let codegen_path = Path::new(&codegen_out_dir).join("generated_grammar.rs");
     fs::write(&codegen_path, codegen)?;
 
+    #[cfg(feature = "better-build-info")]
     build_info_build::build_script();
     Ok(())
 }
