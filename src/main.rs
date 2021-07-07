@@ -20,6 +20,7 @@ use std::{
     path::PathBuf,
 };
 
+#[cfg(feature = "better-build-info")]
 build_info::build_info!(fn build_info);
 
 #[cfg(feature = "jemallocator")]
@@ -154,6 +155,7 @@ fn dump_default_config() -> Result<()> {
 }
 
 /// Print extended version information to the terminal
+#[cfg(feature = "better-build-info")]
 fn print_build_info() {
     println!(
         "{}",
@@ -176,6 +178,8 @@ fn main(args: Args) -> Result<()> {
         match cmd {
             Command::List => list_supported_languages(),
             Command::DumpDefaultConfig => dump_default_config()?,
+
+            #[cfg(feature = "better-build-info")]
             Command::BuildInfo => print_build_info(),
         }
     } else {

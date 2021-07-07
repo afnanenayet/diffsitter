@@ -38,7 +38,7 @@ jobs:
       with:
         command: build
         use-cross: ${{ matrix.job.use-cross }}
-        args: --target ${{ matrix.job.target }}
+        args: --target ${{ matrix.job.target }} --features better-build-info
     - name: Unit tests
       uses: actions-rs/cargo@v1
       with:

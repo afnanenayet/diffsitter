@@ -90,6 +90,7 @@ pub enum Command {
     DumpDefaultConfig,
 
     /// Print extended build information
+    #[cfg(feature = "better-build-info")]
     BuildInfo,
 }
 
