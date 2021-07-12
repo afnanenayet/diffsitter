@@ -161,6 +161,11 @@ brew install diffsitter
 # brew install afnanenayet/tap/diffsitter
 ```
 
+### Arch Linux (AUR)
+
+@samhh has packaged diffsitter for arch on the AUR. Use your favorite AUR
+helper to install [`diffsitter-bin`](https://aur.archlinux.org/packages/diffsitter-bin/).
+
 ## Usage
 
 For detailed help you can run `diffsitter --help` (`diffsitter -h` provides
