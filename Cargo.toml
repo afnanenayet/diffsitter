@@ -34,7 +34,7 @@ include = [
 [dependencies]
 tree-sitter = "0.19.5"
 structopt = { version = "0.3.22", features = ["paw"] }
-anyhow = "1.0.41"
+anyhow = "1.0.42"
 phf = { version = "0.9.0", features = ["macros"] }
 console = "0.14.1"
 paw = "1.0.0"
@@ -61,7 +61,7 @@ xdg = "2.2.0"
 [build-dependencies]
 cc = { version = "1.0.69", features = ["parallel"] }
 phf = { version = "0.9.0", features = ["macros"] }
-anyhow = "1.0.41"
+anyhow = "1.0.42"
 cargo-emit = "0.1.1"
 rayon = "1.5.1"
 build-info-build = { version = "0.0.24", optional = true }
