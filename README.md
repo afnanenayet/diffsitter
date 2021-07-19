@@ -9,6 +9,11 @@
 
 [![asciicast](https://asciinema.org/a/joEIfP8XoxUhZKXEqUD8CEP7j.svg)](https://asciinema.org/a/joEIfP8XoxUhZKXEqUD8CEP7j)
 
+## Disclaimer
+
+`diffsitter` is very much a work in progress and nowhere close to production
+ready (yet). Contributions are always welcome!
+
 ## Summary
 
 `diffsitter` creates semantically meaningful diffs that ignore formatting
