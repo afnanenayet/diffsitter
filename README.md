@@ -221,7 +221,7 @@ project and initialize submodules:
 
 ```sh
 git clone
-git submodule --init --recursive
+git submodule update --init --recursive
 ```
 
 This project targets the latest stable version of `rustc`, it may work on older
