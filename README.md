@@ -186,6 +186,20 @@ directory for Windows. You can also refer to the
 *Note: the tests for this crate check to make sure the provided sample config
 is a valid config.*
 
+To see the changes to the current git repo in diffsitter, you can add
+the following to your repo's `.git/config` and run `git difftool`.
+
+```
+[diff]
+        tool = diffsitter
+
+[difftool]
+        prompt = false
+
+[difftool "diffsitter"]
+        cmd = diffsitter "$LOCAL" "$REMOTE"
+```
+
 ## Development
 
 You need a Rust toolchain, which you can install from here: https://rustup.rs.
