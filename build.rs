@@ -160,7 +160,7 @@ fn main() -> Result<()> {
         GrammarCompileInfo {
             display_name: "json",
             path: PathBuf::from("grammars/tree-sitter-json"),
-            c_sources: vec["parser.c"],
+            c_sources: vec!["parser.c"],
             ..GrammarCompileInfo::default()
         }
     ];
