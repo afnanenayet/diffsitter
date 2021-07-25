@@ -162,7 +162,7 @@ fn main() -> Result<()> {
             path: PathBuf::from("grammars/tree-sitter-json"),
             c_sources: vec!["parser.c"],
             ..GrammarCompileInfo::default()
-        }
+        },
     ];
 
     // The string represented the generated code that we get from the tree sitter grammars
