@@ -186,43 +186,6 @@ directory for Windows. You can also refer to the
 *Note: the tests for this crate check to make sure the provided sample config
 is a valid config.*
 
-## Development
+## Contributing
 
-You need a Rust toolchain, which you can install from here: https://rustup.rs.
-You will also need a C and C++ compiler, any standard-compliant one should be
-fine (GCC, Clang, or Visual Studio).
-
-If you're on Mac and have [Homebrew](https://brew.sh) installed:
-
-```sh
-brew install llvm
-
-# or
-
-brew install gcc
-```
-
-The built-in Apple clang that comes with XCode is also fine.
-
-If you're on Ubuntu:
-
-```sh
-sudo apt install gcc
-```
-
-If you're on Arch Linux:
-
-```sh
-sudo pacman -S gcc
-```
-
-Once you have the requisite toolchains installed, you'll want to clone the
-project and initialize submodules:
-
-```sh
-git clone
-git submodule update --init --recursive
-```
-
-This project targets the latest stable version of `rustc`, it may work on older
-versions, but support is only guaranteed for the latest stable version.
+See [docs/CONTRIBUTING.md].
