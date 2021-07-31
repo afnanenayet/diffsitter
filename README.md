@@ -188,4 +188,4 @@ is a valid config.*
 
 ## Contributing
 
-See [docs/CONTRIBUTING.md].
+See [CONTRIBUTING.md](docs/CONTRIBUTING.md).
