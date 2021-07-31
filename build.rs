@@ -77,7 +77,7 @@ fn compile_grammar(
             .include(include)
             .files(c_sources)
             .warnings(false)
-            .try_compile(&output_name)?;
+            .try_compile(output_name)?;
     }
     Ok(())
 }
