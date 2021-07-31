@@ -89,3 +89,8 @@ little flaky on the Windows platform check, so if you see that tests failed
 there, try re-running the checks with Github actions to see if they pass.
 
 This project targets the latest stable version of `rustc`.
+
+Note that if you update anything to do with the project config, you'll have to
+update the [sample config](../assets/sample_config.json5) as well to ensure
+that tests pass (the project will actually parse the sample config) and that
+it documents the various options available to users.
