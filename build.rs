@@ -163,6 +163,12 @@ fn main() -> Result<()> {
             c_sources: vec!["parser.c"],
             ..GrammarCompileInfo::default()
         },
+        GrammarCompileInfo {
+            display_name: "hcl",
+            path: PathBuf::from("grammars/tree-sitter-hcl"),
+            c_sources: vec!["parser.c"],
+            cpp_sources: vec!["scanner.cc"],
+        },
     ];
 
     // The string represented the generated code that we get from the tree sitter grammars
