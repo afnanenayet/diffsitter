@@ -8,6 +8,7 @@ use std::{
     path::{Path, PathBuf},
     vec,
 };
+use thiserror::Error;
 
 /// Compilation information as it pertains to a tree-sitter grammar
 ///
@@ -36,6 +37,22 @@ struct CompileParams {
     pub c_sources: Vec<PathBuf>,
     pub cpp_sources: Vec<PathBuf>,
     pub display_name: String,
+}
+
+/// An error that can arise when sanity check compilation parameters
+#[derive(Debug, Error)]
+enum CompileParamError {
+    #[error("Subdirectory for grammar {0} was not found")]
+    SubdirectoryNotFound(String),
+
+    #[error("Source files {source_files:?} not found for {grammar}")]
+    SourceFilesNotFound {
+        /// The name of the grammar that had an error
+        grammar: String,
+
+        /// The missing source files
+        source_files: Vec<String>,
+    },
 }
 
 /// Environment variables that the build system relies on
@@ -87,6 +104,94 @@ fn extra_cargo_directives() {
     for &env_var in BUILD_ENV_VARS {
         rerun_if_env_changed!(env_var);
     }
+}
+
+/// Preprocess grammar compilation info so the build script can find all of the source files.
+///
+/// This will augment the C and C++ source files so that they have the full relative path from the
+/// repository root rather, which prepends the repository path and `src/` to the file.
+///
+/// For example, a `GrammarCompileInfo` instance for Rust:
+///
+/// ```rust
+/// GrammarCompileInfo {
+///     display_name: "rust",
+///     path: PathBuf::from("grammars/tree-sitter-rust"),
+///     c_sources: vec!["parser.c", "scanner.c"],
+///     ..GrammarCompileInfo::default()
+/// };
+/// ```
+///
+/// will get turned to:
+///
+/// ```rust
+/// CompileParams {
+///     display_name: "rust",
+///     path: PathBuf::from("grammars/tree-sitter-rust"),
+///     c_sources: vec![
+///         "grammars/tree-sitter-rust/src/parser.c",
+///         "grammars/tree-sitter-rust/src/scanner.c"
+///     ],
+///     cpp_sources: vec![],
+/// };
+/// ```
+fn preprocess_compile_info(grammar: &GrammarCompileInfo) -> CompileParams {
+    // The directory to the source files
+    let dir = grammar.path.join("src");
+
+    // Prepend {grammar-repo}/src path to each file
+    let c_sources: Vec<_> = grammar
+        .c_sources
+        .iter()
+        .map(|&filename| dir.join(filename))
+        .collect();
+    let cpp_sources: Vec<_> = grammar
+        .cpp_sources
+        .iter()
+        .map(|&filename| dir.join(filename))
+        .collect();
+
+    CompileParams {
+        dir,
+        c_sources,
+        cpp_sources,
+        display_name: grammar.display_name.into(),
+    }
+}
+
+/// Sanity check the contents of a compilation info unit.
+///
+/// This should give clearer errors up front compared to the more obscure errors you can get from
+/// the C/C++ toolchains when files are missing.
+fn verify_compile_params(compile_params: &CompileParams) -> Result<(), CompileParamError> {
+    if !compile_params.dir.exists() {
+        return Err(CompileParamError::SubdirectoryNotFound(
+            compile_params.display_name.to_string(),
+        ));
+    }
+
+    let missing_sources = compile_params
+        .c_sources
+        .iter()
+        .chain(compile_params.cpp_sources.iter())
+        .filter_map(|file| {
+            // Filter for files that *don't* exist
+            if file.exists() {
+                None
+            } else {
+                Some(file.to_string_lossy().to_string())
+            }
+        })
+        .collect::<Vec<String>>();
+
+    if !missing_sources.is_empty() {
+        return Err(CompileParamError::SourceFilesNotFound {
+            grammar: compile_params.display_name.to_string(),
+            source_files: missing_sources,
+        });
+    }
+
+    Ok(())
 }
 
 fn main() -> Result<()> {
@@ -169,6 +274,7 @@ fn main() -> Result<()> {
             c_sources: vec!["parser.c"],
             cpp_sources: vec!["scanner.cc"],
         },
+        // Add new grammars here...
     ];
 
     // The string represented the generated code that we get from the tree sitter grammars
@@ -186,31 +292,14 @@ use phf::phf_map;
 
     // We create a vector of parameters so we can use Rayon's parallel iterators to compile
     // grammars in parallel
-    let compile_params: Vec<CompileParams> = grammars
-        .iter()
-        .map(|grammar| {
-            // The directory to the source files
-            let dir = grammar.path.join("src");
+    let compile_params: Vec<CompileParams> = grammars.iter().map(preprocess_compile_info).collect();
 
-            // Prepend {grammar-repo}/src path to each file
-            let c_sources: Vec<_> = grammar
-                .c_sources
-                .iter()
-                .map(|&filename| dir.join(filename))
-                .collect();
-            let cpp_sources: Vec<_> = grammar
-                .cpp_sources
-                .iter()
-                .map(|&filename| dir.join(filename))
-                .collect();
-            CompileParams {
-                dir,
-                c_sources,
-                cpp_sources,
-                display_name: grammar.display_name.into(),
-            }
-        })
-        .collect();
+    // Verify each preprocessed compile param entry -- this will short circuit the build script if
+    // there are any errors
+    compile_params
+        .iter()
+        .map(verify_compile_params)
+        .collect::<Result<Vec<_>, CompileParamError>>()?;
 
     // Any of the compilation steps failing will short circuit the entire `collect` function and
     // error out
