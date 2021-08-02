@@ -64,6 +64,7 @@ phf = { version = "0.9.0", features = ["macros"] }
 anyhow = "1.0.42"
 cargo-emit = "0.1.1"
 rayon = "1.5.1"
+thiserror = "1.0.26"
 build-info-build = { version = "0.0.24", optional = true }
 
 [profile.release]
