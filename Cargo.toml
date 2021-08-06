@@ -35,7 +35,7 @@ include = [
 tree-sitter = "0.19.5"
 structopt = { version = "0.3.22", features = ["paw"] }
 anyhow = "1.0.42"
-phf = { version = "0.9.0", features = ["macros"] }
+phf = { version = "0.9.1", features = ["macros"] }
 console = "0.14.1"
 paw = "1.0.0"
 strum = "0.21.0"
@@ -60,7 +60,7 @@ xdg = "2.2.0"
 
 [build-dependencies]
 cc = { version = "1.0.69", features = ["parallel"] }
-phf = { version = "0.9.0", features = ["macros"] }
+phf = { version = "0.9.1", features = ["macros"] }
 anyhow = "1.0.42"
 cargo-emit = "0.1.1"
 rayon = "1.5.1"
