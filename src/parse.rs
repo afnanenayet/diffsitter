@@ -34,6 +34,8 @@ static FILE_EXTS: phf::Map<&'static str, &'static str> = phf_map! {
     "php" => "php",
     "json" => "json",
     "hcl" => "hcl",
+    "ts" => "typescript",
+    "tsx" => "tsx",
 };
 
 /// Generate a [tree sitter language](Language) from a language string

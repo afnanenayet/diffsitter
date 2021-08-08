@@ -39,6 +39,7 @@ languages supported by tree-sitter.
 * Python
 * Ruby
 * Rust
+* Typescript/TSX
 
 ## Examples
 

@@ -274,6 +274,18 @@ fn main() -> Result<()> {
             c_sources: vec!["parser.c"],
             cpp_sources: vec!["scanner.cc"],
         },
+        GrammarCompileInfo {
+            display_name: "typescript",
+            path: PathBuf::from("grammars/tree-sitter-typescript/typescript"),
+            c_sources: vec!["parser.c", "scanner.c"],
+            cpp_sources: vec![],
+        },
+        GrammarCompileInfo {
+            display_name: "tsx",
+            path: PathBuf::from("grammars/tree-sitter-typescript/tsx"),
+            c_sources: vec!["parser.c", "scanner.c"],
+            cpp_sources: vec![],
+        }
         // Add new grammars here...
     ];
 
