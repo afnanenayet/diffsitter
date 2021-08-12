@@ -98,10 +98,18 @@ pub enum Command {
 pub fn list_supported_languages() {
     let languages = supported_languages();
 
-    println!("This program was compiled with support for:");
+    #[cfg(feature = "static-grammar-libs")]
+    {
+        println!("This program was compiled with support for:");
 
-    for language in languages {
-        println!("- {}", language);
+        for language in languages {
+            println!("- {}", language);
+        }
+    }
+
+    #[cfg(feature = "dynamic-grammar-libs")]
+    {
+        println!("This program will dynamically load grammars from shared libraries");
     }
 }
 

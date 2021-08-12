@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{bail, Result};
 use cargo_emit::{rerun_if_changed, rerun_if_env_changed};
 use rayon::prelude::*;
 use std::{
@@ -194,7 +194,9 @@ fn verify_compile_params(compile_params: &CompileParams) -> Result<(), CompilePa
     Ok(())
 }
 
-fn main() -> Result<()> {
+/// Compile the submodules as static grammars for the binary.
+fn compile_static_grammars() -> Result<()> {
+    // This can't be `const` because `PathBuf` isn't `const`
     let grammars = vec![
         GrammarCompileInfo {
             display_name: "rust",
@@ -285,8 +287,7 @@ fn main() -> Result<()> {
             path: PathBuf::from("grammars/tree-sitter-typescript/tsx"),
             c_sources: vec!["parser.c", "scanner.c"],
             cpp_sources: vec![],
-        }
-        // Add new grammars here...
+        }, // Add new grammars here...
     ];
 
     // The string represented the generated code that we get from the tree sitter grammars
@@ -337,12 +338,16 @@ use phf::phf_map;
             "extern \"C\" {{ pub fn tree_sitter_{}() -> Language; }}\n",
             language
         );
-        languages.push(language);
+        languages.push(language.as_str());
 
         // We recompile the libraries if any grammar sources or this build file change, since Cargo
         // will cache based on the Rust modules and isn't aware of the linked C libraries.
         for source in params.c_sources.iter().chain(params.cpp_sources.iter()) {
-            rerun_if_changed!(&source.as_path().to_string_lossy());
+            if let Some(grammar_path) = &source.as_path().to_str() {
+                rerun_if_changed!(grammar_path.to_string());
+            } else {
+                bail!("Path to grammar for {} is not a valid string", language);
+            }
         }
     }
 
@@ -353,6 +358,11 @@ use phf::phf_map;
     let codegen_out_dir = env::var_os("OUT_DIR").unwrap();
     let codegen_path = Path::new(&codegen_out_dir).join("generated_grammar.rs");
     fs::write(&codegen_path, codegen)?;
+    Ok(())
+}
+
+fn main() -> Result<()> {
+    compile_static_grammars()?;
 
     #[cfg(feature = "better-build-info")]
     build_info_build::build_script();
