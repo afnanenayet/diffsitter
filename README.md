@@ -40,6 +40,7 @@ languages supported by tree-sitter.
 * Ruby
 * Rust
 * Typescript/TSX
+* HCL
 
 ## Examples
 
