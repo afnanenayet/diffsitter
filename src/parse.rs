@@ -99,7 +99,7 @@ fn fn_name_from_lang(lang: &str) -> String {
 /// to dashes (-).
 #[cfg(feature = "dynamic-grammar-libs")]
 fn lib_name_from_lang(lang: &str) -> String {
-    format!("lib{}", lang.replace("_", "-"))
+    format!("libtree-sitter-{}", lang.replace("_", "-"))
 }
 
 /// Attempt to generate a tree-sitter grammar from a shared library
