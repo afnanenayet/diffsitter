@@ -96,10 +96,20 @@ fn fn_name_from_lang(lang: &str) -> String {
 /// Generate the name of the library to `dlopen` given the name of the langauge.
 ///
 /// "lib" will be prepended to the name of the language, and any underscores (_) will be converted
-/// to dashes (-).
+/// to dashes (-) and the appropriate extension will be applied based on the platform this binary
+/// was compiled for.
 #[cfg(feature = "dynamic-grammar-libs")]
 fn lib_name_from_lang(lang: &str) -> String {
-    format!("libtree-sitter-{}", lang.replace("_", "-"))
+    let extension = if cfg!(target_os = "darwin") {
+        "dylib"
+    } else if cfg!(target_os = "linux") {
+        "so"
+    } else if cfg!(target_os = "windows") {
+        "dll"
+    } else {
+        panic!("Dynamic libraries are not supported for this platform.");
+    };
+    format!("libtree-sitter-{}.{}", lang.replace("_", "-"), extension)
 }
 
 /// Attempt to generate a tree-sitter grammar from a shared library
