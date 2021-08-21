@@ -6,6 +6,7 @@ include!(concat!(env!("OUT_DIR"), "/generated_grammar.rs"));
 use anyhow::Result;
 use log::{debug, error, info};
 use logging_timer::time;
+use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
     fs, io,
@@ -72,6 +73,26 @@ pub enum LoadingError {
     LibloadingError(#[from] libloading::Error),
 }
 
+type StringMap = HashMap<String, String>;
+
+/// Configuration options pertaining to loading grammars and parsing files.
+#[derive(Debug, Eq, PartialEq, Serialize, Deserialize, Clone, Default)]
+pub struct GrammarConfig {
+    /// Set which dynamic library files should be used for different languages.
+    ///
+    /// This is a mapping from language strings to absolute file paths, relative filepaths, or
+    /// file names.
+    pub dylib_overrides: Option<StringMap>,
+
+    /// Override the languages that get resolved for different extensions.
+    ///
+    /// This is a mapping from extension names to language strings. For example:
+    /// ```txt
+    /// "cpp" => "cpp"
+    /// ```
+    pub file_associations: Option<StringMap>,
+}
+
 /// Generate a [tree sitter language](Language) from a language string for a static language.
 ///
 /// This will return an error if an unknown string is provided.
@@ -114,9 +135,20 @@ fn lib_name_from_lang(lang: &str) -> String {
 
 /// Attempt to generate a tree-sitter grammar from a shared library
 #[cfg(feature = "dynamic-grammar-libs")]
-fn generate_language_dynamic(lang: &str) -> Result<Language, LoadingError> {
+fn generate_language_dynamic(
+    lang: &str,
+    overrides: Option<&StringMap>,
+) -> Result<Language, LoadingError> {
+    let default_fname = lib_name_from_lang(lang);
+
+    let lib_fname = if let Some(d) = overrides {
+        d.get(lang).unwrap_or(&default_fname)
+    } else {
+        &default_fname
+    };
+
     unsafe {
-        let lib = libloading::Library::new(lib_name_from_lang(lang))?;
+        let lib = libloading::Library::new(lib_fname)?;
         let func = lib.get::<libloading::Symbol<unsafe extern "C" fn() -> Language>>(
             fn_name_from_lang(lang).as_bytes(),
         )?;
@@ -129,7 +161,7 @@ fn generate_language_dynamic(lang: &str) -> Result<Language, LoadingError> {
 /// This is a dispatch method that will attempt to load a statically linked grammar, and then fall
 /// back to loading the dynamic library for the grammar.
 #[allow(clippy::vec_init_then_push)]
-fn generate_language(lang: &str) -> Result<Language, LoadingError> {
+fn generate_language(lang: &str, config: &GrammarConfig) -> Result<Language, LoadingError> {
     // The candidates for the grammar, in order of precedence.
     let mut grammar_candidates = Vec::new();
 
@@ -137,9 +169,12 @@ fn generate_language(lang: &str) -> Result<Language, LoadingError> {
     grammar_candidates.push(generate_language_static(lang));
 
     #[cfg(feature = "dynamic-grammar-libs")]
-    grammar_candidates.push(generate_language_dynamic(lang));
+    grammar_candidates.push(generate_language_dynamic(
+        lang,
+        config.dylib_overrides.as_ref(),
+    ));
 
-    // Need to do this here to avoid lifetime issues in the loop
+    // Need to get the length of the vector here to prevent issues with borrowing in the loop
     let last_cand_idx = grammar_candidates.len() - 1;
 
     for (i, candidate_result) in grammar_candidates.into_iter().enumerate() {
@@ -150,6 +185,8 @@ fn generate_language(lang: &str) -> Result<Language, LoadingError> {
                 return Ok(grammar);
             }
             Err(e) => {
+                // Only error out on the last candidate, otherwise we want to keep falling back to
+                // the next potential grammar
                 if is_last_cand {
                     return Err(e);
                 }
@@ -204,12 +241,12 @@ pub fn resolve_language_str<'a>(
 /// The user may optionally provide a map of overrides or additional file extensions.
 pub fn language_from_ext(
     ext: &str,
-    overrides: Option<&HashMap<String, String>>,
+    grammar_config: &GrammarConfig,
 ) -> Result<Language, LoadingError> {
-    let language_str_cand = resolve_language_str(ext, overrides);
+    let language_str_cand = resolve_language_str(ext, grammar_config.file_associations.as_ref());
 
     if let Some(language_str) = language_str_cand {
-        generate_language(language_str)
+        generate_language(language_str, grammar_config)
     } else {
         Err(LoadingError::UnsupportedExt(ext.to_string()))
     }
@@ -223,19 +260,19 @@ pub fn language_from_ext(
 pub fn parse_file(
     p: &Path,
     language: Option<&str>,
-    overrides: Option<&HashMap<String, String>>,
+    config: &GrammarConfig,
 ) -> Result<Tree, LoadingError> {
     let text = fs::read_to_string(p)?;
     let mut parser = Parser::new();
     let language = match language {
         Some(x) => {
             info!("Using language {} with parser", x);
-            generate_language(x)
+            generate_language(x, config)
         }
         None => {
             if let Some(ext) = p.extension() {
                 let ext_str = ext.to_string_lossy();
-                language_from_ext(&ext_str, overrides)
+                language_from_ext(&ext_str, config)
             } else {
                 Err(LoadingError::NoFileExt(p.to_string_lossy().to_string()))
             }
@@ -287,11 +324,12 @@ mod tests {
 
     #[cfg(feature = "dynamic-grammar-libs")]
     #[test]
+    #[ignore] // this test is only applicable in certain packaging scenarios
     fn dynamic_load_parsers() {
         let mut failures = Vec::new();
 
         for (&name, _) in &LANGUAGES {
-            if generate_language_dynamic(name).is_err() {
+            if generate_language_dynamic(name, None).is_err() {
                 failures.push(name);
             }
         }

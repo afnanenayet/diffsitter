@@ -12,9 +12,9 @@ use config::{Config, ConfigReadError};
 use console::Term;
 use formatting::{DisplayParameters, DocumentDiffData};
 use log::{debug, error, info, warn, LevelFilter};
+use parse::GrammarConfig;
 use serde_json as json;
 use std::{
-    collections::HashMap,
     fs,
     io::{BufWriter, Write},
     path::PathBuf,
@@ -73,7 +73,7 @@ fn derive_config(args: &Args) -> Result<Config> {
 fn generate_ast_vector_data(
     path: PathBuf,
     file_type: Option<&str>,
-    file_associations: Option<&HashMap<String, String>>,
+    grammar_config: &GrammarConfig,
 ) -> Result<AstVectorData> {
     let text = fs::read_to_string(&path)?;
     let file_name = path.to_string_lossy();
@@ -87,7 +87,7 @@ fn generate_ast_vector_data(
     } else {
         info!("Will deduce filetype from file extension");
     };
-    let tree = parse::parse_file(&path, file_type, file_associations)?;
+    let tree = parse::parse_file(&path, file_type, grammar_config)?;
     Ok(AstVectorData { text, tree, path })
 }
 
@@ -109,7 +109,6 @@ fn run_diff(args: &Args) -> Result<()> {
     let config = derive_config(args)?;
 
     let file_type = args.file_type.as_deref();
-    let file_associations = config.file_associations.as_ref();
     let path_a = args.old.as_ref().unwrap();
     let path_b = args.new.as_ref().unwrap();
 
@@ -117,8 +116,8 @@ fn run_diff(args: &Args) -> Result<()> {
     // AstVectorData structs. Because of that, we can't make a function that generates the ast vectors in
     // one shot.
 
-    let ast_data_a = generate_ast_vector_data(path_a.to_path_buf(), file_type, file_associations)?;
-    let ast_data_b = generate_ast_vector_data(path_b.to_path_buf(), file_type, file_associations)?;
+    let ast_data_a = generate_ast_vector_data(path_a.to_path_buf(), file_type, &config.grammar)?;
+    let ast_data_b = generate_ast_vector_data(path_b.to_path_buf(), file_type, &config.grammar)?;
 
     let diff_vec_a = generate_ast_vector(&ast_data_a);
     let diff_vec_b = generate_ast_vector(&ast_data_b);
