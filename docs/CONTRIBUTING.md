@@ -41,6 +41,34 @@ files aren't present, so you should run the update command to see if that fixes
 the error. If it doesn't, I've messed up and you should file an issue
 (with as much detail as possible).
 
+### Dynamic Libraries/Grammars
+
+If you want to use dynamic libraries you don't have to clone the submodules.
+You can build this binary with support for dynamic libraries with the following
+command:
+
+```sh
+cargo build --no-default-features --features dynamic-grammar-libs
+```
+
+There is an optional test that checks to see if the default library locations
+can be loaded correctly for every language that `diffsitter` is configured to
+handle by default. This will look for a shared library file in the user's
+default library lookup path in the form `libtree-sitter-{lang}.{ext}` where
+`ext` is determined by the user's platform (`.so` on Linux, `.dylib` on MacOS,
+and `.dll` on Windows). The test will then try to find and call the function to
+construct the grammar object from that file if it is able to find it.
+
+You can invoke the test with this command:
+
+```sh
+cargo test --features dynamic-grammar-libs -- --ignored --exact parse::tests::dynamic_load_parsers
+```
+
+This test is marked `#[ignore]` because people may decide to package their
+shared libraries for `tree-sitter` differently or may want to specify different
+file paths for these shared libraries in their config.
+
 ### C/C++ Toolchains
 
 If you're on Mac and have [Homebrew](https://brew.sh) installed:
