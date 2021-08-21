@@ -121,7 +121,7 @@ fn fn_name_from_lang(lang: &str) -> String {
 /// was compiled for.
 #[cfg(feature = "dynamic-grammar-libs")]
 fn lib_name_from_lang(lang: &str) -> String {
-    let extension = if cfg!(target_os = "darwin") {
+    let extension = if cfg!(target_os = "macos") {
         "dylib"
     } else if cfg!(target_os = "linux") {
         "so"
