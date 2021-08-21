@@ -362,6 +362,7 @@ use phf::phf_map;
 }
 
 fn main() -> Result<()> {
+    #[cfg(feature = "static-grammar-libs")]
     compile_static_grammars()?;
 
     #[cfg(feature = "better-build-info")]
