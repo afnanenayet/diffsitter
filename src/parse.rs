@@ -1,6 +1,7 @@
 //! Utilities for reading and parsing files with the diffsitter parser
 
 // Loads codegen methods from the build script
+#[cfg(feature = "static-grammar-libs")]
 include!(concat!(env!("OUT_DIR"), "/generated_grammar.rs"));
 
 use anyhow::Result;
