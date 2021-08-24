@@ -40,7 +40,7 @@ console = "0.14.1"
 paw = "1.0.0"
 strum = "0.21.0"
 strum_macros = "0.21.1"
-serde = { version = "1.0.127", features = ["derive"] }
+serde = { version = "1.0.129", features = ["derive"] }
 serde_json = "1.0.64"
 json5 = "0.3.0"
 pretty_env_logger = "0.4.0"
