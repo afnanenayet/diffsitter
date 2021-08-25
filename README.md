@@ -21,7 +21,7 @@ differences like spacing. It does so by computing a diff on the AST (abstract
 syntax tree) of a file rather than computing the diff on the text contents of
 the file.
 
-`diffstter` uses the parsers from the
+`diffsitter` uses the parsers from the
 [tree-sitter](https://tree-sitter.github.io/tree-sitter) project to parse
 source code. As such, the languages supported by this tool are restricted to the
 languages supported by tree-sitter.
