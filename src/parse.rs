@@ -162,6 +162,8 @@ fn generate_language_dynamic(
 /// This is a dispatch method that will attempt to load a statically linked grammar, and then fall
 /// back to loading the dynamic library for the grammar.
 #[allow(clippy::vec_init_then_push)]
+// `config` is not used if the `dynamic-grammar-libs` build flag isn't enabled
+#[allow(unused)]
 fn generate_language(lang: &str, config: &GrammarConfig) -> Result<Language, LoadingError> {
     // The candidates for the grammar, in order of precedence.
     let mut grammar_candidates = Vec::new();
