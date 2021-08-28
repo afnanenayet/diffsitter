@@ -1,8 +1,17 @@
 //! Utilities for reading and parsing files with the diffsitter parser
 
 // Loads codegen methods from the build script
+// We only load for either static-grammar-libs or dynamic-grammar-libs. This is required
+// because both of these feature enable functions that need imports and functions
+//#[cfg(any(feature = "static-grammar-libs", feature = "dynamic-grammar-libs"))]
 #[cfg(feature = "static-grammar-libs")]
 include!(concat!(env!("OUT_DIR"), "/generated_grammar.rs"));
+
+#[cfg(not(feature = "static-grammar-libs"))]
+use phf::phf_map;
+
+#[cfg(not(feature = "static-grammar-libs"))]
+use tree_sitter::Language;
 
 use anyhow::Result;
 use log::{debug, error, info};
@@ -48,6 +57,7 @@ static FILE_EXTS: phf::Map<&'static str, &'static str> = phf_map! {
 /// Possible errors that can arise when loading grammars
 #[derive(Error, Debug)]
 pub enum LoadingError {
+    #[cfg(feature = "static-grammar-libs")]
     #[error("The program was not compiled with support for {0}")]
     StaticNotCompiled(String),
 
@@ -294,10 +304,15 @@ pub fn parse_file(
 }
 
 /// Return the languages supported by this instance of the tool in alphabetically sorted order
+#[cfg(feature = "static-grammar-libs")]
 pub fn supported_languages() -> Vec<&'static str> {
-    let mut keys: Vec<&'static str> = LANGUAGES.keys().copied().collect();
-    keys.sort_unstable();
-    keys
+    if cfg!(feature = "static-grammar-libs") {
+        let mut keys: Vec<&'static str> = Vec::new();
+        keys.sort_unstable();
+        keys
+    } else {
+        Vec::new()
+    }
 }
 
 #[cfg(test)]
@@ -329,9 +344,13 @@ mod tests {
     #[test]
     #[ignore] // this test is only applicable in certain packaging scenarios
     fn dynamic_load_parsers() {
+        let languages = vec![
+            "rust", "cpp", "python", "bash", "ocaml", "go", "ruby", "java", "c_sharp", "css",
+            "php", "json", "tsx", "hcl",
+        ];
         let mut failures = Vec::new();
 
-        for (&name, _) in &LANGUAGES {
+        for &name in &languages {
             if generate_language_dynamic(name, None).is_err() {
                 failures.push(name);
             }

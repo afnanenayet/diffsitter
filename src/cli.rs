@@ -1,5 +1,6 @@
 //! Code related to the CLI
 
+#[cfg(feature = "static-grammar-libs")]
 use crate::parse::supported_languages;
 use std::path::PathBuf;
 use structopt::StructOpt;
@@ -96,10 +97,9 @@ pub enum Command {
 
 /// Print a list of the languages that this instance of diffsitter was compiled with
 pub fn list_supported_languages() {
-    let languages = supported_languages();
-
     #[cfg(feature = "static-grammar-libs")]
     {
+        let languages = supported_languages();
         println!("This program was compiled with support for:");
 
         for language in languages {
