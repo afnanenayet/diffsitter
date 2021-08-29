@@ -3,7 +3,6 @@
 // Loads codegen methods from the build script
 // We only load for either static-grammar-libs or dynamic-grammar-libs. This is required
 // because both of these feature enable functions that need imports and functions
-//#[cfg(any(feature = "static-grammar-libs", feature = "dynamic-grammar-libs"))]
 #[cfg(feature = "static-grammar-libs")]
 include!(concat!(env!("OUT_DIR"), "/generated_grammar.rs"));
 
