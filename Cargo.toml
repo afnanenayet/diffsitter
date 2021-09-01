@@ -62,7 +62,7 @@ xdg = "2.2.0"
 cc = { version = "1.0.69", features = ["parallel"] }
 phf = { version = "0.10.0", features = ["macros"] }
 anyhow = "1.0.42"
-cargo-emit = "0.1.1"
+cargo-emit = "0.2.1"
 rayon = "1.5.1"
 thiserror = "1.0.26"
 build-info-build = { version = "0.0.24", optional = true }
