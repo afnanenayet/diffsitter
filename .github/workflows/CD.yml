@@ -96,13 +96,7 @@ jobs:
           command: build
           use-cross: ${{ matrix.job.use-cross }}
           args: --release --locked --target ${{ matrix.job.target }} --features better-build-info
-      - uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ matrix.job.target }}-cargo-optimized-${{ hashFiles('**/Cargo.lock') }}
+      - uses: Swatinem/rust-cache@v1
 
       - name: Install packages (Windows)
         if: matrix.job.os == 'windows-latest'
