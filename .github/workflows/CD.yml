@@ -97,7 +97,8 @@ jobs:
           use-cross: ${{ matrix.job.use-cross }}
           args: --release --locked --target ${{ matrix.job.target }} --features better-build-info
       - uses: Swatinem/rust-cache@v1
-
+        with:
+          key: ${{ matrix.job.target }}
       - name: Install packages (Windows)
         if: matrix.job.os == 'windows-latest'
         uses: crazy-max/ghaction-chocolatey@v1.4.0
