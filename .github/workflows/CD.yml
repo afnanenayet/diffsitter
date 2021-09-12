@@ -96,14 +96,9 @@ jobs:
           command: build
           use-cross: ${{ matrix.job.use-cross }}
           args: --release --locked --target ${{ matrix.job.target }} --features better-build-info
-      - uses: actions/cache@v2
+      - uses: Swatinem/rust-cache@v1
         with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ matrix.job.target }}-cargo-optimized-${{ hashFiles('**/Cargo.lock') }}
-
+          key: ${{ matrix.job.target }}
       - name: Install packages (Windows)
         if: matrix.job.os == 'windows-latest'
         uses: crazy-max/ghaction-chocolatey@v1.4.0

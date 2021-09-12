@@ -33,6 +33,9 @@ jobs:
         target: ${{ matrix.job.target }}
         profile: minimal
         override: true
+    - uses: Swatinem/rust-cache@v1
+      with:
+          key: ${{ matrix.job.target }}
     - name: Build
       uses: actions-rs/cargo@v1
       with:
@@ -45,10 +48,3 @@ jobs:
         command: test
         use-cross: ${{ matrix.job.use-cross }}
         args: --target ${{ matrix.job.target }} --verbose
-    - uses: actions/cache@v2
-      with:
-        path: |
-          ~/.cargo/registry
-          ~/.cargo/git
-          target
-        key: ${{ matrix.job.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
