@@ -367,6 +367,7 @@ dependencies = [
  "logging_timer",
  "paw",
  "phf",
+ "pretty_assertions",
  "pretty_env_logger",
  "rayon",
  "serde",
@@ -374,6 +375,7 @@ dependencies = [
  "structopt",
  "strum",
  "strum_macros",
+ "test-case",
  "thiserror",
  "tree-sitter",
  "xdg",
@@ -1268,6 +1270,19 @@ checksum = "633c1a546cee861a1a6d0dc69ebeca693bf4296661ba7852b9d21d159e0506df"
 dependencies = [
  "libc",
  "winapi",
+]
+
+[[package]]
+name = "test-case"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "956044ef122917dde830c19dec5f76d0670329fde4104836d62ebcb14f4865f1"
+dependencies = [
+ "cfg-if",
+ "proc-macro2 1.0.29",
+ "quote 1.0.9",
+ "syn 1.0.76",
+ "version_check",
 ]
 
 [[package]]
