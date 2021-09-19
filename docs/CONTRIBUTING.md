@@ -122,3 +122,22 @@ Note that if you update anything to do with the project config, you'll have to
 update the [sample config](../assets/sample_config.json5) as well to ensure
 that tests pass (the project will actually parse the sample config) and that
 it documents the various options available to users.
+
+### Submodules
+
+We are currently vendoring tree sitter grammars in the diffsitter repository so
+we can compile everything statically. We strip the Rust bindings from the
+repository if it contains them, otherwise Rust will not include any files from
+these folders in the target directory, and we will not be able to compile these
+dependencies ourselves.
+
+We maintain these vendors and ensure they stay up to date using
+[nvchecker](https://github.com/lilydjwg/nvchecker). We have a repository for
+the grammars at:
+[github.com/afnananeayet/diffsitter-grammars](https://github.com/afnanenayet/diffsitter-grammars).
+If you update a tree sitter fork, you should file a pull request in the
+`diffsitter-grammars` repository and a PR in this repository with the updated
+submodule. You can also use that repository with `nvchecker` to find
+forks that are out of date, which makes for an easy first issue that you can
+tackle in this project.
+

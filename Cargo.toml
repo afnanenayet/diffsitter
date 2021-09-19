@@ -34,18 +34,18 @@ include = [
 [dependencies]
 tree-sitter = "0.20.0"
 structopt = { version = "0.3.23", features = ["paw"] }
-anyhow = "1.0.42"
+anyhow = "1.0.44"
 phf = { version = "0.10.0", features = ["macros"] }
 console = "0.14.1"
 paw = "1.0.0"
 strum = "0.21.0"
 strum_macros = "0.21.1"
 serde = { version = "1.0.130", features = ["derive"] }
-serde_json = "1.0.64"
+serde_json = "1.0.68"
 json5 = "0.3.0"
 pretty_env_logger = "0.4.0"
 log = { version = "0.4.14", features = ["std"] }
-thiserror = "1.0.26"
+thiserror = "1.0.29"
 logging_timer = "1.0.0"
 build-info = { version = "0.0.24", optional = true }
 jemallocator = { version = "0.3.2", optional = true }
@@ -62,10 +62,10 @@ xdg = "2.2.0"
 [build-dependencies]
 cc = { version = "1.0.70", features = ["parallel"] }
 phf = { version = "0.10.0", features = ["macros"] }
-anyhow = "1.0.42"
+anyhow = "1.0.44"
 cargo-emit = "0.2.1"
 rayon = "1.5.1"
-thiserror = "1.0.26"
+thiserror = "1.0.29"
 build-info-build = { version = "0.0.24", optional = true }
 
 [profile.release]
