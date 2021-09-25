@@ -195,6 +195,7 @@ fn verify_compile_params(compile_params: &CompileParams) -> Result<(), CompilePa
 }
 
 fn main() -> Result<()> {
+    // Add new grammars to this vector
     let grammars = vec![
         GrammarCompileInfo {
             display_name: "rust",
@@ -285,8 +286,7 @@ fn main() -> Result<()> {
             path: PathBuf::from("grammars/tree-sitter-typescript/tsx"),
             c_sources: vec!["parser.c", "scanner.c"],
             cpp_sources: vec![],
-        }
-        // Add new grammars here...
+        },
     ];
 
     // The string represented the generated code that we get from the tree sitter grammars

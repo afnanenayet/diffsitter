@@ -5,6 +5,7 @@ use crate::diff::{Hunk, Hunks, Line};
 use anyhow::Result;
 use console::{Color, Style, Term};
 use log::{debug, info};
+use logging_timer::time;
 use serde::{Deserialize, Serialize};
 use std::{
     cmp::{max, Ordering},
@@ -203,6 +204,7 @@ impl DiffWriter {
     ///
     /// This will process the "raw" [diff vector](AstVector) and turn extract the differences
     /// between lines.
+    #[time("info", "formatting::{}")]
     pub fn print(&self, term: &mut BufWriter<Term>, params: &DisplayParameters) -> Result<()> {
         let DisplayParameters { old, new } = &params;
         let old_fmt = FormattingDirectives::from(&self.deletion);
@@ -217,8 +219,7 @@ impl DiffWriter {
         self.print_title(term, old.filename, new.filename, &old_fmt, &new_fmt)?;
 
         // Iterate through the edits on both documents. We know that both of the vectors are
-        // sorted, and we can use that property to iterate through the entries in O(n). Basic
-        // leetcode woo!
+        // sorted, and we can use that property to iterate through the entries in O(n).
         let mut it_old = 0;
         let mut it_new = 0;
 
