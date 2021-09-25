@@ -42,7 +42,7 @@ strum = "0.21.0"
 strum_macros = "0.21.1"
 serde = { version = "1.0.130", features = ["derive"] }
 serde_json = "1.0.68"
-json5 = "0.3.0"
+json5 = "0.4.1"
 pretty_env_logger = "0.4.0"
 log = { version = "0.4.14", features = ["std"] }
 thiserror = "1.0.29"
@@ -50,6 +50,10 @@ logging_timer = "1.0.0"
 build-info = { version = "0.0.24", optional = true }
 jemallocator = { version = "0.3.2", optional = true }
 libloading = { version = "0.7.0", optional = true }
+
+[dev-dependencies]
+test-case = "1.1.0"
+pretty_assertions = "0.7.2"
 
 [target.'cfg(target_os = "windows")'.dependencies]
 # We use directories next to get the windows config path

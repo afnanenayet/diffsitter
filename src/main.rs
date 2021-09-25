@@ -3,6 +3,7 @@ mod cli;
 mod config;
 mod diff;
 mod formatting;
+mod neg_idx_vec;
 mod parse;
 
 use anyhow::Result;
@@ -112,9 +113,9 @@ fn run_diff(args: &Args) -> Result<()> {
     let path_a = args.old.as_ref().unwrap();
     let path_b = args.new.as_ref().unwrap();
 
-    // This looks a bit weird because a the ast vectors and some other data reference data in the
-    // AstVectorData structs. Because of that, we can't make a function that generates the ast vectors in
-    // one shot.
+    // This looks a bit weird because the ast vectors and some other data reference data in the
+    // AstVectorData structs. Because of that, we can't make a function that generates the ast
+    // vectors in one shot.
 
     let ast_data_a = generate_ast_vector_data(path_a.to_path_buf(), file_type, &config.grammar)?;
     let ast_data_b = generate_ast_vector_data(path_b.to_path_buf(), file_type, &config.grammar)?;
@@ -122,7 +123,7 @@ fn run_diff(args: &Args) -> Result<()> {
     let diff_vec_a = generate_ast_vector(&ast_data_a);
     let diff_vec_b = generate_ast_vector(&ast_data_b);
 
-    let (old_hunks, new_hunks) = ast::edit_hunks(&diff_vec_a, &diff_vec_b)?;
+    let (old_hunks, new_hunks) = ast::compute_edit_script(&diff_vec_a, &diff_vec_b);
     let params = DisplayParameters {
         old: DocumentDiffData {
             filename: &ast_data_a.path.to_string_lossy(),
