@@ -188,6 +188,35 @@ directory for Windows. You can also refer to the
 *Note: the tests for this crate check to make sure the provided sample config
 is a valid config.*
 
+## Dependencies
+
+`diffsitter` is usually compiled as a static binary, so the `tree-sitter`
+grammars/libraries are baked into the binary as static libraries. There is an
+option to build with support for dynamic libraries which will look for shared
+library files in the user's default library path. This will search for
+library files of the form `libtree-sitter-{lang}.{ext}`, where `lang` is the
+language that the user is trying to diff and `ext` is the platform-specific
+extension for shared library files (`.so`, `.dylib`, etc). The user can
+override the dynamic library file for each language in the config as such:
+
+```json5
+{
+    "grammar": {
+        // You can specify the dynamic library names for each language
+        "dylib-overrides": {
+            // with a filename
+            "rust": "libtree-sitter-rust.so",
+            // with an absolute path
+            "c": "/usr/lib/libtree-sitter-c.so",
+            // with a relative path
+            "cpp": "../libtree-sitter-c.so",
+        },
+    }
+}
+```
+
+*The above excerpt was taken from the sample config.*
+
 ## Contributing
 
 See [CONTRIBUTING.md](docs/CONTRIBUTING.md).

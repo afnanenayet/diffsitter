@@ -1,6 +1,6 @@
 //! Utilities and definitions for config handling
 
-use crate::formatting::DiffWriter;
+use crate::{formatting::DiffWriter, parse::GrammarConfig};
 use anyhow::{Context, Result};
 use json5 as json;
 use log::info;
@@ -19,7 +19,7 @@ use directories_next::ProjectDirs;
 const CFG_FILE_NAME: &str = "config.json5";
 
 /// The config struct for the application
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 #[serde(rename_all = "kebab-case")]
 pub struct Config {
     /// Custom file extension mappings between a file extension and a language
@@ -31,15 +31,9 @@ pub struct Config {
 
     /// Formatting options for display
     pub formatting: DiffWriter,
-}
 
-impl Default for Config {
-    fn default() -> Self {
-        Config {
-            file_associations: None,
-            formatting: DiffWriter::default(),
-        }
-    }
+    /// Options for loading
+    pub grammar: GrammarConfig,
 }
 
 /// The possible errors that can arise when attempting to read a config

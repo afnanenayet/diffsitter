@@ -95,7 +95,7 @@ jobs:
         with:
           command: build
           use-cross: ${{ matrix.job.use-cross }}
-          args: --release --locked --target ${{ matrix.job.target }} --features better-build-info
+          args: --release --locked --target ${{ matrix.job.target }} --features better-build-info,static-grammar-libs
       - uses: Swatinem/rust-cache@v1
         with:
           key: ${{ matrix.job.target }}-release

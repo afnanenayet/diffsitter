@@ -1,12 +1,6 @@
 // This is a JSON5 file, so you can use comments and trailing commas, which
 // makes it a lot more convenient for configs.
 {
-    // You can set different file associations here, these will be merged with
-    // the default associations, where the associations in the config take
-    // precedence
-    "file-associations": {
-        "rs": "rust",
-    },
     // Set options for terminal formatting here
     "formatting": {
         // Set the style for diff hunks from the new document
@@ -37,6 +31,24 @@
             "bold": true,
             "underline": false,
             "prefix": "-",
+        },
+    },
+    // Set options related to grammars here
+    "grammar": {
+        // You can set different file associations here, these will be merged with
+        // the default associations, where the associations in the config take
+        // precedence
+        "file-associations": {
+            "rs": "rust",
+        },
+        // You can specify the dynamic library names for each language
+        "dylib-overrides": {
+            // with a filename
+            "rust": "libtree-sitter-rust.so",
+            // with an absolute path
+            "c": "/usr/lib/libtree-sitter-c.so",
+            // with a relative path
+            "cpp": "../libtree-sitter-cpp.so",
         },
     },
 }

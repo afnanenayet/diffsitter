@@ -363,6 +363,7 @@ dependencies = [
  "directories-next",
  "jemallocator",
  "json5",
+ "libloading",
  "log",
  "logging_timer",
  "paw",
@@ -610,6 +611,16 @@ dependencies = [
  "libc",
  "libz-sys",
  "pkg-config",
+]
+
+[[package]]
+name = "libloading"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6f84d96438c15fcd6c3f244c8fce01d1e2b9c6b5623e9c711dc9286d8fc92d6a"
+dependencies = [
+ "cfg-if",
+ "winapi",
 ]
 
 [[package]]

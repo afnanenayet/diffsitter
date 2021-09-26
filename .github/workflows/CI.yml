@@ -46,10 +46,10 @@ jobs:
       with:
         command: build
         use-cross: ${{ matrix.job.use-cross }}
-        args: --target ${{ matrix.job.target }} --features better-build-info
+        args: --locked --target ${{ matrix.job.target }} --features better-build-info,static-grammar-libs,dynamic-grammar-libs
     - name: Unit tests
       uses: actions-rs/cargo@v1
       with:
         command: test
         use-cross: ${{ matrix.job.use-cross }}
-        args: --target ${{ matrix.job.target }} --verbose
+        args: --locked --target ${{ matrix.job.target }} --verbose --features better-build-info,static-grammar-libs,dynamic-grammar-libs
