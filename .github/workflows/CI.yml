@@ -47,4 +47,4 @@ jobs:
       with:
         command: test
         use-cross: ${{ matrix.job.use-cross }}
-        args: --locked --target ${{ matrix.job.target }} --verbose --features better-build-info,static-grammar-libs
+        args: --locked --target ${{ matrix.job.target }} --verbose --features better-build-info,static-grammar-libs,dynamic-grammar-libs
