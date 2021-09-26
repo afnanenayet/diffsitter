@@ -36,6 +36,11 @@ jobs:
     - uses: Swatinem/rust-cache@v1
       with:
           key: ${{ matrix.job.target }}
+    - name: Check formatting
+      uses: actions-rs/cargo@v1
+      with:
+        command: fmt
+        args: --all -- --check
     - name: Build
       uses: actions-rs/cargo@v1
       with:
