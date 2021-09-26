@@ -542,8 +542,20 @@ impl Myers {
                     let old = (old_range.start as i32) + x0;
                     let new = (new_range.start as i32) + y0;
 
-                    debug_assert!(old >= (old_range.start as i32) && old < (old_range.end as i32));
-                    debug_assert!(new >= (new_range.start as i32) && new < (new_range.end as i32));
+                    debug_assert!(
+                        old >= (old_range.start as i32) && old <= (old_range.end as i32),
+                        "expected old={} in {}..{}",
+                        old,
+                        old_range.start,
+                        old_range.end,
+                    );
+                    debug_assert!(
+                        new >= (new_range.start as i32) && new <= (new_range.end as i32),
+                        "expected new={} in {}..{}",
+                        new,
+                        new_range.start,
+                        new_range.end,
+                    );
 
                     // NOTE: that we can convert x and y to `usize` because they are both within
                     // the range of the length of the inputs, which are valid usize values. This property
@@ -607,10 +619,18 @@ impl Myers {
                         let new = m - y + (new_range.start as i32);
 
                         debug_assert!(
-                            old >= (old_range.start as i32) && old <= (old_range.end as i32)
+                            old >= (old_range.start as i32) && old <= (old_range.end as i32),
+                            "expected old={} in {}..{}",
+                            old,
+                            old_range.start,
+                            old_range.end,
                         );
                         debug_assert!(
-                            new >= (new_range.start as i32) && new <= (new_range.end as i32)
+                            new >= (new_range.start as i32) && new <= (new_range.end as i32),
+                            "expected new={} in {}..{}",
+                            new,
+                            new_range.start,
+                            new_range.end,
                         );
 
                         return Coordinates {
