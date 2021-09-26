@@ -286,7 +286,7 @@ fn main() -> Result<()> {
             path: PathBuf::from("grammars/tree-sitter-typescript/tsx"),
             c_sources: vec!["parser.c", "scanner.c"],
             cpp_sources: vec![],
-        },
+        }, // Add new grammars here...
     ];
 
     // The string represented the generated code that we get from the tree sitter grammars
