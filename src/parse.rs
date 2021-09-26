@@ -79,7 +79,7 @@ pub enum LoadingError {
     IoError(#[from] io::Error),
 
     #[cfg(feature = "dynamic-grammar-libs")]
-    #[error("libloading was unable to load the library")]
+    #[error("Unable to dynamically load grammar")]
     LibloadingError(#[from] libloading::Error),
 }
 
@@ -87,6 +87,7 @@ type StringMap = HashMap<String, String>;
 
 /// Configuration options pertaining to loading grammars and parsing files.
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize, Clone, Default)]
+#[serde(rename_all = "kebab-case")]
 pub struct GrammarConfig {
     /// Set which dynamic library files should be used for different languages.
     ///
@@ -152,39 +153,61 @@ fn generate_language_dynamic(
     let default_fname = lib_name_from_lang(lang);
 
     let lib_fname = if let Some(d) = overrides {
+        debug!("Overriding dynamic library name because of user config");
         d.get(lang).unwrap_or(&default_fname)
     } else {
         &default_fname
     };
+    info!("Loading dynamic library from {}", lib_fname);
+    let fn_name = fn_name_from_lang(lang);
+    debug!("Using name {} for dynamic function", fn_name);
 
-    unsafe {
-        let lib = libloading::Library::new(lib_fname)?;
-        let func = lib.get::<libloading::Symbol<unsafe extern "C" fn() -> Language>>(
-            fn_name_from_lang(lang).as_bytes(),
-        )?;
-        Ok(func())
-    }
+    let grammar = unsafe {
+        // We leak the library because the symbol table has to be loaded in memory for the
+        // entire duration of the program up until the very end. There is probably a better way
+        // to do this that doesn't involve leaking memory, but I wasn't able to figure it out.
+        let ptr = Box::new(libloading::Library::new(lib_fname)?);
+        let lib = Box::leak(ptr);
+        let constructor =
+            lib.get::<libloading::Symbol<unsafe extern "C" fn() -> Language>>(fn_name.as_bytes())?;
+        constructor()
+    };
+    Ok(grammar)
 }
 
 /// Generate a langauge from a language string.
 ///
 /// This is a dispatch method that will attempt to load a statically linked grammar, and then fall
-/// back to loading the dynamic library for the grammar.
+/// back to loading the dynamic library for the grammar. If the user specifies an override for the
+/// dynamic library then that will be prioritized first.
 #[allow(clippy::vec_init_then_push)]
 // `config` is not used if the `dynamic-grammar-libs` build flag isn't enabled
 #[allow(unused)]
-fn generate_language(lang: &str, config: &GrammarConfig) -> Result<Language, LoadingError> {
+fn generate_language<'a>(lang: &str, config: &GrammarConfig) -> Result<Language, LoadingError> {
     // The candidates for the grammar, in order of precedence.
     let mut grammar_candidates = Vec::new();
 
+    // Try the dynamic grammar first if there's a user override
+    #[cfg(feature = "dynamic-grammar-libs")]
+    if config.dylib_overrides.is_some() {
+        grammar_candidates.push(generate_language_dynamic(
+            lang,
+            config.dylib_overrides.as_ref(),
+        ));
+    }
+
+    // If there's no user override we prioritize the static/vendored grammar since there's much
+    // better guarantees of that working correctly.
     #[cfg(feature = "static-grammar-libs")]
     grammar_candidates.push(generate_language_static(lang));
 
     #[cfg(feature = "dynamic-grammar-libs")]
-    grammar_candidates.push(generate_language_dynamic(
-        lang,
-        config.dylib_overrides.as_ref(),
-    ));
+    if config.dylib_overrides.is_none() {
+        grammar_candidates.push(generate_language_dynamic(
+            lang,
+            config.dylib_overrides.as_ref(),
+        ));
+    }
 
     // Need to get the length of the vector here to prevent issues with borrowing in the loop
     let last_cand_idx = grammar_candidates.len() - 1;
@@ -194,18 +217,21 @@ fn generate_language(lang: &str, config: &GrammarConfig) -> Result<Language, Loa
 
         match candidate_result {
             Ok(grammar) => {
+                info!("Succeeded loading grammar for {}", lang);
                 return Ok(grammar);
             }
             Err(e) => {
+                debug!("Failed to load candidate grammar for {}: {}", lang, &e);
                 // Only error out on the last candidate, otherwise we want to keep falling back to
                 // the next potential grammar
                 if is_last_cand {
+                    error!("Failed to load all candidate grammars for {}", lang);
                     return Err(e);
                 }
             }
         };
     }
-    // This shouldn't ever really happen - it may be more prudent to make this `unreachable!()`
+    error!("No grammars were loaded at all");
     Err(LoadingError::NoGrammars)
 }
 
