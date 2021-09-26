@@ -41,14 +41,14 @@
         "file-associations": {
             "rs": "rust",
         },
-        // You can specify the dynamic library names for each language 
+        // You can specify the dynamic library names for each language
         "dylib-overrides": {
             // with a filename
             "rust": "libtree-sitter-rust.so",
             // with an absolute path
             "c": "/usr/lib/libtree-sitter-c.so",
             // with a relative path
-            "cpp": "../libtree-sitter-c.so",
+            "cpp": "../libtree-sitter-cpp.so",
         },
     },
 }
