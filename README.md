@@ -217,6 +217,13 @@ override the dynamic library file for each language in the config as such:
 
 *The above excerpt was taken from the sample config.*
 
+## Git integration
+
+You can use `diffsitter` with git by using the provided
+[shim](bin/git-diffsitter) for invoking diffsitter with git's diff command and
+setting your [`.gitattributes`](etc/example-gitattributes) and
+[`git` config](etc/example-gitconfig) accordingly.
+
 ## Contributing
 
 See [CONTRIBUTING.md](docs/CONTRIBUTING.md).

@@ -1,0 +1,3 @@
+[diff "diffsitter"]
+    command = git-diffsitter
+    binary = true
