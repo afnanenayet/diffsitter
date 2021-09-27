@@ -141,3 +141,32 @@ submodule. You can also use that repository with `nvchecker` to find
 forks that are out of date, which makes for an easy first issue that you can
 tackle in this project.
 
+### Testing
+
+Tests are run using the cargo:
+
+```sh
+cargo test --all-features
+```
+
+Tests are run on every supported platform through Github actions.
+
+We use a combination of unit testing and snapshot testing. There's certain
+components with expected behavior, and we use unit tests to verify that. We
+also utilize snapshot testing using the [insta](https://docs.rs/insta) library
+that verify that we're seeing consistent output between changes.
+
+We don't expect the existing unit tests to change as much, but it's very
+plausible that snapshot tests will change. If you change some code and snapshot
+tests change, feel free to update the snapshots if the change is expected. You
+can easily review the changes and create new snapshots using
+[cargo-insta](https://crates.io/crates/cargo-insta).
+
+To update snapshots, install `cargo-insta` and run the following command:
+
+```sh
+cargo insta review
+```
+
+This will open up a TUI tool that lets you review snapshots and accept or
+reject the changes.
