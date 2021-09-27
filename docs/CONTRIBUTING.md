@@ -143,7 +143,7 @@ tackle in this project.
 
 ### Testing
 
-Tests are run using the cargo:
+Tests are run using cargo:
 
 ```sh
 cargo test --all-features
