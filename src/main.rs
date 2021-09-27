@@ -196,3 +196,42 @@ fn main(args: Args) -> Result<()> {
     }
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use insta::assert_debug_snapshot;
+    use test_case::test_case;
+
+    /// Get paths to input files for tests
+    fn get_test_paths(test_type: &str, test_name: &str, ext: &str) -> (PathBuf, PathBuf) {
+        let test_data_root = PathBuf::from(format!("./test_data/{}/{}", test_type, test_name));
+        let path_a = test_data_root.join(format!("a.{}", ext));
+        let path_b = test_data_root.join(format!("b.{}", ext));
+        assert!(
+            path_a.exists(),
+            "test data path {} does not exist",
+            path_a.to_str().unwrap()
+        );
+        assert!(
+            path_b.exists(),
+            "test data path {} does not exist",
+            path_b.to_str().unwrap()
+        );
+        (path_a, path_b)
+    }
+
+    #[test_case("short", "rust", "rs")]
+    #[test_case("short", "python", "py")]
+    #[test]
+    fn diff_hunks_snapshot(test_type: &str, name: &str, ext: &str) {
+        let (path_a, path_b) = get_test_paths(test_type, name, ext);
+        let config = GrammarConfig::default();
+        let ast_data_a = generate_ast_vector_data(path_a.to_path_buf(), None, &config).unwrap();
+        let ast_data_b = generate_ast_vector_data(path_b.to_path_buf(), None, &config).unwrap();
+        let diff_vec_a = generate_ast_vector(&ast_data_a);
+        let diff_vec_b = generate_ast_vector(&ast_data_b);
+        let diff_hunks = ast::compute_edit_script(&diff_vec_a, &diff_vec_b);
+        assert_debug_snapshot!(diff_hunks);
+    }
+}
