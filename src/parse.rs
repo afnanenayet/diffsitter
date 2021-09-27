@@ -335,7 +335,7 @@ pub fn parse_file(
 #[cfg(feature = "static-grammar-libs")]
 pub fn supported_languages() -> Vec<&'static str> {
     if cfg!(feature = "static-grammar-libs") {
-        let mut keys: Vec<&'static str> = Vec::new();
+        let mut keys: Vec<&'static str> = LANGUAGES.keys().copied().collect();
         keys.sort_unstable();
         keys
     } else {
