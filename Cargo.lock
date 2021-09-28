@@ -151,7 +151,7 @@ dependencies = [
  "git2",
  "glob",
  "lazy_static",
- "pretty_assertions",
+ "pretty_assertions 0.7.2",
  "rustc_version 0.4.0",
  "serde_json",
  "xz2",
@@ -399,7 +399,7 @@ dependencies = [
  "logging_timer",
  "paw",
  "phf",
- "pretty_assertions",
+ "pretty_assertions 1.0.0",
  "pretty_env_logger",
  "rayon",
  "serde",
@@ -996,6 +996,18 @@ name = "pretty_assertions"
 version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1cab0e7c02cf376875e9335e0ba1da535775beb5450d21e1dffca068818ed98b"
+dependencies = [
+ "ansi_term 0.12.1",
+ "ctor",
+ "diff",
+ "output_vt100",
+]
+
+[[package]]
+name = "pretty_assertions"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ec0cfe1b2403f172ba0f234e500906ee0a3e493fb81092dac23ebefe129301cc"
 dependencies = [
  "ansi_term 0.12.1",
  "ctor",
