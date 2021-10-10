@@ -12,21 +12,21 @@ build = "build.rs"
 homepage = "https://github.com/afnanenayet/diffsitter"
 repository = "https://github.com/afnanenayet/diffsitter"
 include = [
-    "src/**/*",
-    "LICENSE",
-    "README.md",
-    "grammars/**/*.c",
-    "grammars/**/*.cc",
-    "grammars/**/*.cpp",
-    "grammars/**/*.h",
-    "grammars/**/*.hpp",
-    "build.rs",
-    "!**/*.png",
-    "!**/test/**/*",
-    "!**/*_test.*",
-    "!**/examples/**/*",
-    "!**/target/**/*",
-    "!assets/*"
+  "src/**/*",
+  "LICENSE",
+  "README.md",
+  "grammars/**/*.c",
+  "grammars/**/*.cc",
+  "grammars/**/*.cpp",
+  "grammars/**/*.h",
+  "grammars/**/*.hpp",
+  "build.rs",
+  "!**/*.png",
+  "!**/test/**/*",
+  "!**/*_test.*",
+  "!**/examples/**/*",
+  "!**/target/**/*",
+  "!assets/*",
 ]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

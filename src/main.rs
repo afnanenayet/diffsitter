@@ -13,12 +13,13 @@ use config::{Config, ConfigReadError};
 use console::Term;
 use formatting::{DisplayParameters, DocumentDiffData};
 use log::{debug, error, info, warn, LevelFilter};
-use parse::GrammarConfig;
+use parse::{generate_language, GrammarConfig};
 use serde_json as json;
 use std::{
     fs,
-    io::{BufWriter, Write},
-    path::PathBuf,
+    io::{self, BufWriter, Write},
+    path::{Path, PathBuf},
+    process::{Child, Command},
 };
 
 #[cfg(feature = "better-build-info")]
@@ -26,6 +27,8 @@ build_info::build_info!(fn build_info);
 
 #[cfg(feature = "jemallocator")]
 use jemallocator::Jemalloc;
+
+use crate::parse::language_from_ext;
 
 #[cfg(feature = "jemallocator")]
 #[global_allocator]
@@ -105,10 +108,51 @@ fn generate_ast_vector(data: &AstVectorData) -> AstVector<'_> {
     ast_vec
 }
 
-/// Take the diff of two files
-fn run_diff(args: &Args) -> Result<()> {
-    let config = derive_config(args)?;
+/// Check if the input files are supported by this program.
+///
+/// If the user provides a language override, this will check that the language is supported by the
+/// program. If the user supplies any extension mappings, this will check to see if the extension
+/// is in the mapping or if it's one of the user-defined ones.
+///
+/// This is used to determine whether the program should fall back to another diff utility.
+fn are_input_files_supported(args: &Args, config: &Config) -> bool {
+    let paths = vec![&args.old, &args.new];
 
+    // If there's a user override at the command line, that takes priority over everything else.
+    if let Some(file_type) = &args.file_type {
+        return generate_language(file_type, &config.grammar).is_ok();
+    }
+
+    // For each path, attempt to create a parser for that given extension, checking for any
+    // possible overrides.
+    for path in paths.into_iter().flatten() {
+        debug!("Checking if {} can be parsed", path.display());
+        let ext = path.extension();
+
+        if ext.is_none() {
+            return false;
+        }
+
+        let ext = ext.unwrap();
+
+        if ext.to_str().is_none() {
+            warn!("No filetype deduced for {}", path.display());
+            return false;
+        }
+
+        let ext = ext.to_str().unwrap();
+
+        if language_from_ext(ext, &config.grammar).is_err() {
+            error!("Extension {} not supported", ext);
+            return false;
+        }
+    }
+    debug!("Extensions for both input files are supported");
+    true
+}
+
+/// Take the diff of two files
+fn run_diff(args: &Args, config: &Config) -> Result<()> {
     let file_type = args.file_type.as_deref();
     let path_a = args.old.as_ref().unwrap();
     let path_b = args.new.as_ref().unwrap();
@@ -169,9 +213,19 @@ fn print_build_info() {
     );
 }
 
+/// Run the diff fallback command using the command and the given paths.
+fn diff_fallback(cmd: &str, old: &Path, new: &Path) -> io::Result<Child> {
+    debug!("Spawning diff fallback process");
+    Command::new(cmd).args([old, new]).spawn()
+}
+
 #[paw::main]
 fn main(args: Args) -> Result<()> {
     use cli::Command;
+
+    // We parse the config as early as possible so users can get quick feedback if anything is off
+    // with their config.
+    let config = derive_config(&args)?;
 
     // Users can supply a command that will *not* run a diff, which we handle here
     if let Some(cmd) = args.cmd {
@@ -192,7 +246,20 @@ fn main(args: Args) -> Result<()> {
             .filter_level(log_level)
             .init();
         set_term_colors(args.color_output);
-        run_diff(&args)?;
+
+        // First check if the input files can be parsed with tree-sitter.
+        let files_supported = are_input_files_supported(&args, &config);
+
+        // If the files are supported by our grammars, awesome. Otherwise fall back to a diff
+        // utility if one is specified.
+        if files_supported {
+            run_diff(&args, &config)?;
+        } else if let Some(cmd) = config.fallback_cmd {
+            info!("Input files are not supported but user has configured diff fallback");
+            diff_fallback(&cmd, &args.old.unwrap(), &args.new.unwrap())?;
+        } else {
+            anyhow::bail!("Unsupported file type with no fallback command specified.");
+        }
     }
     Ok(())
 }
