@@ -36,7 +36,7 @@ tree-sitter = "0.20.0"
 structopt = { version = "0.3.23", features = ["paw"] }
 anyhow = "1.0.44"
 phf = { version = "0.10.0", features = ["macros"] }
-console = "0.14.1"
+console = "0.15.0"
 paw = "1.0.0"
 strum = "0.22.0"
 strum_macros = "0.22.0"
