@@ -186,7 +186,7 @@ fn generate_language_dynamic(
 #[allow(clippy::vec_init_then_push)]
 // `config` is not used if the `dynamic-grammar-libs` build flag isn't enabled
 #[allow(unused)]
-fn generate_language(lang: &str, config: &GrammarConfig) -> Result<Language, LoadingError> {
+pub fn generate_language(lang: &str, config: &GrammarConfig) -> Result<Language, LoadingError> {
     // The candidates for the grammar, in order of precedence.
     let mut grammar_candidates = Vec::new();
 

@@ -34,6 +34,16 @@ pub struct Config {
 
     /// Options for loading
     pub grammar: GrammarConfig,
+
+    /// The program to invoke if the given files can not be parsed by the available tree-sitter
+    /// parsers.
+    ///
+    /// This will invoke the program with with the old and new file as arguments, like so:
+    ///
+    /// ```sh
+    /// ${FALLBACK_PROGRAM} ${OLD} ${NEW}
+    /// ```
+    pub fallback_cmd: Option<String>,
 }
 
 /// The possible errors that can arise when attempting to read a config

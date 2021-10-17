@@ -51,4 +51,11 @@
             "cpp": "../libtree-sitter-cpp.so",
         },
     },
+    // Specify a fallback command if diffsitter can't parse the given input
+    // files. This is invoked by diffsitter as:
+    //
+    // ```sh
+    // ${fallback_cmd} ${old} ${new}
+    // ```
+    "fallback-cmd": "diff",
 }
