@@ -4,7 +4,7 @@
 use crate::parse::supported_languages;
 use std::path::PathBuf;
 use structopt::StructOpt;
-use strum_macros::{EnumString, ToString};
+use strum_macros::{Display, EnumString};
 
 #[derive(Debug, Eq, PartialEq, Clone, StructOpt)]
 #[structopt(
@@ -114,7 +114,7 @@ pub fn list_supported_languages() {
 }
 
 /// Whether the output to the terminal should be colored
-#[derive(Debug, Clone, Copy, PartialEq, Eq, EnumString, ToString)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, EnumString, Display)]
 #[strum(serialize_all = "snake_case")]
 pub enum ColorOutputPolicy {
     /// Automatically enable color if printing to a TTY, otherwise disable color
