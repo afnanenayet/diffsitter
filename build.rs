@@ -214,10 +214,12 @@ fn verify_compile_params(compile_params: &CompileParams) -> Result<(), CompilePa
     Ok(())
 }
 
-/// Compile the submodules as static grammars for the binary.
-#[cfg(feature = "static-grammar-libs")]
-fn compile_static_grammars() -> Result<()> {
-    // This can't be `const` because `PathBuf` isn't `const`
+/// Grammar compilation information for diffsitter.
+///
+/// This defines all of the grammars that are used by the build script. If you want to add new
+/// grammars, add them to this list. This would ideally be a global static vector, but we can't
+/// create a `const static` because the `PathBuf` constructors can't be evaluated at compile time.
+fn grammars() -> Vec<GrammarCompileInfo<'static>> {
     let grammars = vec![
         GrammarCompileInfo {
             display_name: "rust",
@@ -310,7 +312,13 @@ fn compile_static_grammars() -> Result<()> {
             cpp_sources: vec![],
         }, // Add new grammars here...
     ];
+    grammars
+}
 
+/// Compile the submodules as static grammars for the binary.
+#[cfg(feature = "static-grammar-libs")]
+fn compile_static_grammars() -> Result<()> {
+    let grammars = grammars();
     // The string represented the generated code that we get from the tree sitter grammars
     let mut codegen = String::from(
         r#"
