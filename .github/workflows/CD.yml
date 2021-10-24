@@ -209,14 +209,14 @@ jobs:
           asset_content_type: application/octet-stream
 
       - name: Build Debian release (x86_64-unknown-linux-gnu)
-        if: matrix.triple.target == 'x86_64-unknown-linux-gnu'
+        if: matrix.job.target == 'x86_64-unknown-linux-gnu'
         run: |
           cargo install cargo-deb --version 1.29.2
           cargo deb
           cp ./target/debian/diffsitter_*.deb ./diffsitter_${{ env.RELEASE_VERSION }}_amd64.deb
 
       - name: Upload Debian file (x86_64-unknown-linux-gnu)
-        if: matrix.triple.target == 'x86_64-unknown-linux-gnu'
+        if: matrix.job.target == 'x86_64-unknown-linux-gnu'
         uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -224,4 +224,21 @@ jobs:
           upload_url: ${{ env.RELEASE_UPLOAD_URL }}
           asset_path: diffsitter_${{ env.RELEASE_VERSION }}_amd64.deb
           asset_name: diffsitter_${{ env.RELEASE_VERSION }}_amd64.deb
+          asset_content_type: application/octet-stream
+
+      - name: Generate tarball with submodules
+        if: matrix.job.target == 'x86_64-unknown-linux-gnu'
+        shell: bash
+        run: |
+          bash deployment/git-archive-all.bash diffsitter_src.tar.gz
+
+      - name: Upload tarball with submodules
+        if: matrix.job.target == 'x86_64-unknown-linux-gnu'
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
+          asset_path: diffsitter_src.tar.gz
+          asset_name: diffsitter_src.tar.gz
           asset_content_type: application/octet-stream
