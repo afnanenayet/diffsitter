@@ -58,10 +58,11 @@ jobs:
       if: matrix.job.target == 'x86_64-unknown-linux-gnu'
       with:
         version: '0.18.3'
-        args: '--locked -- --test-threads 1 --features better-build-info,static-grammar-libs,dynamic-grammar-libs'
+        args: '--locked --features better-build-info,static-grammar-libs,dynamic-grammar-libs'
         out-type: 'Lcov'
     - name: Coveralls
       if: matrix.job.target == 'x86_64-unknown-linux-gnu'
       uses: coverallsapp/github-action@master
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: "lcov.info"
