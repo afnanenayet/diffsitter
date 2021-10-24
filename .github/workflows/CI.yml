@@ -53,3 +53,15 @@ jobs:
         command: test
         use-cross: ${{ matrix.job.use-cross }}
         args: --locked --target ${{ matrix.job.target }} --verbose --features better-build-info,static-grammar-libs,dynamic-grammar-libs
+    - name: Run cargo-tarpaulin
+      uses: actions-rs/tarpaulin@v0.1
+      if: matrix.job.target == 'x86_64-unknown-linux-gnu'
+      with:
+        version: '0.18.3'
+        args: '--locked -- --test-threads 1 --features better-build-info,static-grammar-libs,dynamic-grammar-libs'
+        out-type: 'Lcov'
+    - name: Coveralls
+      if: matrix.job.target == 'x86_64-unknown-linux-gnu'
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
