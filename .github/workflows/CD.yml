@@ -1,11 +1,14 @@
 name: CD
 
 on:
+  schedule:
+    - cron: '5 5 * * *'
   workflow_dispatch:
     inputs:
       tag:
-        description: "Which tag to deploy as:"
+        description: "Tag name for release"
         required: true
+        default: nightly
   push:
     tags:
       - "*"
