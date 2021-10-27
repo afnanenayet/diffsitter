@@ -37,6 +37,8 @@ jobs:
       - name: Release Changelog Builder
         uses: mikepenz/release-changelog-builder-action@v2.5.1
         if:  github.ref != 'nightly'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create GitHub release
         id: release
