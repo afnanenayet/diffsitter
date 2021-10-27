@@ -33,6 +33,11 @@ jobs:
       - name: Validate version environment variable
         run: |
           echo "Version being built against is version ${{ env.VERSION }}"!
+
+
+      - name: Release Changelog Builder
+        uses: mikepenz/release-changelog-builder-action@v2.5.1
+
       - name: Create GitHub release
         id: release
         uses: actions/create-release@v1
@@ -42,6 +47,7 @@ jobs:
           draft: true
           tag_name: ${{ env.VERSION }}
           release_name: ${{ env.VERSION }}
+          body: ${{steps.github_release.outputs.changelog}}
 
       - name: Save release upload URL to artifact
         run: echo "${{ steps.release.outputs.upload_url }}" > artifacts/release-upload-url
