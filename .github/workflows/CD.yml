@@ -134,7 +134,7 @@ jobs:
         if: matrix.job.os == 'windows-latest'
         run: |
           cp .\target\${{ matrix.job.target }}\release\${{ matrix.job.artifact_name }} ${{ matrix.job.artifact_name }}
-          cp .\assets\git-diffsitter .\git-diffsitter
+          cp .\bin\git-diffsitter .\git-diffsitter
           zip -r diffsitter-${{ matrix.job.target }}.zip ${{ matrix.job.artifact_name }} git-diffsitter
 
       - name: Archive release assets
@@ -144,7 +144,7 @@ jobs:
         run: |
           mkdir -p diffsitter-${{ matrix.job.target }}
           cp target/${{ matrix.job.target }}/release/${{ matrix.job.artifact_name }} diffsitter-${{ matrix.job.target }}
-          cp assets/git-diffsitter diffsitter-${{ matrix.job.target }}
+          cp bin/git-diffsitter diffsitter-${{ matrix.job.target }}
           tar -czvf diffsitter-${{ matrix.job.target }}.tar.gz diffsitter-${{ matrix.job.target }}
 
       - name: Generate SHA256 checksum for binary
