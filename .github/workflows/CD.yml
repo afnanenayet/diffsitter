@@ -34,7 +34,9 @@ jobs:
         run: |
           echo "Version being built against is version ${{ env.VERSION }}"!
 
-      - uses: actions/checkout@v2
+      - name: "Check out repository"
+        uses: actions/checkout@v2
+        if:  github.ref != 'nightly'
 
       - name: Release Changelog Builder
         uses: mikepenz/release-changelog-builder-action@v2.5.1
