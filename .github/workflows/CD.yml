@@ -212,7 +212,14 @@ jobs:
           asset_content_type: application/octet-stream
 
       - name: Build Debian release (x86_64-unknown-linux-gnu)
-        if: matrix.job.target == 'x86_64-unknown-linux-gnu'
+        if: matrix.job.target == 'x86_64-unknown-linux-gnu' && github.event_name == 'workflow_dispatch'
+        run: |
+          cargo install cargo-deb --version 1.29.2
+          cargo deb
+          cp ./target/debian/diffsitter_*.deb ./diffsitter_${{ github.event.inputs.tag_name }}_amd64.deb
+
+      - name: Build Debian release (x86_64-unknown-linux-gnu)
+        if: matrix.job.target == 'x86_64-unknown-linux-gnu' && github.event_name != 'workflow_dispatch'
         run: |
           cargo install cargo-deb --version 1.29.2
           cargo deb
