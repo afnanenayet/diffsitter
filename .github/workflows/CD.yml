@@ -226,7 +226,7 @@ jobs:
           cp ./target/debian/diffsitter_*.deb ./diffsitter_${{ env.RELEASE_VERSION }}_amd64.deb
 
       - name: Upload Debian file (x86_64-unknown-linux-gnu)
-        if: matrix.job.target == 'x86_64-unknown-linux-gnu'
+        if: matrix.job.target == 'x86_64-unknown-linux-gnu' && github.event_name != 'workflow_dispatch'
         uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -234,6 +234,17 @@ jobs:
           upload_url: ${{ env.RELEASE_UPLOAD_URL }}
           asset_path: diffsitter_${{ env.RELEASE_VERSION }}_amd64.deb
           asset_name: diffsitter_${{ env.RELEASE_VERSION }}_amd64.deb
+          asset_content_type: application/octet-stream
+
+      - name: Upload Debian file (x86_64-unknown-linux-gnu)
+        if: matrix.job.target == 'x86_64-unknown-linux-gnu' && github.event_name == 'workflow_dispatch'
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
+          asset_path: diffsitter_${{ github.event.inputs.tag_name }}_amd64.deb
+          asset_name: diffsitter_${{ github.event.inputs.tag_name }}_amd64.deb
           asset_content_type: application/octet-stream
 
       - name: Generate tarball with submodules
