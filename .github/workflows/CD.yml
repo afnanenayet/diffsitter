@@ -24,9 +24,9 @@ jobs:
       - name: Get the release version from the tag
         if: env.VERSION == ''
         run: |
-          if [[ -n "${{ github.event.inputs.tag }}" ]]; then
+          if [[ -n "${{ github.event.inputs.tag_name }}" ]]; then
             echo "Manual run against a tag; overriding actual tag in the environment..."
-            echo "VERSION=${{ github.event.inputs.tag }}" >> $GITHUB_ENV
+            echo "VERSION=${{ github.event.inputs.tag_name }}" >> $GITHUB_ENV
           else
             echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
           fi
@@ -212,21 +212,14 @@ jobs:
           asset_content_type: application/octet-stream
 
       - name: Build Debian release (x86_64-unknown-linux-gnu)
-        if: matrix.job.target == 'x86_64-unknown-linux-gnu' && github.event_name == 'workflow_dispatch'
-        run: |
-          cargo install cargo-deb --version 1.29.2
-          cargo deb
-          cp ./target/debian/diffsitter_*.deb ./diffsitter_${{ github.event.inputs.tag_name }}_amd64.deb
-
-      - name: Build Debian release (x86_64-unknown-linux-gnu)
-        if: matrix.job.target == 'x86_64-unknown-linux-gnu' && github.event_name != 'workflow_dispatch'
+        if: matrix.job.target == 'x86_64-unknown-linux-gnu'
         run: |
           cargo install cargo-deb --version 1.29.2
           cargo deb
           cp ./target/debian/diffsitter_*.deb ./diffsitter_${{ env.RELEASE_VERSION }}_amd64.deb
 
       - name: Upload Debian file (x86_64-unknown-linux-gnu)
-        if: matrix.job.target == 'x86_64-unknown-linux-gnu' && github.event_name != 'workflow_dispatch'
+        if: matrix.job.target == 'x86_64-unknown-linux-gnu'
         uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -234,17 +227,6 @@ jobs:
           upload_url: ${{ env.RELEASE_UPLOAD_URL }}
           asset_path: diffsitter_${{ env.RELEASE_VERSION }}_amd64.deb
           asset_name: diffsitter_${{ env.RELEASE_VERSION }}_amd64.deb
-          asset_content_type: application/octet-stream
-
-      - name: Upload Debian file (x86_64-unknown-linux-gnu)
-        if: matrix.job.target == 'x86_64-unknown-linux-gnu' && github.event_name == 'workflow_dispatch'
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
-          asset_path: diffsitter_${{ github.event.inputs.tag_name }}_amd64.deb
-          asset_name: diffsitter_${{ github.event.inputs.tag_name }}_amd64.deb
           asset_content_type: application/octet-stream
 
       - name: Generate tarball with submodules
