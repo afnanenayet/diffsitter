@@ -5,7 +5,7 @@ on:
     - cron: '5 5 * * *'
   workflow_dispatch:
     inputs:
-      tag:
+      tag_name:
         description: "Tag name for release"
         required: true
         default: nightly
@@ -22,14 +22,18 @@ jobs:
         run: mkdir artifacts
 
       - name: Get the release version from the tag
-        if: env.VERSION == ''
+        if: env.VERSION == '' && github.event_name != 'workflow_dispatch'
         run: |
-          if [[ -n "${{ github.event.inputs.tag }}" ]]; then
+          if [[ -n "${{ github.event.inputs.tag_name }}" ]]; then
             echo "Manual run against a tag; overriding actual tag in the environment..."
-            echo "VERSION=${{ github.event.inputs.tag }}" >> $GITHUB_ENV
+            echo "VERSION=${{ github.event.inputs.tag_name }}" >> $GITHUB_ENV
           else
             echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
           fi
+      - name: Get release version from tag
+        if: env.VERSION == '' && github.event_name == 'workflow_dispatch'
+        run: |
+            echo "VERSION=${{ github.event.inputs.tag_name }}" >> $GITHUB_ENV
       - name: Validate version environment variable
         run: |
           echo "Version being built against is version ${{ env.VERSION }}"!
