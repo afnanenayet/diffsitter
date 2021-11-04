@@ -38,12 +38,24 @@ jobs:
         run: |
           echo "Version being built against is version ${{ env.VERSION }}"!
       - name: Create GitHub release
+        if: github.event_name != 'workflow_dispatch'
         id: release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           draft: true
+          tag_name: ${{ env.VERSION }}
+          release_name: ${{ env.VERSION }}
+
+      - name: Create GitHub release
+        if: github.event_name == 'workflow_dispatch'
+        id: release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          draft: false
           tag_name: ${{ env.VERSION }}
           release_name: ${{ env.VERSION }}
 
