@@ -39,7 +39,7 @@ jobs:
           echo "Version being built against is version ${{ env.VERSION }}"!
       - name: Create GitHub release
         if: github.event_name != 'workflow_dispatch'
-        id: release
+        id: release_tag
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -50,7 +50,7 @@ jobs:
 
       - name: Create GitHub release
         if: github.event_name == 'workflow_dispatch'
-        id: release
+        id: release_dispatch
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
