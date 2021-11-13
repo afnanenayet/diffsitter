@@ -22,7 +22,7 @@ jobs:
         run: mkdir artifacts
 
       - name: Get the release version from the tag
-        if: env.VERSION == '' && github.event_name != 'workflow_dispatch'
+        if: env.VERSION == '' && github.event_name != 'workflow_dispatch' && github.event_name != 'schedule'
         run: |
           if [[ -n "${{ github.event.inputs.tag_name }}" ]]; then
             echo "Manual run against a tag; overriding actual tag in the environment..."
@@ -31,14 +31,14 @@ jobs:
             echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
           fi
       - name: Get release version from tag
-        if: env.VERSION == '' && github.event_name == 'workflow_dispatch'
+        if: env.VERSION == '' && (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
         run: |
             echo "VERSION=${{ github.event.inputs.tag_name }}" >> $GITHUB_ENV
       - name: Validate version environment variable
         run: |
           echo "Version being built against is version ${{ env.VERSION }}"!
       - name: Create GitHub release
-        if: github.event_name != 'workflow_dispatch'
+        if: github.event_name != 'workflow_dispatch' && github.event_name != 'schedule'
         id: release_tag
         uses: actions/create-release@v1
         env:
@@ -49,7 +49,7 @@ jobs:
           release_name: ${{ env.VERSION }}
 
       - name: Create GitHub release
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
         id: release_dispatch
         uses: actions/create-release@v1
         env:
@@ -132,7 +132,7 @@ jobs:
 
       - uses: actions/setup-python@v2
         with:
-          version: "3.9"
+          python-version: "3.9"
 
       - name: Get release download URL
         uses: actions/download-artifact@v2
