@@ -27,7 +27,7 @@
 	url = https://github.com/afnanenayet/tree-sitter-ocaml.git
 [submodule "grammars/tree-sitter-typescript"]
 	path = grammars/tree-sitter-typescript
-	url = https://github.com/tree-sitter/tree-sitter-typescript.git
+	url = https://github.com/afnanenayet/tree-sitter-typescript.git
 [submodule "grammars/tree-sitter-verilog"]
 	path = grammars/tree-sitter-verilog
 	url = https://github.com/tree-sitter/tree-sitter-verilog.git
