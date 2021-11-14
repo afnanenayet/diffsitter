@@ -21,7 +21,7 @@ jobs:
       - name: Create artifacts directory
         run: mkdir artifacts
 
-      - name: Get the release version from the tag
+      - name: Get release version from tag
         if: env.VERSION == '' && github.event_name != 'workflow_dispatch' && github.event_name != 'schedule'
         run: |
           if [[ -n "${{ github.event.inputs.tag_name }}" ]]; then
@@ -30,7 +30,7 @@ jobs:
           else
             echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
           fi
-      - name: Get release version from tag
+      - name: Get release version from inputs
         if: env.VERSION == '' && (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
         run: |
             echo "VERSION=${{ github.event.inputs.tag_name }}" >> $GITHUB_ENV
