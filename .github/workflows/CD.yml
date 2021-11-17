@@ -32,8 +32,10 @@ jobs:
           fi
       - name: Get release version from inputs
         if: env.VERSION == '' && (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
+        env:
+          default_tag_name: nightly
         run: |
-            echo "VERSION=${{ github.event.inputs.tag_name }}" >> $GITHUB_ENV
+            echo "VERSION=${{ github.event.inputs.tag_name || env.default_tag_name }}" >> $GITHUB_ENV
       - name: Validate version environment variable
         run: |
           echo "Version being built against is version ${{ env.VERSION }}"!
