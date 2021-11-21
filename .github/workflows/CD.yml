@@ -39,30 +39,34 @@ jobs:
       - name: Validate version environment variable
         run: |
           echo "Version being built against is version ${{ env.VERSION }}"!
-      - name: Create GitHub release
+
+      - name: Create GitHub release (tag)
         if: github.event_name != 'workflow_dispatch' && github.event_name != 'schedule'
         id: release_tag
-        uses: actions/create-release@v1
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          draft: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          draft: true
-          tag_name: ${{ env.VERSION }}
-          release_name: ${{ env.VERSION }}
 
-      - name: Create GitHub release
+      - name: Create GitHub release (schedule/workflow dispatch)
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
         id: release_dispatch
-        uses: actions/create-release@v1
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          allowUpdates: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          draft: false
-          tag_name: ${{ env.VERSION }}
-          release_name: ${{ env.VERSION }}
 
-      - name: Save release upload URL to artifact
-        run: echo "${{ steps.release.outputs.upload_url }}" > artifacts/release-upload-url
+      - name: Save release upload URL to artifact (tag)
+        if: github.event_name != 'workflow_dispatch' && github.event_name != 'schedule'
+        run: echo "${{ steps.release_tag.outputs.upload_url }}" > artifacts/release-upload-url
+
+      - name: Save release upload URL to artifact (workflow/schedule)
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+        run: echo "${{ steps.release_dispatch.outputs.upload_url }}" > artifacts/release-upload-url
 
       - name: Save version number to artifact
         run: echo "${{ env.VERSION }}" > artifacts/release-version
