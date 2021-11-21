@@ -59,7 +59,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
           name: ${{ env.VERSION }}
-          tag_name: ${{ env.VERSION }}
+          tag: ${{ env.VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
