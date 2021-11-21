@@ -47,6 +47,18 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           draft: true
+          name: ${{ env.VERSION }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub release (schedule/workflow dispatch)
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+        id: release_dispatch
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          allowUpdates: true
+          name: ${{ env.VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
