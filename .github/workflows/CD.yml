@@ -62,16 +62,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create GitHub release (tag)
-        if: github.event_name != 'workflow_dispatch' && github.event_name != 'schedule'
-        id: release_tag
-        uses: ncipollo/release-action@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          allowUpdates: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Save release upload URL to artifact (tag)
         if: github.event_name != 'workflow_dispatch' && github.event_name != 'schedule'
         run: echo "${{ steps.release_tag.outputs.upload_url }}" > artifacts/release-upload-url
