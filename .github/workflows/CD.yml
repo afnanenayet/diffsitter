@@ -41,7 +41,7 @@ jobs:
           echo "Version being built against is version ${{ env.VERSION }}"!
 
       # We need to update the nightly tag every night
-      - name: Update nightly tag
+      - name: Nightly set up
         if: env.VERSION == 'nightly'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -51,6 +51,11 @@ jobs:
           git tag -d nightly || true
           git tag nightly
           git push origin nightly
+          echo "PRELEASE=true" >> $GITHUB_ENV
+
+      - if: env.VERSION != 'nightly'
+        run: |
+          echo "PRELEASE=false" >> $GITHUB_ENV
 
       - name: Create GitHub release (tag)
         if: github.event_name != 'workflow_dispatch' && github.event_name != 'schedule'
@@ -60,6 +65,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           draft: true
           name: ${{ env.VERSION }}
+          prerelease: ${{ env.PRELEASE }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -72,6 +78,7 @@ jobs:
           allowUpdates: true
           name: ${{ env.VERSION }}
           tag: ${{ env.VERSION }}
+          prerelease: ${{ env.PRELEASE }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
