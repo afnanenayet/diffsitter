@@ -41,6 +41,9 @@ jobs:
           echo "Version being built against is version ${{ env.VERSION }}"!
 
       # We need to update the nightly tag every night
+      - uses: actions/checkout@v2
+        if: env.VERSION == 'nightly'
+
       - name: Nightly set up
         if: env.VERSION == 'nightly'
         env:
