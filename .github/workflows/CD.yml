@@ -18,9 +18,6 @@ jobs:
     name: Create github release
     runs-on: ubuntu-latest
     steps:
-      - name: Create artifacts directory
-        run: mkdir artifacts
-
       - name: Get release version from tag
         if: env.VERSION == '' && github.event_name != 'workflow_dispatch' && github.event_name != 'schedule'
         run: |
@@ -40,8 +37,12 @@ jobs:
         run: |
           echo "Version being built against is version ${{ env.VERSION }}"!
 
-      # We need to update the nightly tag every night
-      - name: Update nightly tag
+      - uses: actions/checkout@v2
+        if: env.VERSION == 'nightly'
+
+      # We need to update the nightly tag every night, otherwise the CD
+      # pipeline will release the same revision every time
+      - name: Nightly set up
         if: env.VERSION == 'nightly'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -51,6 +52,11 @@ jobs:
           git tag -d nightly || true
           git tag nightly
           git push origin nightly
+          echo "PRELEASE=true" >> $GITHUB_ENV
+
+      - if: env.VERSION != 'nightly'
+        run: |
+          echo "PRELEASE=false" >> $GITHUB_ENV
 
       - name: Create GitHub release (tag)
         if: github.event_name != 'workflow_dispatch' && github.event_name != 'schedule'
@@ -60,6 +66,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           draft: true
           name: ${{ env.VERSION }}
+          prerelease: ${{ env.PRELEASE }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -72,8 +79,12 @@ jobs:
           allowUpdates: true
           name: ${{ env.VERSION }}
           tag: ${{ env.VERSION }}
+          prerelease: ${{ env.PRELEASE }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create artifacts directory
+        run: mkdir artifacts
 
       - name: Save release upload URL to artifact (tag)
         if: github.event_name != 'workflow_dispatch' && github.event_name != 'schedule'
