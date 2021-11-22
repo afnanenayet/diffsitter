@@ -40,6 +40,18 @@ jobs:
         run: |
           echo "Version being built against is version ${{ env.VERSION }}"!
 
+      # We need to update the nightly tag every night
+      - name: Update nightly tag
+        if: env.VERSION == 'nightly'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release delete nightly --yes || true
+          git push origin :nightly
+          git tag -d nightly || true
+          git tag nightly
+          git push origin nightly
+
       - name: Create GitHub release (tag)
         if: github.event_name != 'workflow_dispatch' && github.event_name != 'schedule'
         id: release_tag
