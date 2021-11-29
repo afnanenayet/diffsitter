@@ -152,7 +152,9 @@ It also has extensive logging if you want to debug or see timing information:
 ### Published binaries
 
 This project uses Github actions to build and publish binaries for each tagged
-release. You can download binaries from there if your platform is listed.
+release. You can download binaries from there if your platform is listed. We
+publish [nightly releases](https://github.com/afnanenayet/diffsitter/releases/tag/nightly)
+as well as tagged [stable releases](https://github.com/afnanenayet/diffsitter/releases/latest).
 
 ### Cargo
 
@@ -217,6 +219,25 @@ override the dynamic library file for each language in the config as such:
 
 *The above excerpt was taken from the sample config.*
 
+## Questions, Bugs, and Support
+
+If you notice any bugs, have any issues, want to see a new feature, or just
+have a question, feel free to open an
+[issue](https://github.com/afnanenayet/diffsitter/issues) or create a
+[discussion post](https://github.com/afnanenayet/diffsitter/discussions).
+
+If you file an issue, it would be preferable that you include a minimal example
+and/or post the log output of `diffsitter` (which you can do by adding the
+`-d/--debug` flag).
+
 ## Contributing
 
 See [CONTRIBUTING.md](docs/CONTRIBUTING.md).
+
+## Similar Projects
+
+* [difftastic](https://github.com/Wilfred/difftastic)
+* [locust](https://www.libhunt.com/r/bugout-dev/locust)
+* [gumtree](https://github.com/GumTreeDiff/gumtree)
+* [diffr](https://github.com/mookid/diffr)
+* [delta](https://github.com/dandavison/delta)
