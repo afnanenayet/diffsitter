@@ -183,9 +183,12 @@ brief help messages).
 You can configure file associations and formatting options for `diffsitter`
 using a config file. If a config is not supplied, the app will use the default
 config, which you can see with `diffsitter --cmd dump_default_config`. It will
-look for a config at `$XDG_HOME/.config` on macOS and Linux, and the standard
-directory for Windows. You can also refer to the
+look for a config at `${XDG_HOME:-$HOME}/.config` on macOS and Linux, and the
+standard directory for Windows. You can also refer to the
 [sample config](/assets/sample_config.json5).
+
+You can override the default config path by using the `--config` flag or set
+the `DIFFSITTER_CONFIG` environment variable.
 
 *Note: the tests for this crate check to make sure the provided sample config
 is a valid config.*
@@ -217,7 +220,8 @@ override the dynamic library file for each language in the config as such:
 }
 ```
 
-*The above excerpt was taken from the sample config.*
+*The above excerpt was taken from the
+[sample config](/assets/sample_config.json5).*
 
 ## Questions, Bugs, and Support
 
