@@ -193,6 +193,22 @@ the `DIFFSITTER_CONFIG` environment variable.
 *Note: the tests for this crate check to make sure the provided sample config
 is a valid config.*
 
+## Development
+
+This reposititory uses submodules for `tree-sitter` grammars. You will either
+need to clone recursively:
+
+```
+git clone git@github.com:afnanenayet/diffsitter.git --recursive
+```
+
+or if you already cloned the repository:
+
+```
+git submodule init
+git submodule update
+```
+
 ## Dependencies
 
 `diffsitter` is usually compiled as a static binary, so the `tree-sitter`
