@@ -1,5 +1,9 @@
 // This is a JSON5 file, so you can use comments and trailing commas, which
 // makes it a lot more convenient for configs.
+// diffsitter looks for config files in
+// ${XDG_HOME:-$HOME}/.config/diffsitter/config.json5 by default. You can
+// override this behavior by passing the `--config` flag or setting the
+// "DIFFSITTER_CONFIG" environment variable.
 {
     // Set options for terminal formatting here
     "formatting": {
