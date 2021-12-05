@@ -146,7 +146,7 @@ jobs:
         with:
           command: build
           use-cross: ${{ matrix.job.use-cross }}
-          args: --release --locked --target ${{ matrix.job.target }} --features better-build-info,static-grammar-libs
+          args: --profile production --locked --target ${{ matrix.job.target }} --features better-build-info,static-grammar-libs
       - uses: Swatinem/rust-cache@v1
         with:
           key: ${{ matrix.job.target }}-release
@@ -194,7 +194,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p diffsitter-${{ matrix.job.target }}
-          cp target/${{ matrix.job.target }}/release/${{ matrix.job.artifact_name }} diffsitter-${{ matrix.job.target }}
+          cp target/${{ matrix.job.target }}/production/${{ matrix.job.artifact_name }} diffsitter-${{ matrix.job.target }}
           cp bin/git-diffsitter diffsitter-${{ matrix.job.target }}
           tar -czvf diffsitter-${{ matrix.job.target }}.tar.gz diffsitter-${{ matrix.job.target }}
 
