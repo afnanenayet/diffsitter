@@ -77,9 +77,6 @@ rayon = "1.5.1"
 thiserror = "1.0.30"
 build-info-build = { version = "0.0.24", optional = true }
 
-[profile.release]
-lto = "thin"
-
 [features]
 default = ["static-grammar-libs"]
 
@@ -93,3 +90,8 @@ dynamic-grammar-libs = []
 
 # Compile the static tree-sitter grammars from the submodules in this repo.
 static-grammar-libs = []
+
+[profile.production]
+inherits = "release"
+lto = true
+codegen-units = 1

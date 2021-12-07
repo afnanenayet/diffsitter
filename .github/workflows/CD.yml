@@ -139,6 +139,15 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: 'recursive'
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.job.target }}
+          profile: minimal
+          override: true
+
       - name: Build optimized binary
         env:
           MACOS_DEPLOYMENT_TARGET: 10.7
@@ -146,7 +155,7 @@ jobs:
         with:
           command: build
           use-cross: ${{ matrix.job.use-cross }}
-          args: --release --locked --target ${{ matrix.job.target }} --features better-build-info,static-grammar-libs
+          args: --profile production --locked --target ${{ matrix.job.target }} --features better-build-info,static-grammar-libs
       - uses: Swatinem/rust-cache@v1
         with:
           key: ${{ matrix.job.target }}-release
@@ -184,7 +193,7 @@ jobs:
         id: archive_release_assets_windows
         if: matrix.job.os == 'windows-latest'
         run: |
-          cp .\target\${{ matrix.job.target }}\release\${{ matrix.job.artifact_name }} ${{ matrix.job.artifact_name }}
+          cp .\target\${{ matrix.job.target }}\production\${{ matrix.job.artifact_name }} ${{ matrix.job.artifact_name }}
           cp .\bin\git-diffsitter .\git-diffsitter
           zip -r diffsitter-${{ matrix.job.target }}.zip ${{ matrix.job.artifact_name }} git-diffsitter
 
@@ -194,7 +203,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p diffsitter-${{ matrix.job.target }}
-          cp target/${{ matrix.job.target }}/release/${{ matrix.job.artifact_name }} diffsitter-${{ matrix.job.target }}
+          cp target/${{ matrix.job.target }}/production/${{ matrix.job.artifact_name }} diffsitter-${{ matrix.job.target }}
           cp bin/git-diffsitter diffsitter-${{ matrix.job.target }}
           tar -czvf diffsitter-${{ matrix.job.target }}.tar.gz diffsitter-${{ matrix.job.target }}
 
