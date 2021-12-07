@@ -193,7 +193,7 @@ jobs:
         id: archive_release_assets_windows
         if: matrix.job.os == 'windows-latest'
         run: |
-          cp .\target\${{ matrix.job.target }}\release\${{ matrix.job.artifact_name }} ${{ matrix.job.artifact_name }}
+          cp .\target\${{ matrix.job.target }}\production\${{ matrix.job.artifact_name }} ${{ matrix.job.artifact_name }}
           cp .\bin\git-diffsitter .\git-diffsitter
           zip -r diffsitter-${{ matrix.job.target }}.zip ${{ matrix.job.artifact_name }} git-diffsitter
 
