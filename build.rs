@@ -219,6 +219,7 @@ fn verify_compile_params(compile_params: &CompileParams) -> Result<(), CompilePa
 /// This defines all of the grammars that are used by the build script. If you want to add new
 /// grammars, add them to this list. This would ideally be a global static vector, but we can't
 /// create a `const static` because the `PathBuf` constructors can't be evaluated at compile time.
+#[cfg(feature = "static-grammar-libs")]
 fn grammars() -> Vec<GrammarCompileInfo<'static>> {
     let grammars = vec![
         GrammarCompileInfo {
