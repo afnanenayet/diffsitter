@@ -161,8 +161,8 @@ fn run_diff(args: &Args, config: &Config) -> Result<()> {
     // AstVectorData structs. Because of that, we can't make a function that generates the ast
     // vectors in one shot.
 
-    let ast_data_a = generate_ast_vector_data(path_a.to_path_buf(), file_type, &config.grammar)?;
-    let ast_data_b = generate_ast_vector_data(path_b.to_path_buf(), file_type, &config.grammar)?;
+    let ast_data_a = generate_ast_vector_data(path_a.clone(), file_type, &config.grammar)?;
+    let ast_data_b = generate_ast_vector_data(path_b.clone(), file_type, &config.grammar)?;
 
     let diff_vec_a = generate_ast_vector(&ast_data_a);
     let diff_vec_b = generate_ast_vector(&ast_data_b);
@@ -294,8 +294,8 @@ mod tests {
     fn diff_hunks_snapshot(test_type: &str, name: &str, ext: &str) {
         let (path_a, path_b) = get_test_paths(test_type, name, ext);
         let config = GrammarConfig::default();
-        let ast_data_a = generate_ast_vector_data(path_a.to_path_buf(), None, &config).unwrap();
-        let ast_data_b = generate_ast_vector_data(path_b.to_path_buf(), None, &config).unwrap();
+        let ast_data_a = generate_ast_vector_data(path_a, None, &config).unwrap();
+        let ast_data_b = generate_ast_vector_data(path_b, None, &config).unwrap();
         let diff_vec_a = generate_ast_vector(&ast_data_a);
         let diff_vec_b = generate_ast_vector(&ast_data_b);
         let diff_hunks = ast::compute_edit_script(&diff_vec_a, &diff_vec_b);
