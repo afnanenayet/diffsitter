@@ -374,7 +374,7 @@ use phf::phf_map;
         // will cache based on the Rust modules and isn't aware of the linked C libraries.
         for source in params.c_sources.iter().chain(params.cpp_sources.iter()) {
             if let Some(grammar_path) = &source.as_path().to_str() {
-                rerun_if_changed!(grammar_path.to_string());
+                rerun_if_changed!((*grammar_path).to_string());
             } else {
                 bail!("Path to grammar for {} is not a valid string", language);
             }

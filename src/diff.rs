@@ -683,9 +683,9 @@ mod tests {
         let input_b = &b"CBABAC"[..];
         let mut frontiers = MyersFrontiers::new(input_a.len(), input_b.len());
         let mid_snake = Myers::middle_snake(
-            &input_a[..],
+            input_a,
             0..input_a.len(),
-            &input_b[..],
+            input_b,
             0..input_b.len(),
             &mut frontiers,
         );
@@ -756,12 +756,12 @@ mod tests {
     #[test_case(b"BAAA", b"CAAA" => 0 ; "no common prefix")]
     #[test_case(b"AAABA", b"AAACA" => 3 ; "with common prefix")]
     fn common_prefix(a: &[u8], b: &[u8]) -> usize {
-        common_prefix_len(&a[..], 0..a.len(), &b[..], 0..b.len())
+        common_prefix_len(a, 0..a.len(), b, 0..b.len())
     }
 
     #[test_case(b"AAAB", b"AAAC" => 0 ; "no common suffix")]
     #[test_case(b"ABAAA", b"ACAAA" => 3 ; "with common suffix")]
     fn common_suffix(a: &[u8], b: &[u8]) -> usize {
-        common_suffix_len(&a[..], 0..a.len(), &b[..], 0..b.len())
+        common_suffix_len(a, 0..a.len(), b, 0..b.len())
     }
 }
