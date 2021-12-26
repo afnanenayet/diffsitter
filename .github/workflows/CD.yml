@@ -290,7 +290,7 @@ jobs:
         if: matrix.job.target == 'x86_64-unknown-linux-gnu'
         shell: bash
         run: |
-          bash deployment/git-archive-all.bash diffsitter_src.tar.gz
+          bash deployment/git-archive-all.bash --prefix "diffsitter_src/" --format tar.gz diffsitter_src.tar.gz
 
       - name: Upload tarball with submodules
         if: matrix.job.target == 'x86_64-unknown-linux-gnu'
