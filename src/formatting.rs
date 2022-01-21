@@ -45,7 +45,7 @@ impl From<ColorDef> for Color {
             ColorDef::Yellow => Color::Yellow,
             ColorDef::Blue => Color::Blue,
             ColorDef::Magenta => Color::Magenta,
-            ColorDef::Cyan => Color::White,
+            ColorDef::Cyan => Color::Cyan,
             ColorDef::Color256(c) => Color::Color256(c),
         }
     }
