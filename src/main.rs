@@ -67,7 +67,7 @@ fn derive_config(args: &Args) -> Result<Config> {
 
 /// Create an AST vector from a path
 ///
-/// This returns an AstVector and a pinned struct with the owned data, which the AstVector
+/// This returns an `AstVector` and a pinned struct with the owned data, which the `AstVector`
 /// references.
 ///
 /// `data` is used as an out-parameter. We need some external struct we can reference because the

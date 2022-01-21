@@ -63,7 +63,7 @@ impl Config {
     /// If a path is supplied, this method will attempt to read the contents of that path and parse
     /// it to a string. If a path isn't supplied, the function will attempt to figure out what the
     /// default config file path is supposed to be (based on OS conventions, see
-    /// [default_config_file_path]).
+    /// [`default_config_file_path`]).
     pub fn try_from_file<P: AsRef<Path>>(path: Option<&P>) -> Result<Self, ConfigReadError> {
         // rustc will emit an incorrect warning that this variable isn't used, which is untrue.
         // While the variable isn't read *directly*, it is used to store the owned PathBuf from
@@ -87,8 +87,8 @@ impl Config {
     }
 }
 
-/// Return the default location for the config file (for *nix, Linux and MacOS), this will use
-/// $XDG_CONFIG/.config, where `$XDG_CONFIG` is `$HOME/.config` by default.
+/// Return the default location for the config file (for *nix, Linux and `MacOS`), this will use
+/// $`XDG_CONFIG/.config`, where `$XDG_CONFIG` is `$HOME/.config` by default.
 #[cfg(not(target_os = "windows"))]
 fn default_config_file_path() -> Result<PathBuf> {
     let xdg_dirs = xdg::BaseDirectories::with_prefix("diffsitter")?;
