@@ -13,7 +13,7 @@ use config::{Config, ConfigReadError};
 use console::Term;
 use formatting::{DisplayParameters, DocumentDiffData};
 use log::{debug, error, info, warn, LevelFilter};
-use parse::{generate_language, GrammarConfig};
+use parse::{generate_language, language_from_ext, GrammarConfig};
 use serde_json as json;
 use std::{
     fs,
@@ -27,8 +27,6 @@ build_info::build_info!(fn build_info);
 
 #[cfg(feature = "jemallocator")]
 use jemallocator::Jemalloc;
-
-use crate::parse::language_from_ext;
 
 #[cfg(feature = "jemallocator")]
 #[global_allocator]
