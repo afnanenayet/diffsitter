@@ -1,5 +1,6 @@
 ---
 source: src/main.rs
+assertion_line: 305
 expression: diff_hunks
 
 ---
