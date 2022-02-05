@@ -296,6 +296,11 @@ mod tests {
         let diff_vec_a = generate_ast_vector(&ast_data_a);
         let diff_vec_b = generate_ast_vector(&ast_data_b);
         let diff_hunks = ast::compute_edit_script(&diff_vec_a, &diff_vec_b);
-        assert_debug_snapshot!(diff_hunks);
+
+        // We have to set the snapshot name manually, otherwise there appear to be threading issues
+        // and we end up with more snapshot files than there are tests, which cause
+        // nondeterministic errors.
+        let snapshot_name = format!("{test_type}_{name}");
+        assert_debug_snapshot!(snapshot_name, diff_hunks);
     }
 }
