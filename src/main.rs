@@ -288,7 +288,6 @@ mod tests {
 
     #[test_case("short", "rust", "rs")]
     #[test_case("short", "python", "py")]
-    #[test]
     fn diff_hunks_snapshot(test_type: &str, name: &str, ext: &str) {
         let (path_a, path_b) = get_test_paths(test_type, name, ext);
         let config = GrammarConfig::default();
