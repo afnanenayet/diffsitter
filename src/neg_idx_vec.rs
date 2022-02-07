@@ -52,7 +52,6 @@ impl<T> NegIdxVec<T> {
     /// so negative indices are relative to the end of the vector.
     fn idx_helper(&self, idx: i32) -> usize {
         let len = self.len;
-
         let final_index = if idx >= 0 {
             idx as usize
         } else {

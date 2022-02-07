@@ -113,10 +113,12 @@ pub enum HunkInsertionError {
         last_line: usize,
     },
 
-    #[error("Attempted to prepend an entry with a column ({incoming_col:?}) greater than the first entry's column ({last_col:?})")]
+    #[error("Attempted to append an entry with a column ({incoming_col:?}, line: {incoming_line:?}) less than the first entry's column ({last_col:?}, line: {last_line:?})")]
     PriorColumn {
         incoming_col: usize,
+        incoming_line: usize,
         last_col: usize,
+        last_line: usize,
     },
 }
 
@@ -144,7 +146,7 @@ impl<'a> Hunk<'a> {
     ///
     /// Entries can only be prepended in descending order (from last to first)
     pub fn push_front(&mut self, entry: Entry<'a>) -> Result<(), HunkInsertionError> {
-        let incoming_line_idx = entry.reference.start_position().row;
+        let incoming_line_idx = entry.start_position().row;
 
         // Add a new line vector if the entry has a greater line index, or if the vector is empty.
         // We ensure that the last line has the same line index as the incoming entry.
@@ -186,10 +188,10 @@ impl<'a> Hunk<'a> {
             //if let Some(&first_entry) = first_line.entries.front() {
             // TODO(afnan) ^ this instead?
             // TODO(afnan) should this be start_position() instead of end?
-            let first_col = first_entry.reference.end_position().column;
-            //let first_col = first_entry.reference.start_position().column;
+            let first_col = first_entry.end_position().column;
+            //let first_col = first_entry.start_position().column;
             // TODO(afnan) ^ this instead?
-            let incoming_col = entry.reference.end_position().column;
+            let incoming_col = entry.end_position().column;
 
             if incoming_col > first_col {
                 return Err(HunkInsertionError::LaterColumn {
@@ -208,7 +210,7 @@ impl<'a> Hunk<'a> {
     /// entries out of order. For example, you can't insert an entry on line 1 after inserting an
     /// entry on line 5.
     pub fn push_back(&mut self, entry: Entry<'a>) -> Result<(), HunkInsertionError> {
-        let incoming_line_idx = entry.reference.start_position().row;
+        let incoming_line_idx = entry.start_position().row;
 
         // Create a new line if the incoming entry is on the next line. This will throw an error
         // if we have an entry on a non-adjacent line or an out-of-order insertion.
@@ -235,19 +237,23 @@ impl<'a> Hunk<'a> {
         }
         // The lines are empty, we need to add the first one
         else {
-            self.0.push_back(Line::new(incoming_line_idx))
+            self.0.push_back(Line::new(incoming_line_idx));
         }
 
         let last_line = self.0.back_mut().unwrap();
 
         if let Some(&last_entry) = last_line.entries.back() {
-            let last_col = last_entry.reference.end_position().column;
-            let incoming_col = entry.reference.start_position().column;
+            let last_col = last_entry.end_position().column;
+            let last_line = last_entry.end_position().row;
+            let incoming_col = entry.start_position().column;
+            let incoming_line = entry.end_position().row;
 
             if incoming_col < last_col {
                 return Err(HunkInsertionError::PriorColumn {
                     incoming_col,
                     last_col,
+                    incoming_line,
+                    last_line,
                 });
             }
         }
@@ -316,6 +322,46 @@ impl<'a> Hunks<'a> {
             self.0.back_mut().unwrap().push_back(entry)?;
         }
         Ok(())
+    }
+}
+
+pub struct HunkAppender<'a>(pub Hunks<'a>);
+
+impl<'a> FromIterator<Entry<'a>> for HunkAppender<'a> {
+    /// Create an instance of `Hunks` from an iterator over [entries](Entry).
+    ///
+    /// The user is responsible for making sure that the hunks are in proper order, otherwise this
+    /// constructor may panic.
+    fn from_iter<T>(iter: T) -> Self
+    where
+        T: IntoIterator<Item = Entry<'a>>,
+    {
+        let mut hunks = Hunks::new();
+
+        for i in iter {
+            hunks.push_back(i).expect("Invalid iterator");
+        }
+        HunkAppender(hunks)
+    }
+}
+
+pub struct HunkPrepender<'a>(pub Hunks<'a>);
+
+impl<'a> FromIterator<Entry<'a>> for HunkPrepender<'a> {
+    /// Create an instance of `Hunks` from an iterator over [entries](Entry).
+    ///
+    /// The user is responsible for making sure that the hunks are in proper order, otherwise this
+    /// constructor may panic.
+    fn from_iter<T>(iter: T) -> Self
+    where
+        T: IntoIterator<Item = Entry<'a>>,
+    {
+        let mut hunks = Hunks::new();
+
+        for i in iter {
+            hunks.push_front(i).expect("Invalid iterator");
+        }
+        HunkPrepender(hunks)
     }
 }
 
