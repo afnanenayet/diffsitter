@@ -52,7 +52,7 @@ jemallocator = { version = "0.3.2", optional = true }
 libloading = "0.7.3"
 
 [dev-dependencies]
-test-case = "1.2.1"
+test-case = "1.2.3"
 pretty_assertions = "1.1.0"
 
 # We need the backtrace feature to enable snapshot name generation in
