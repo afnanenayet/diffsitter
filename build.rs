@@ -397,5 +397,7 @@ fn main() -> Result<()> {
 
     #[cfg(feature = "better-build-info")]
     build_info_build::build_script();
+
+    // TODO(afnan): add generaetd shell completion scripts
     Ok(())
 }
