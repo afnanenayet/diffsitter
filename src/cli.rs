@@ -62,6 +62,42 @@ pub struct Args {
     pub no_config: bool,
 }
 
+/// A wrapper struct for `clap_complete::Shell`.
+///
+/// We need this wrapper so we can automatically serialize strings using `EnumString` and use the
+/// enums as a clap argument.
+#[derive(Copy, Clone, EnumString, PartialEq, Eq, Debug)]
+#[strum(serialize_all = "snake_case")]
+pub enum ShellWrapper {
+    Bash,
+    Zsh,
+    Fish,
+    Elvish,
+
+    #[strum(serialize = "powershell")]
+    PowerShell,
+}
+
+impl Default for ShellWrapper {
+    fn default() -> Self {
+        Self::Bash
+    }
+}
+
+impl From<ShellWrapper> for clap_complete::Shell {
+    fn from(wrapper: ShellWrapper) -> Self {
+        use clap_complete as cc;
+
+        match wrapper {
+            ShellWrapper::Bash => cc::Shell::Bash,
+            ShellWrapper::Zsh => cc::Shell::Zsh,
+            ShellWrapper::Fish => cc::Shell::Fish,
+            ShellWrapper::Elvish => cc::Shell::Elvish,
+            ShellWrapper::PowerShell => cc::Shell::PowerShell,
+        }
+    }
+}
+
 /// Commands related to the configuration
 #[derive(Debug, Eq, PartialEq, Clone, Copy, Parser, EnumString)]
 #[strum(serialize_all = "snake_case")]
@@ -75,6 +111,14 @@ pub enum Command {
     /// Print extended build information
     #[cfg(feature = "better-build-info")]
     BuildInfo,
+
+    /// Generate shell completion scripts for diffsitter
+    GenCompletion {
+        /// The shell to generate completion scripts for.
+        ///
+        /// This will print the shell completion script to stdout. bash, zsh, and fish are supported.
+        shell: ShellWrapper,
+    },
 }
 
 /// Whether the output to the terminal should be colored
