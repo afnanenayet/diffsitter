@@ -33,7 +33,12 @@ include = [
 
 [dependencies]
 tree-sitter = "0.20.4"
-structopt = { version = "0.3.26", features = ["paw"] }
+clap = { version = "3.0.14", features = [
+  "derive",
+  "env",
+  "unicode",
+  "wrap_help",
+] }
 anyhow = "1.0.53"
 phf = { version = "0.10.1", features = ["macros"] }
 console = "0.15.0"

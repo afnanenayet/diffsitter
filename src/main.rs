@@ -6,9 +6,11 @@ mod formatting;
 mod neg_idx_vec;
 mod parse;
 
+use crate::parse::supported_languages;
 use anyhow::Result;
 use ast::{AstVector, AstVectorData};
-use cli::{list_supported_languages, set_term_colors, Args};
+use clap::Parser;
+use cli::{Args, ColorOutputPolicy};
 use config::{Config, ConfigReadError};
 use console::Term;
 use formatting::{DisplayParameters, DocumentDiffData};
@@ -217,9 +219,38 @@ fn diff_fallback(cmd: &str, old: &Path, new: &Path) -> io::Result<Child> {
     Command::new(cmd).args([old, new]).spawn()
 }
 
-#[paw::main]
-fn main(args: Args) -> Result<()> {
+/// Print a list of the languages that this instance of diffsitter was compiled with
+pub fn list_supported_languages() {
+    #[cfg(feature = "static-grammar-libs")]
+    {
+        let languages = supported_languages();
+        println!("This program was compiled with support for:");
+
+        for language in languages {
+            println!("- {}", language);
+        }
+    }
+
+    #[cfg(feature = "dynamic-grammar-libs")]
+    {
+        println!("This program will dynamically load grammars from shared libraries");
+    }
+}
+
+/// Set whether the terminal should display colors based on the user's preferences
+///
+/// This method will set the terminal output policy *for the current thread*.
+fn set_term_colors(color_opt: ColorOutputPolicy) {
+    match color_opt {
+        ColorOutputPolicy::Off => (console::set_colors_enabled(false)),
+        ColorOutputPolicy::On => (console::set_colors_enabled(true)),
+        _ => (),
+    };
+}
+
+fn main() -> Result<()> {
     use cli::Command;
+    let args = Args::parse();
 
     // We parse the config as early as possible so users can get quick feedback if anything is off
     // with their config.
