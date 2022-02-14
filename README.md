@@ -193,6 +193,27 @@ the `DIFFSITTER_CONFIG` environment variable.
 *Note: the tests for this crate check to make sure the provided sample config
 is a valid config.*
 
+### Shell Completion
+
+You can generate shell completion scripts using the binary using the
+`gen-completion` subcommand. This will print the shell completion script for a
+given shell to `STDOUT`.
+
+You should use the help text for the most up to date usage information, but
+general usage would look like this:
+
+```sh
+diffsitter gen-completion bash > completion.bash
+```
+
+We currently support the following shells (via `clap_complete`):
+
+* Bash
+* Zsh
+* Fish
+* Elvish
+* Powershell
+
 ## Dependencies
 
 `diffsitter` is usually compiled as a static binary, so the `tree-sitter`
