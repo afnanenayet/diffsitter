@@ -9,6 +9,7 @@ mod parse;
 use crate::parse::supported_languages;
 use anyhow::Result;
 use ast::{AstVector, AstVectorData};
+use clap::IntoApp;
 use clap::Parser;
 use cli::{Args, ColorOutputPolicy};
 use config::{Config, ConfigReadError};
@@ -248,6 +249,14 @@ fn set_term_colors(color_opt: ColorOutputPolicy) {
     };
 }
 
+/// Print shell completion scripts to `stdout`.
+///
+/// This is a basic wrapper for the subcommand.
+fn print_shell_completion(shell: clap_complete::Shell) {
+    let mut app = cli::Args::into_app();
+    clap_complete::generate(shell, &mut app, "diffsitter", &mut io::stdout());
+}
+
 fn main() -> Result<()> {
     use cli::Command;
     let args = Args::parse();
@@ -264,6 +273,9 @@ fn main() -> Result<()> {
 
             #[cfg(feature = "better-build-info")]
             Command::BuildInfo => print_build_info(),
+            Command::GenCompletion { shell } => {
+                print_shell_completion(shell.into());
+            }
         }
     } else {
         let log_level = if args.debug {
