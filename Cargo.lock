@@ -87,11 +87,11 @@ dependencies = [
 
 [[package]]
 name = "build-info"
-version = "0.0.24"
+version = "0.0.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "19fbbf442dbe14f0cbc09b8dcf9ccf32537390fb25ea717430d3a18508c66c66"
+checksum = "9ba6aab796645620a69cbaca2eae382ce5bc5c86e15691a05e4b8676405280b2"
 dependencies = [
- "build-info-common",
+ "build-info-common 0.0.25",
  "build-info-proc",
  "lazy_static",
  "proc-macro-hack",
@@ -106,7 +106,7 @@ dependencies = [
  "anyhow",
  "base64",
  "bincode",
- "build-info-common",
+ "build-info-common 0.0.24",
  "cargo_metadata",
  "chrono",
  "git2",
@@ -131,15 +131,27 @@ dependencies = [
 ]
 
 [[package]]
-name = "build-info-proc"
-version = "0.0.24"
+name = "build-info-common"
+version = "0.0.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "62b85100fe8843c08f07f9065e3c6fd4a5dce6d13b953307faa98b7b5e1ea804"
+checksum = "b2283a43c396636e32eb6a4c2c4bcec4b10fc78debe2d8964ab84fe149086b79"
+dependencies = [
+ "chrono",
+ "derive_more",
+ "semver 1.0.4",
+ "serde",
+]
+
+[[package]]
+name = "build-info-proc"
+version = "0.0.25"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ccf7bcaf579dd2d5343f257177f268fc6d8a86b23e46e50b08b371e579cfd757"
 dependencies = [
  "anyhow",
  "base64",
  "bincode",
- "build-info-common",
+ "build-info-common 0.0.25",
  "chrono",
  "format-buf",
  "num-bigint",
