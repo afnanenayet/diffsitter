@@ -253,7 +253,7 @@ fn set_term_colors(color_opt: ColorOutputPolicy) {
 ///
 /// This is a basic wrapper for the subcommand.
 fn print_shell_completion(shell: clap_complete::Shell) {
-    let mut app = cli::Args::into_app();
+    let mut app = cli::Args::command();
     clap_complete::generate(shell, &mut app, "diffsitter", &mut io::stdout());
 }
 
