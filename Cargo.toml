@@ -33,19 +33,19 @@ include = [
 
 [dependencies]
 tree-sitter = "0.20.4"
-clap = { version = "3.1.0", features = [
+clap = { version = "3.1.1", features = [
   "derive",
   "env",
   "unicode",
   "wrap_help",
 ] }
 clap_complete = "3.1.0"
-anyhow = "1.0.54"
+anyhow = "1.0.55"
 phf = { version = "0.10.1", features = ["macros"] }
 console = "0.15.0"
 paw = "1.0.0"
-strum = { version = "0.23.0", features = ["derive"] }
-strum_macros = "0.23.1"
+strum = { version = "0.24.0", features = ["derive"] }
+strum_macros = "0.24.0"
 serde = { version = "1.0.136", features = ["derive"] }
 serde_json = "1.0.79"
 json5 = "0.4.1"
@@ -77,7 +77,7 @@ xdg = "2.4.0"
 [build-dependencies]
 cc = { version = "1.0.73", features = ["parallel"] }
 phf = { version = "0.10.1", features = ["macros"] }
-anyhow = "1.0.54"
+anyhow = "1.0.55"
 cargo-emit = "0.2.1"
 rayon = "1.5.1"
 thiserror = "1.0.30"
