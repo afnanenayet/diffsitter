@@ -32,14 +32,14 @@ include = [
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tree-sitter = "0.20.4"
-clap = { version = "3.1.2", features = [
+tree-sitter = "0.20.5"
+clap = { version = "3.1.5", features = [
   "derive",
   "env",
   "unicode",
   "wrap_help",
 ] }
-clap_complete = "3.1.0"
+clap_complete = "3.1.1"
 anyhow = "1.0.55"
 phf = { version = "0.10.1", features = ["macros"] }
 console = "0.15.0"
@@ -53,9 +53,10 @@ pretty_env_logger = "0.4.0"
 log = { version = "0.4.14", features = ["std"] }
 thiserror = "1.0.30"
 logging_timer = "1.1.0"
-build-info = { version = "0.0.25", optional = true }
+build-info = { version = "0.0.26", optional = true }
 jemallocator = { version = "0.3.2", optional = true }
 libloading = "0.7.3"
+unicode-segmentation = "1.9.0"
 
 [dev-dependencies]
 test-case = "2.0.0"
@@ -64,7 +65,7 @@ pretty_assertions = "1.1.0"
 # We need the backtrace feature to enable snapshot name generation in
 # single-threaded tests (tests using cargo cross run single-threaded due to
 # limitations with QEMU).
-insta = { version = "1.12.0", features = ["backtrace"] }
+insta = { version = "1.13.0", features = ["backtrace"] }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 # We use directories next to get the windows config path
@@ -81,7 +82,7 @@ anyhow = "1.0.55"
 cargo-emit = "0.2.1"
 rayon = "1.5.1"
 thiserror = "1.0.30"
-build-info-build = { version = "0.0.25", optional = true }
+build-info-build = { version = "0.0.26", optional = true }
 
 [features]
 default = ["static-grammar-libs"]

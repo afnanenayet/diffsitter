@@ -1,8 +1,6 @@
 ---
 source: src/main.rs
-assertion_line: 347
 expression: diff_hunks
-
 ---
 (
     Hunks(
@@ -17,7 +15,42 @@ expression: diff_hunks
                         entries: [
                             Entry {
                                 reference: {Node " (1, 4) - (1, 7)},
-                                text: "\"\"\"",
+                                text: "\"",
+                                start_position: Point {
+                                    row: 1,
+                                    column: 4,
+                                },
+                                end_position: Point {
+                                    row: 1,
+                                    column: 5,
+                                },
+                                kind_id: 102,
+                            },
+                            Entry {
+                                reference: {Node " (1, 4) - (1, 7)},
+                                text: "\"",
+                                start_position: Point {
+                                    row: 1,
+                                    column: 5,
+                                },
+                                end_position: Point {
+                                    row: 1,
+                                    column: 6,
+                                },
+                                kind_id: 102,
+                            },
+                            Entry {
+                                reference: {Node " (1, 4) - (1, 7)},
+                                text: "\"",
+                                start_position: Point {
+                                    row: 1,
+                                    column: 6,
+                                },
+                                end_position: Point {
+                                    row: 1,
+                                    column: 7,
+                                },
+                                kind_id: 102,
                             },
                         ],
                     },
@@ -30,7 +63,42 @@ expression: diff_hunks
                         entries: [
                             Entry {
                                 reference: {Node " (3, 4) - (3, 7)},
-                                text: "\"\"\"",
+                                text: "\"",
+                                start_position: Point {
+                                    row: 3,
+                                    column: 4,
+                                },
+                                end_position: Point {
+                                    row: 3,
+                                    column: 5,
+                                },
+                                kind_id: 102,
+                            },
+                            Entry {
+                                reference: {Node " (3, 4) - (3, 7)},
+                                text: "\"",
+                                start_position: Point {
+                                    row: 3,
+                                    column: 5,
+                                },
+                                end_position: Point {
+                                    row: 3,
+                                    column: 6,
+                                },
+                                kind_id: 102,
+                            },
+                            Entry {
+                                reference: {Node " (3, 4) - (3, 7)},
+                                text: "\"",
+                                start_position: Point {
+                                    row: 3,
+                                    column: 6,
+                                },
+                                end_position: Point {
+                                    row: 3,
+                                    column: 7,
+                                },
+                                kind_id: 102,
                             },
                         ],
                     },
@@ -44,14 +112,41 @@ expression: diff_hunks
                             Entry {
                                 reference: {Node identifier (6, 4) - (6, 5)},
                                 text: "x",
+                                start_position: Point {
+                                    row: 6,
+                                    column: 4,
+                                },
+                                end_position: Point {
+                                    row: 6,
+                                    column: 5,
+                                },
+                                kind_id: 1,
                             },
                             Entry {
                                 reference: {Node = (6, 10) - (6, 11)},
                                 text: "=",
+                                start_position: Point {
+                                    row: 6,
+                                    column: 10,
+                                },
+                                end_position: Point {
+                                    row: 6,
+                                    column: 11,
+                                },
+                                kind_id: 46,
                             },
                             Entry {
                                 reference: {Node integer (6, 12) - (6, 13)},
                                 text: "1",
+                                start_position: Point {
+                                    row: 6,
+                                    column: 12,
+                                },
+                                end_position: Point {
+                                    row: 6,
+                                    column: 13,
+                                },
+                                kind_id: 92,
                             },
                         ],
                     },
