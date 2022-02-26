@@ -56,7 +56,6 @@ logging_timer = "1.1.0"
 build-info = { version = "0.0.25", optional = true }
 jemallocator = { version = "0.3.2", optional = true }
 libloading = "0.7.3"
-unicode-segmentation = "1.9.0"
 
 [dev-dependencies]
 test-case = "2.0.0"
