@@ -1,6 +1,6 @@
 ---
 source: src/main.rs
-assertion_line: 347
+assertion_line: 350
 expression: diff_hunks
 
 ---
@@ -14,23 +14,87 @@ expression: diff_hunks
                         entries: [
                             Entry {
                                 reference: {Node let (1, 4) - (1, 7)},
-                                text: "let",
+                                text: "l",
+                                start_position: Point {
+                                    row: 1,
+                                    column: 4,
+                                },
+                                end_position: Point {
+                                    row: 1,
+                                    column: 5,
+                                },
+                            },
+                            Entry {
+                                reference: {Node let (1, 4) - (1, 7)},
+                                text: "e",
+                                start_position: Point {
+                                    row: 1,
+                                    column: 5,
+                                },
+                                end_position: Point {
+                                    row: 1,
+                                    column: 6,
+                                },
+                            },
+                            Entry {
+                                reference: {Node let (1, 4) - (1, 7)},
+                                text: "t",
+                                start_position: Point {
+                                    row: 1,
+                                    column: 6,
+                                },
+                                end_position: Point {
+                                    row: 1,
+                                    column: 7,
+                                },
                             },
                             Entry {
                                 reference: {Node identifier (1, 8) - (1, 9)},
                                 text: "x",
+                                start_position: Point {
+                                    row: 1,
+                                    column: 8,
+                                },
+                                end_position: Point {
+                                    row: 1,
+                                    column: 9,
+                                },
                             },
                             Entry {
                                 reference: {Node = (1, 10) - (1, 11)},
                                 text: "=",
+                                start_position: Point {
+                                    row: 1,
+                                    column: 10,
+                                },
+                                end_position: Point {
+                                    row: 1,
+                                    column: 11,
+                                },
                             },
                             Entry {
                                 reference: {Node integer_literal (1, 12) - (1, 13)},
                                 text: "1",
+                                start_position: Point {
+                                    row: 1,
+                                    column: 12,
+                                },
+                                end_position: Point {
+                                    row: 1,
+                                    column: 13,
+                                },
                             },
                             Entry {
                                 reference: {Node ; (1, 13) - (1, 14)},
                                 text: ";",
+                                start_position: Point {
+                                    row: 1,
+                                    column: 13,
+                                },
+                                end_position: Point {
+                                    row: 1,
+                                    column: 14,
+                                },
                             },
                         ],
                     },
@@ -43,7 +107,27 @@ expression: diff_hunks
                         entries: [
                             Entry {
                                 reference: {Node identifier (4, 3) - (4, 10)},
-                                text: "add_one",
+                                text: "n",
+                                start_position: Point {
+                                    row: 4,
+                                    column: 8,
+                                },
+                                end_position: Point {
+                                    row: 4,
+                                    column: 9,
+                                },
+                            },
+                            Entry {
+                                reference: {Node identifier (4, 3) - (4, 10)},
+                                text: "e",
+                                start_position: Point {
+                                    row: 4,
+                                    column: 9,
+                                },
+                                end_position: Point {
+                                    row: 4,
+                                    column: 10,
+                                },
                             },
                         ],
                     },
@@ -61,6 +145,14 @@ expression: diff_hunks
                             Entry {
                                 reference: {Node } (9, 0) - (9, 1)},
                                 text: "}",
+                                start_position: Point {
+                                    row: 9,
+                                    column: 0,
+                                },
+                                end_position: Point {
+                                    row: 9,
+                                    column: 1,
+                                },
                             },
                         ],
                     },
@@ -73,23 +165,159 @@ expression: diff_hunks
                         entries: [
                             Entry {
                                 reference: {Node fn (11, 0) - (11, 2)},
-                                text: "fn",
+                                text: "f",
+                                start_position: Point {
+                                    row: 11,
+                                    column: 0,
+                                },
+                                end_position: Point {
+                                    row: 11,
+                                    column: 1,
+                                },
+                            },
+                            Entry {
+                                reference: {Node fn (11, 0) - (11, 2)},
+                                text: "n",
+                                start_position: Point {
+                                    row: 11,
+                                    column: 1,
+                                },
+                                end_position: Point {
+                                    row: 11,
+                                    column: 2,
+                                },
                             },
                             Entry {
                                 reference: {Node identifier (11, 3) - (11, 11)},
-                                text: "addition",
+                                text: "a",
+                                start_position: Point {
+                                    row: 11,
+                                    column: 3,
+                                },
+                                end_position: Point {
+                                    row: 11,
+                                    column: 4,
+                                },
+                            },
+                            Entry {
+                                reference: {Node identifier (11, 3) - (11, 11)},
+                                text: "d",
+                                start_position: Point {
+                                    row: 11,
+                                    column: 4,
+                                },
+                                end_position: Point {
+                                    row: 11,
+                                    column: 5,
+                                },
+                            },
+                            Entry {
+                                reference: {Node identifier (11, 3) - (11, 11)},
+                                text: "d",
+                                start_position: Point {
+                                    row: 11,
+                                    column: 5,
+                                },
+                                end_position: Point {
+                                    row: 11,
+                                    column: 6,
+                                },
+                            },
+                            Entry {
+                                reference: {Node identifier (11, 3) - (11, 11)},
+                                text: "i",
+                                start_position: Point {
+                                    row: 11,
+                                    column: 6,
+                                },
+                                end_position: Point {
+                                    row: 11,
+                                    column: 7,
+                                },
+                            },
+                            Entry {
+                                reference: {Node identifier (11, 3) - (11, 11)},
+                                text: "t",
+                                start_position: Point {
+                                    row: 11,
+                                    column: 7,
+                                },
+                                end_position: Point {
+                                    row: 11,
+                                    column: 8,
+                                },
+                            },
+                            Entry {
+                                reference: {Node identifier (11, 3) - (11, 11)},
+                                text: "i",
+                                start_position: Point {
+                                    row: 11,
+                                    column: 8,
+                                },
+                                end_position: Point {
+                                    row: 11,
+                                    column: 9,
+                                },
+                            },
+                            Entry {
+                                reference: {Node identifier (11, 3) - (11, 11)},
+                                text: "o",
+                                start_position: Point {
+                                    row: 11,
+                                    column: 9,
+                                },
+                                end_position: Point {
+                                    row: 11,
+                                    column: 10,
+                                },
+                            },
+                            Entry {
+                                reference: {Node identifier (11, 3) - (11, 11)},
+                                text: "n",
+                                start_position: Point {
+                                    row: 11,
+                                    column: 10,
+                                },
+                                end_position: Point {
+                                    row: 11,
+                                    column: 11,
+                                },
                             },
                             Entry {
                                 reference: {Node ( (11, 11) - (11, 12)},
                                 text: "(",
+                                start_position: Point {
+                                    row: 11,
+                                    column: 11,
+                                },
+                                end_position: Point {
+                                    row: 11,
+                                    column: 12,
+                                },
                             },
                             Entry {
                                 reference: {Node ) (11, 12) - (11, 13)},
                                 text: ")",
+                                start_position: Point {
+                                    row: 11,
+                                    column: 12,
+                                },
+                                end_position: Point {
+                                    row: 11,
+                                    column: 13,
+                                },
                             },
                             Entry {
                                 reference: {Node { (11, 14) - (11, 15)},
                                 text: "{",
+                                start_position: Point {
+                                    row: 11,
+                                    column: 14,
+                                },
+                                end_position: Point {
+                                    row: 11,
+                                    column: 15,
+                                },
                             },
                         ],
                     },
@@ -102,15 +330,51 @@ expression: diff_hunks
                         entries: [
                             Entry {
                                 reference: {Node identifier (14, 3) - (14, 10)},
-                                text: "add_two",
+                                text: "t",
+                                start_position: Point {
+                                    row: 14,
+                                    column: 7,
+                                },
+                                end_position: Point {
+                                    row: 14,
+                                    column: 8,
+                                },
+                            },
+                            Entry {
+                                reference: {Node identifier (14, 3) - (14, 10)},
+                                text: "w",
+                                start_position: Point {
+                                    row: 14,
+                                    column: 8,
+                                },
+                                end_position: Point {
+                                    row: 14,
+                                    column: 9,
+                                },
                             },
                             Entry {
                                 reference: {Node ( (14, 10) - (14, 11)},
                                 text: "(",
+                                start_position: Point {
+                                    row: 14,
+                                    column: 10,
+                                },
+                                end_position: Point {
+                                    row: 14,
+                                    column: 11,
+                                },
                             },
                             Entry {
                                 reference: {Node ) (14, 11) - (14, 12)},
                                 text: ")",
+                                start_position: Point {
+                                    row: 14,
+                                    column: 11,
+                                },
+                                end_position: Point {
+                                    row: 14,
+                                    column: 12,
+                                },
                             },
                         ],
                     },

@@ -96,9 +96,9 @@ fn generate_ast_vector_data(
     Ok(AstVectorData { text, tree, path })
 }
 
-/// Generate an AST vector from the underlying data
+/// Generate an AST vector from the underlying data.
 ///
-/// This is split off into a function so we can handle things like logging and keep the code DRY
+/// This will break up the AST vector data into a list of AST nodes that correspond to graphemes.
 fn generate_ast_vector(data: &AstVectorData) -> AstVector<'_> {
     let ast_vec = AstVector::from_ts_tree(&data.tree, &data.text);
     info!(
@@ -181,10 +181,11 @@ fn run_diff(args: &Args, config: &Config) -> Result<()> {
             text: &ast_data_b.text,
         },
     };
-    // Use a buffered terminal instead of a normal unbuffered terminal so we can amortize the cost of printing. It
-    // doesn't really how frequently the terminal prints to stdout because the user just cares about the output at the
-    // end, we don't care about how frequently the terminal does partial updates or anything like that. If the user is
-    // curious about progress, they can enable logging and see when hunks are processed and written to the buffer.
+    // Use a buffered terminal instead of a normal unbuffered terminal so we can amortize the cost
+    // of printing. It doesn't really matter how frequently the terminal prints to stdout because
+    // the user just cares about the output at the end, we don't care about how frequently the
+    // terminal does partial updates or anything like that. If the user is curious about progress,
+    // they can enable logging and see when hunks are processed and written to the buffer.
     let mut buf_writer = BufWriter::new(Term::stdout());
     config.formatting.print(&mut buf_writer, &params)?;
     // Just in case we forgot to flush anything in the `print` function
@@ -287,7 +288,6 @@ fn main() -> Result<()> {
             .filter_level(log_level)
             .init();
         set_term_colors(args.color_output);
-
         // First check if the input files can be parsed with tree-sitter.
         let files_supported = are_input_files_supported(&args, &config);
 
@@ -326,11 +326,14 @@ mod tests {
             "test data path {} does not exist",
             path_b.to_str().unwrap()
         );
+
         (path_a, path_b)
     }
 
     #[test_case("short", "rust", "rs")]
     #[test_case("short", "python", "py")]
+    #[test_case("medium", "rust", "rs")]
+    #[test_case("medium", "cpp", "cpp")]
     fn diff_hunks_snapshot(test_type: &str, name: &str, ext: &str) {
         let (path_a, path_b) = get_test_paths(test_type, name, ext);
         let config = GrammarConfig::default();

@@ -280,8 +280,6 @@ impl DiffWriter {
         old_fmt: &FormattingDirectives,
         new_fmt: &FormattingDirectives,
     ) -> std::io::Result<()> {
-        let divider = " -> ";
-
         // The different ways we can stack the title
         #[derive(Debug, Eq, PartialEq, PartialOrd, Ord, strum_macros::Display)]
         #[strum(serialize_all = "snake_case")]
@@ -289,6 +287,7 @@ impl DiffWriter {
             Vertical,
             Horizontal,
         }
+        let divider = " -> ";
 
         // We construct the fully horizontal title string. If wider than the terminal, then we
         // format another title string that's vertically stacked
@@ -419,16 +418,16 @@ impl DiffWriter {
         // First, we print the prefix to stdout
         write!(term, "{}", regular.apply_to(fmt.prefix.as_ref()))?;
 
-        // The number of characters that have been printed out to stdout already. These aren't
-        // *actually* chars because UTF-8, but you get the gist.
+        // The number of characters that have been printed out to stdout already. All indices are
+        // in raw byte offsets, as splitting on graphemes, etc was taken care of when processing
+        // the AST nodes.
         let mut printed_chars = 0;
 
         // We keep printing ranges until we've covered the entire line
         for entry in &line.entries {
             // The range of text to emphasize
             // TODO(afnan) deal with ranges spanning multiple rows
-            let emphasis_range =
-                entry.reference.start_position().column..entry.reference.end_position().column;
+            let emphasis_range = entry.start_position().column..entry.end_position().column;
 
             // First we need to see if there's any regular text to cover. If the range has a len of
             // zero this is a no-op
