@@ -91,7 +91,7 @@ version = "0.0.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9ba6aab796645620a69cbaca2eae382ce5bc5c86e15691a05e4b8676405280b2"
 dependencies = [
- "build-info-common",
+ "build-info-common 0.0.25",
  "build-info-proc",
  "lazy_static",
  "proc-macro-hack",
@@ -99,14 +99,14 @@ dependencies = [
 
 [[package]]
 name = "build-info-build"
-version = "0.0.25"
+version = "0.0.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "22a5f411661cae69a077c6c2e6b459c4474dd8507722abd7df5c5c3e77994332"
+checksum = "1ebfef0dcb94d65cc2cd98ce285de89ed40c9a1d2bb10175f548867d0e26cda0"
 dependencies = [
  "anyhow",
  "base64",
  "bincode",
- "build-info-common",
+ "build-info-common 0.0.26",
  "cargo_metadata",
  "chrono",
  "git2",
@@ -131,6 +131,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "build-info-common"
+version = "0.0.26"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "db629469a6955021b15eb99cf5983ae8dcf9d0432ba2a8295715efee232da912"
+dependencies = [
+ "chrono",
+ "derive_more",
+ "semver 1.0.4",
+ "serde",
+]
+
+[[package]]
 name = "build-info-proc"
 version = "0.0.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -139,7 +151,7 @@ dependencies = [
  "anyhow",
  "base64",
  "bincode",
- "build-info-common",
+ "build-info-common 0.0.25",
  "chrono",
  "format-buf",
  "num-bigint",
@@ -531,9 +543,9 @@ dependencies = [
 
 [[package]]
 name = "git2"
-version = "0.13.22"
+version = "0.14.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9c1cbbfc9a1996c6af82c2b4caf828d2c653af4fcdbb0e5674cc966eee5a4197"
+checksum = "6e7d3b96ec1fcaa8431cf04a4f1ef5caafe58d5cf7bcc31f09c1626adddb0ffe"
 dependencies = [
  "bitflags",
  "libc",
@@ -674,9 +686,9 @@ checksum = "3cb00336871be5ed2c8ed44b60ae9959dc5b9f08539422ed43f09e34ecaeba21"
 
 [[package]]
 name = "libgit2-sys"
-version = "0.12.23+1.2.0"
+version = "0.13.1+1.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "29730a445bae719db3107078b46808cc45a5b7a6bae3f31272923af969453356"
+checksum = "43e598aa7a4faedf1ea1b4608f582b06f0f40211eec551b7ef36019ae3f62def"
 dependencies = [
  "cc",
  "libc",

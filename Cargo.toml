@@ -81,7 +81,7 @@ anyhow = "1.0.55"
 cargo-emit = "0.2.1"
 rayon = "1.5.1"
 thiserror = "1.0.30"
-build-info-build = { version = "0.0.25", optional = true }
+build-info-build = { version = "0.0.26", optional = true }
 
 [features]
 default = ["static-grammar-libs"]
