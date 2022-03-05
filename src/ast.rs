@@ -193,7 +193,7 @@ impl<'a> Hash for AstVectorLeaf<'a> {
 
 impl<'a> PartialEq for Entry<'a> {
     fn eq(&self, other: &Entry) -> bool {
-        self.kind_id == self.kind_id && self.text == other.text
+        self.kind_id == other.kind_id && self.text == other.text
     }
 }
 

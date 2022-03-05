@@ -37,6 +37,19 @@ expression: diff_hunks
                                 kind_id: 61,
                             },
                             Entry {
+                                reference: {Node let (1, 4) - (1, 7)},
+                                text: "t",
+                                start_position: Point {
+                                    row: 1,
+                                    column: 6,
+                                },
+                                end_position: Point {
+                                    row: 1,
+                                    column: 7,
+                                },
+                                kind_id: 61,
+                            },
+                            Entry {
                                 reference: {Node identifier (1, 8) - (1, 9)},
                                 text: "x",
                                 start_position: Point {
@@ -233,6 +246,19 @@ expression: diff_hunks
                                 end_position: Point {
                                     row: 11,
                                     column: 7,
+                                },
+                                kind_id: 1,
+                            },
+                            Entry {
+                                reference: {Node identifier (11, 3) - (11, 11)},
+                                text: "t",
+                                start_position: Point {
+                                    row: 11,
+                                    column: 7,
+                                },
+                                end_position: Point {
+                                    row: 11,
+                                    column: 8,
                                 },
                                 kind_id: 1,
                             },
