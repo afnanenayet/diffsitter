@@ -117,7 +117,7 @@ fn generate_ast_vector(data: &AstVectorData) -> AstVector<'_> {
 ///
 /// This is used to determine whether the program should fall back to another diff utility.
 fn are_input_files_supported(args: &Args, config: &Config) -> bool {
-    let paths = vec![&args.old, &args.new];
+    let paths = [&args.old, &args.new];
 
     // If there's a user override at the command line, that takes priority over everything else.
     if let Some(file_type) = &args.file_type {
