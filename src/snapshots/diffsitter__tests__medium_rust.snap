@@ -300,6 +300,19 @@ expression: diff_hunks
                         entries: [
                             Entry {
                                 reference: {Node identifier (66, 4) - (66, 9)},
+                                text: "d",
+                                start_position: Point {
+                                    row: 66,
+                                    column: 4,
+                                },
+                                end_position: Point {
+                                    row: 66,
+                                    column: 5,
+                                },
+                                kind_id: 1,
+                            },
+                            Entry {
+                                reference: {Node identifier (66, 4) - (66, 9)},
                                 text: "o",
                                 start_position: Point {
                                     row: 66,
@@ -308,6 +321,19 @@ expression: diff_hunks
                                 end_position: Point {
                                     row: 66,
                                     column: 6,
+                                },
+                                kind_id: 1,
+                            },
+                            Entry {
+                                reference: {Node identifier (66, 4) - (66, 9)},
+                                text: "l",
+                                start_position: Point {
+                                    row: 66,
+                                    column: 6,
+                                },
+                                end_position: Point {
+                                    row: 66,
+                                    column: 7,
                                 },
                                 kind_id: 1,
                             },
@@ -338,28 +364,15 @@ expression: diff_hunks
                                 kind_id: 1,
                             },
                             Entry {
-                                reference: {Node . (66, 9) - (66, 10)},
-                                text: ".",
-                                start_position: Point {
-                                    row: 66,
-                                    column: 9,
-                                },
-                                end_position: Point {
-                                    row: 66,
-                                    column: 10,
-                                },
-                                kind_id: 121,
-                            },
-                            Entry {
                                 reference: {Node field_identifier (66, 10) - (66, 14)},
-                                text: "t",
+                                text: "a",
                                 start_position: Point {
-                                    row: 66,
-                                    column: 10,
-                                },
-                                end_position: Point {
                                     row: 66,
                                     column: 11,
+                                },
+                                end_position: Point {
+                                    row: 66,
+                                    column: 12,
                                 },
                                 kind_id: 316,
                             },
@@ -705,17 +718,17 @@ expression: diff_hunks
                                 kind_id: 1,
                             },
                             Entry {
-                                reference: {Node . (72, 3) - (72, 4)},
-                                text: ".",
+                                reference: {Node identifier (72, 1) - (72, 3)},
+                                text: "d",
                                 start_position: Point {
                                     row: 72,
-                                    column: 3,
+                                    column: 2,
                                 },
                                 end_position: Point {
                                     row: 72,
-                                    column: 4,
+                                    column: 3,
                                 },
-                                kind_id: 121,
+                                kind_id: 1,
                             },
                             Entry {
                                 reference: {Node field_identifier (72, 4) - (72, 9)},
@@ -727,6 +740,19 @@ expression: diff_hunks
                                 end_position: Point {
                                     row: 72,
                                     column: 5,
+                                },
+                                kind_id: 316,
+                            },
+                            Entry {
+                                reference: {Node field_identifier (72, 4) - (72, 9)},
+                                text: "l",
+                                start_position: Point {
+                                    row: 72,
+                                    column: 5,
+                                },
+                                end_position: Point {
+                                    row: 72,
+                                    column: 6,
                                 },
                                 kind_id: 316,
                             },
@@ -745,14 +771,14 @@ expression: diff_hunks
                             },
                             Entry {
                                 reference: {Node field_identifier (72, 4) - (72, 9)},
-                                text: "t",
+                                text: "a",
                                 start_position: Point {
                                     row: 72,
-                                    column: 8,
+                                    column: 7,
                                 },
                                 end_position: Point {
                                     row: 72,
-                                    column: 9,
+                                    column: 8,
                                 },
                                 kind_id: 316,
                             },
