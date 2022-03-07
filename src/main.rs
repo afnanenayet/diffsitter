@@ -8,11 +8,11 @@ mod parse;
 
 use crate::parse::supported_languages;
 use anyhow::Result;
-use ast::{AstVector, AstVectorData};
+use ast::{Vector, VectorData};
 use clap::IntoApp;
 use clap::Parser;
 use cli::{Args, ColorOutputPolicy};
-use config::{Config, ConfigReadError};
+use config::{Config, ReadError};
 use console::Term;
 use formatting::{DisplayParameters, DocumentDiffData};
 use log::{debug, error, info, warn, LevelFilter};
@@ -53,14 +53,14 @@ fn derive_config(args: &Args) -> Result<Config> {
             // If it is a recoverable error, ex: not being able to find the default file path or
             // not finding a file at all isn't a hard error, it makes sense for us to use the
             // default config.
-            ConfigReadError::ReadFileFailure(_) | ConfigReadError::NoDefault => {
+            ReadError::ReadFileFailure(_) | ReadError::NoDefault => {
                 warn!("{} - falling back to default config", e);
                 Ok(Config::default())
             }
             // If we *do* find a config file and it doesn't parse correctly, we should return an
             // error and let the user know that their config is incorrect. This isn't a browser,
             // we can't just silently march forward and hope for the best.
-            ConfigReadError::DeserializationFailure(e) => {
+            ReadError::DeserializationFailure(e) => {
                 error!("Failed to deserialize config file: {}", e);
                 Err(anyhow::anyhow!(e))
             }
@@ -79,7 +79,7 @@ fn generate_ast_vector_data(
     path: PathBuf,
     file_type: Option<&str>,
     grammar_config: &GrammarConfig,
-) -> Result<AstVectorData> {
+) -> Result<VectorData> {
     let text = fs::read_to_string(&path)?;
     let file_name = path.to_string_lossy();
     debug!("Reading {} to string", file_name);
@@ -93,14 +93,14 @@ fn generate_ast_vector_data(
         info!("Will deduce filetype from file extension");
     };
     let tree = parse::parse_file(&path, file_type, grammar_config)?;
-    Ok(AstVectorData { text, tree, path })
+    Ok(VectorData { text, tree, path })
 }
 
 /// Generate an AST vector from the underlying data.
 ///
 /// This will break up the AST vector data into a list of AST nodes that correspond to graphemes.
-fn generate_ast_vector(data: &AstVectorData) -> AstVector<'_> {
-    let ast_vec = AstVector::from_ts_tree(&data.tree, &data.text);
+fn generate_ast_vector(data: &VectorData) -> Vector<'_> {
+    let ast_vec = Vector::from_ts_tree(&data.tree, &data.text);
     info!(
         "Constructed a diff vector with {} nodes for {}",
         ast_vec.len(),

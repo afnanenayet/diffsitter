@@ -387,7 +387,7 @@ impl<'a> FromIterator<Entry<'a>> for Hunks<'a> {
 ///
 /// Any entity that implements this trait is responsible for providing a method
 /// that computes the diff between two inputs.
-pub trait DiffEngine<'elem, T>
+pub trait Engine<'elem, T>
 where
     T: Eq + 'elem,
 {
@@ -401,7 +401,7 @@ where
 #[derive(Eq, PartialEq, Copy, Clone, Debug, Default)]
 pub struct Myers {}
 
-impl<'elem, T> DiffEngine<'elem, T> for Myers
+impl<'elem, T> Engine<'elem, T> for Myers
 where
     T: Eq + 'elem + std::fmt::Debug,
 {
