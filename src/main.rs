@@ -246,7 +246,7 @@ fn set_term_colors(color_opt: ColorOutputPolicy) {
     match color_opt {
         ColorOutputPolicy::Off => (console::set_colors_enabled(false)),
         ColorOutputPolicy::On => (console::set_colors_enabled(true)),
-        _ => (),
+        ColorOutputPolicy::Auto => (),
     };
 }
 
