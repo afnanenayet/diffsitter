@@ -1,6 +1,6 @@
 //! Utilities for processing the ASTs provided by `tree_sitter`
 
-use crate::diff::{DiffEngine, Hunks, Myers};
+use crate::diff::{Engine, Hunks, Myers};
 use logging_timer::time;
 use std::hash::{Hash, Hasher};
 use std::{cell::RefCell, ops::Index, path::PathBuf};
@@ -13,7 +13,7 @@ use unicode_segmentation as us;
 ///
 /// This is used as an intermediate struct for flattening the tree structure.
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct AstVectorLeaf<'a> {
+pub struct VectorLeaf<'a> {
     pub reference: TSNode<'a>,
     pub text: &'a str,
 }
@@ -45,7 +45,7 @@ pub struct Entry<'a> {
     pub kind_id: u16,
 }
 
-impl<'a> AstVectorLeaf<'a> {
+impl<'a> VectorLeaf<'a> {
     /// Split an entry into a vector of entries per grapheme.
     ///
     /// Each grapheme will get its own [Entry] struct. This method will resolve the
@@ -110,8 +110,8 @@ impl<'a> Entry<'a> {
     }
 }
 
-impl<'a> From<&'a AstVector<'a>> for Vec<Entry<'a>> {
-    fn from(ast_vector: &'a AstVector<'a>) -> Self {
+impl<'a> From<&'a Vector<'a>> for Vec<Entry<'a>> {
+    fn from(ast_vector: &'a Vector<'a>) -> Self {
         let mut entries = Vec::new();
         entries.reserve(ast_vector.leaves.len());
 
@@ -127,9 +127,9 @@ impl<'a> From<&'a AstVector<'a>> for Vec<Entry<'a>> {
 /// This representation of the tree leaves is much more convenient for things like dynamic
 /// programming, and provides useful for formatting.
 #[derive(Debug)]
-pub struct AstVector<'a> {
+pub struct Vector<'a> {
     /// The leaves of the AST, build with an in-order traversal
-    pub leaves: Vec<AstVectorLeaf<'a>>,
+    pub leaves: Vec<VectorLeaf<'a>>,
 
     /// The full source text that the AST refers to
     pub source_text: &'a str,
@@ -144,7 +144,7 @@ impl<'a> Eq for Entry<'a> {}
 /// data that the vector references. This gets tricky because the tree sitter library uses FFI so
 /// the lifetime references get even more mangled.
 #[derive(Debug)]
-pub struct AstVectorData {
+pub struct VectorData {
     /// The text in the file
     pub text: String,
 
@@ -155,7 +155,7 @@ pub struct AstVectorData {
     pub path: PathBuf,
 }
 
-impl<'a> AstVector<'a> {
+impl<'a> Vector<'a> {
     /// Create a `DiffVector` from a `tree_sitter` tree
     ///
     /// This method calls a helper function that does an in-order traversal of the tree and adds
@@ -164,7 +164,7 @@ impl<'a> AstVector<'a> {
     pub fn from_ts_tree(tree: &'a TSTree, text: &'a str) -> Self {
         let leaves = RefCell::new(Vec::new());
         build(&leaves, tree.root_node(), text);
-        AstVector {
+        Vector {
             leaves: leaves.into_inner(),
             source_text: text,
         }
@@ -176,15 +176,15 @@ impl<'a> AstVector<'a> {
     }
 }
 
-impl<'a> Index<usize> for AstVector<'a> {
-    type Output = AstVectorLeaf<'a>;
+impl<'a> Index<usize> for Vector<'a> {
+    type Output = VectorLeaf<'a>;
 
     fn index(&self, index: usize) -> &Self::Output {
         &self.leaves[index]
     }
 }
 
-impl<'a> Hash for AstVectorLeaf<'a> {
+impl<'a> Hash for VectorLeaf<'a> {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.reference.kind_id().hash(state);
         self.text.hash(state);
@@ -197,8 +197,8 @@ impl<'a> PartialEq for Entry<'a> {
     }
 }
 
-impl<'a> PartialEq for AstVector<'a> {
-    fn eq(&self, other: &AstVector) -> bool {
+impl<'a> PartialEq for Vector<'a> {
+    fn eq(&self, other: &Vector) -> bool {
         if self.leaves.len() != other.leaves.len() {
             return false;
         }
@@ -220,7 +220,7 @@ impl<'a> PartialEq for AstVector<'a> {
 /// This is a helper function that simply walks the tree and collects leaves in an in-order manner.
 /// Every time it encounters a leaf node, it stores the metadata and reference to the node in an
 /// `Entry` struct.
-fn build<'a>(vector: &RefCell<Vec<AstVectorLeaf<'a>>>, node: tree_sitter::Node<'a>, text: &'a str) {
+fn build<'a>(vector: &RefCell<Vec<VectorLeaf<'a>>>, node: tree_sitter::Node<'a>, text: &'a str) {
     // If the node is a leaf, we can stop traversing
     if node.child_count() == 0 {
         // We only push an entry if the referenced text range isn't empty, since there's no point
@@ -228,7 +228,7 @@ fn build<'a>(vector: &RefCell<Vec<AstVectorLeaf<'a>>>, node: tree_sitter::Node<'
         // because it would attempt to access the 0th index in an empty text range.
         if !node.byte_range().is_empty() {
             let node_text: &'a str = &text[node.byte_range()];
-            vector.borrow_mut().push(AstVectorLeaf {
+            vector.borrow_mut().push(VectorLeaf {
                 reference: node,
                 text: node_text,
             });
@@ -266,7 +266,7 @@ pub enum EditType<T> {
 /// This will return two groups of [hunks](diff::Hunks) in a tuple of the form
 /// `(old_hunks, new_hunks)`.
 #[time("info", "ast::{}")]
-pub fn compute_edit_script<'a>(a: &'a AstVector, b: &'a AstVector) -> (Hunks<'a>, Hunks<'a>) {
+pub fn compute_edit_script<'a>(a: &'a Vector, b: &'a Vector) -> (Hunks<'a>, Hunks<'a>) {
     let myers = Myers::default();
     let a_graphemes: Vec<Entry> = a.into();
     let b_graphemes: Vec<Entry> = b.into();

@@ -48,7 +48,7 @@ pub struct Config {
 
 /// The possible errors that can arise when attempting to read a config
 #[derive(Error, Debug)]
-pub enum ConfigReadError {
+pub enum ReadError {
     #[error("The file failed to deserialize")]
     DeserializationFailure(#[from] anyhow::Error),
     #[error("Failed to read the config file")]
@@ -64,7 +64,7 @@ impl Config {
     /// it to a string. If a path isn't supplied, the function will attempt to figure out what the
     /// default config file path is supposed to be (based on OS conventions, see
     /// [`default_config_file_path`]).
-    pub fn try_from_file<P: AsRef<Path>>(path: Option<&P>) -> Result<Self, ConfigReadError> {
+    pub fn try_from_file<P: AsRef<Path>>(path: Option<&P>) -> Result<Self, ReadError> {
         // rustc will emit an incorrect warning that this variable isn't used, which is untrue.
         // While the variable isn't read *directly*, it is used to store the owned PathBuf from
         // `default_config_file_path` so we can use the reference to the variable in `config_fp`.
@@ -74,15 +74,14 @@ impl Config {
         let config_fp = if let Some(p) = path {
             p.as_ref()
         } else {
-            default_config_fp =
-                default_config_file_path().map_err(|_| ConfigReadError::NoDefault)?;
+            default_config_fp = default_config_file_path().map_err(|_| ReadError::NoDefault)?;
             default_config_fp.as_ref()
         };
         info!("Reading config at {}", config_fp.to_string_lossy());
         let config_contents = fs::read_to_string(config_fp)?;
         let config = json::from_str(&config_contents)
             .with_context(|| format!("Failed to parse config at {}", config_fp.to_string_lossy()))
-            .map_err(ConfigReadError::DeserializationFailure)?;
+            .map_err(ReadError::DeserializationFailure)?;
         Ok(config)
     }
 }

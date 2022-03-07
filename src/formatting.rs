@@ -62,7 +62,7 @@ impl Default for ColorDef {
 /// This was abstracted out because the exact same settings apply for both additions and deletions
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Clone)]
 #[serde(rename_all = "kebab-case")]
-pub struct TextFormatting {
+pub struct Config {
     /// The highlight/background color to use with emphasized text
     #[serde(with = "opt_color_def", default = "default_option")]
     pub highlight: Option<Color>,
@@ -96,16 +96,16 @@ struct RegularStyle(Style);
 #[derive(Clone, Debug, PartialEq, Eq)]
 struct EmphasizedStyle(Style);
 
-impl From<&TextFormatting> for RegularStyle {
-    fn from(fmt: &TextFormatting) -> Self {
+impl From<&Config> for RegularStyle {
+    fn from(fmt: &Config) -> Self {
         let mut style = Style::default();
         style = style.fg(fmt.regular_foreground);
         RegularStyle(style)
     }
 }
 
-impl From<&TextFormatting> for EmphasizedStyle {
-    fn from(fmt: &TextFormatting) -> Self {
+impl From<&Config> for EmphasizedStyle {
+    fn from(fmt: &Config) -> Self {
         let mut style = Style::default();
         style = style.fg(fmt.emphasized_foreground);
 
@@ -131,15 +131,15 @@ impl From<&TextFormatting> for EmphasizedStyle {
 #[serde(default, rename_all = "kebab-case")]
 pub struct DiffWriter {
     /// The formatting options to use with text addition
-    pub addition: TextFormatting,
+    pub addition: Config,
     /// The formatting options to use with text addition
-    pub deletion: TextFormatting,
+    pub deletion: Config,
 }
 
 impl Default for DiffWriter {
     fn default() -> Self {
         DiffWriter {
-            addition: TextFormatting {
+            addition: Config {
                 regular_foreground: Color::Green,
                 emphasized_foreground: Color::Green,
                 highlight: None,
@@ -147,7 +147,7 @@ impl Default for DiffWriter {
                 underline: false,
                 prefix: "+ ".into(),
             },
-            deletion: TextFormatting {
+            deletion: Config {
                 regular_foreground: Color::Red,
                 emphasized_foreground: Color::Red,
                 highlight: None,
@@ -189,8 +189,8 @@ struct FormattingDirectives<'a> {
     pub prefix: &'a dyn AsRef<str>,
 }
 
-impl<'a> From<&'a TextFormatting> for FormattingDirectives<'a> {
-    fn from(fmt_opts: &'a TextFormatting) -> Self {
+impl<'a> From<&'a Config> for FormattingDirectives<'a> {
+    fn from(fmt_opts: &'a Config) -> Self {
         Self {
             regular: fmt_opts.into(),
             emphasis: fmt_opts.into(),
@@ -499,6 +499,7 @@ mod opt_color_def {
     use super::{Color, ColorDef};
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
+    #[allow(clippy::trivially_copy_pass_by_ref)]
     pub fn serialize<S>(value: &Option<Color>, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
