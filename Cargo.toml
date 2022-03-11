@@ -32,15 +32,15 @@ include = [
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tree-sitter = "0.20.5"
-clap = { version = "3.1.5", features = [
+tree-sitter = "0.20.6"
+clap = { version = "3.1.6", features = [
   "derive",
   "env",
   "unicode",
   "wrap_help",
 ] }
 clap_complete = "3.1.1"
-anyhow = "1.0.55"
+anyhow = "1.0.56"
 phf = { version = "0.10.1", features = ["macros"] }
 console = "0.15.0"
 paw = "1.0.0"
@@ -78,7 +78,7 @@ xdg = "2.4.1"
 [build-dependencies]
 cc = { version = "1.0.73", features = ["parallel"] }
 phf = { version = "0.10.1", features = ["macros"] }
-anyhow = "1.0.55"
+anyhow = "1.0.56"
 cargo-emit = "0.2.1"
 rayon = "1.5.1"
 thiserror = "1.0.30"
