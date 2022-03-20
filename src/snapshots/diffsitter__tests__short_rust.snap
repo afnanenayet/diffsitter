@@ -86,7 +86,7 @@ expression: diff_hunks
                                     row: 1,
                                     column: 13,
                                 },
-                                kind_id: 123,
+                                kind_id: 167,
                             },
                             Entry {
                                 reference: {Node ; (1, 13) - (1, 14)},
