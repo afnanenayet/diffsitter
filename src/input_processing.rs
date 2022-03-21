@@ -1,13 +1,63 @@
 //! Utilities for processing the ASTs provided by `tree_sitter`
 
-use crate::diff::{Engine, Hunks, Myers};
 use logging_timer::time;
+use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
 use std::{cell::RefCell, ops::Index, path::PathBuf};
 use tree_sitter::Node as TSNode;
 use tree_sitter::Point;
 use tree_sitter::Tree as TSTree;
 use unicode_segmentation as us;
+
+/// The configuration options for processing tree-sitter output.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+pub struct TreeSitterProcessor {
+    /// Whether we should split the nodes graphemes.
+    ///
+    /// If this is disabled, then the direct tree-sitter nodes will be used and diffs will be less
+    /// granular. This has the advantage of being faster and using less memory.
+    pub split_graphemes: bool,
+}
+
+impl Default for TreeSitterProcessor {
+    fn default() -> Self {
+        Self {
+            split_graphemes: true,
+        }
+    }
+}
+
+impl TreeSitterProcessor {
+    #[time("info", "ast::{}")]
+    pub fn process<'a>(&self, tree: &'a TSTree, text: &'a str) -> Vec<Entry<'a>> {
+        let ast_vector = from_ts_tree(tree, text);
+        let entries = if self.split_graphemes {
+            ast_vector
+                .leaves
+                .iter()
+                .flat_map(|leaf| leaf.split_on_graphemes())
+                .collect()
+        } else {
+            ast_vector.leaves.iter().map(|&x| Entry::from(x)).collect()
+        };
+        entries
+    }
+}
+
+/// Create a `DiffVector` from a `tree_sitter` tree
+///
+/// This method calls a helper function that does an in-order traversal of the tree and adds
+/// leaf nodes to a vector
+#[time("info", "ast::{}")]
+fn from_ts_tree<'a>(tree: &'a TSTree, text: &'a str) -> Vector<'a> {
+    let leaves = RefCell::new(Vec::new());
+    build(&leaves, tree.root_node(), text);
+    Vector {
+        leaves: leaves.into_inner(),
+        source_text: text,
+    }
+}
 
 /// The leaves of an AST vector
 ///
@@ -50,7 +100,7 @@ impl<'a> VectorLeaf<'a> {
     ///
     /// Each grapheme will get its own [Entry] struct. This method will resolve the
     /// indices/positioning of each grapheme from the `self.text` field.
-    fn split_graphemes(self) -> Vec<Entry<'a>> {
+    fn split_on_graphemes(self) -> Vec<Entry<'a>> {
         let mut entries = Vec::new();
         let indices: Vec<(usize, &str)> =
             us::UnicodeSegmentation::grapheme_indices(self.text, true).collect();
@@ -98,6 +148,18 @@ impl<'a> VectorLeaf<'a> {
     }
 }
 
+impl<'a> From<VectorLeaf<'a>> for Entry<'a> {
+    fn from(leaf: VectorLeaf<'a>) -> Self {
+        Self {
+            reference: leaf.reference,
+            text: leaf.text,
+            start_position: leaf.reference.start_position(),
+            end_position: leaf.reference.start_position(),
+            kind_id: leaf.reference.kind_id(),
+        }
+    }
+}
+
 impl<'a> Entry<'a> {
     /// Get the start position of an entry
     pub fn start_position(&self) -> Point {
@@ -116,7 +178,7 @@ impl<'a> From<&'a Vector<'a>> for Vec<Entry<'a>> {
         entries.reserve(ast_vector.leaves.len());
 
         for entry in &ast_vector.leaves {
-            entries.extend(entry.split_graphemes().iter());
+            entries.extend(entry.split_on_graphemes().iter());
         }
         entries
     }
@@ -251,40 +313,4 @@ pub enum EditType<T> {
 
     /// An element that was deleted in the edit script
     Deletion(T),
-}
-
-/// Compute the hunks corresponding to the minimum edit path between two documents
-///
-/// This method computes the minimum edit distance between two `DiffVector`s, which are the leaf
-/// nodes of an AST, using the standard DP approach to the longest common subsequence problem, the
-/// only twist is that here, instead of operating on raw text, we're operating on the leaves of an
-/// AST.
-///
-/// This has O(mn) space complexity and uses O(mn) space to compute the minimum edit path, and then
-/// has O(mn) space complexity and uses O(mn) space to backtrack and recreate the path.
-///
-/// This will return two groups of [hunks](diff::Hunks) in a tuple of the form
-/// `(old_hunks, new_hunks)`.
-#[time("info", "ast::{}")]
-pub fn compute_edit_script<'a>(a: &'a Vector, b: &'a Vector) -> (Hunks<'a>, Hunks<'a>) {
-    let myers = Myers::default();
-    let a_graphemes: Vec<Entry> = a.into();
-    let b_graphemes: Vec<Entry> = b.into();
-    let edit_script = myers.diff(&a_graphemes[..], &b_graphemes[..]);
-    let edit_script_len = edit_script.len();
-
-    let mut old_edits = Vec::with_capacity(edit_script_len);
-    let mut new_edits = Vec::with_capacity(edit_script_len);
-
-    for edit in edit_script {
-        match edit {
-            EditType::Deletion(&e) => old_edits.push(e),
-            EditType::Addition(&e) => new_edits.push(e),
-        };
-    }
-
-    // Convert the vectors of edits into hunks that can be displayed
-    let old_hunks = old_edits.into_iter().collect();
-    let new_hunks = new_edits.into_iter().collect();
-    (old_hunks, new_hunks)
 }

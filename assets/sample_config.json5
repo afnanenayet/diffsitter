@@ -62,4 +62,7 @@
     // ${fallback_cmd} ${old} ${new}
     // ```
     "fallback-cmd": "diff",
+    "input-processing": {
+        "split-graphemes": true,
+    }
 }

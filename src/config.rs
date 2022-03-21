@@ -1,5 +1,6 @@
 //! Utilities and definitions for config handling
 
+use crate::input_processing::TreeSitterProcessor;
 use crate::{formatting::DiffWriter, parse::GrammarConfig};
 use anyhow::{Context, Result};
 use json5 as json;
@@ -34,6 +35,10 @@ pub struct Config {
 
     /// Options for loading
     pub grammar: GrammarConfig,
+
+    /// Options for processing tree-sitter input.
+    #[serde(default)]
+    pub input_processing: TreeSitterProcessor,
 
     /// The program to invoke if the given files can not be parsed by the available tree-sitter
     /// parsers.
