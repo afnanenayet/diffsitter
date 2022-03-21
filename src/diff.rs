@@ -1,9 +1,10 @@
 //! Structs and other convenience methods for handling logical concepts pertaining to diffs, such
 //! as hunks.
 
-use crate::ast::{EditType, Entry};
+use crate::input_processing::{EditType, Entry};
 use crate::neg_idx_vec::NegIdxVec;
 use anyhow::Result;
+use logging_timer::time;
 use std::collections::VecDeque;
 use std::fmt::Debug;
 use std::iter::FromIterator;
@@ -689,6 +690,34 @@ impl Myers {
         }
         unreachable!();
     }
+}
+
+/// Compute the hunks corresponding to the minimum edit path between two documents.
+///
+/// This will process the the AST vectors with the user-provided settings.
+///
+/// This will return two groups of [hunks](diff::Hunks) in a tuple of the form
+/// `(old_hunks, new_hunks)`.
+#[time("info", "diff::{}")]
+pub fn compute_edit_script<'a>(old: &[Entry<'a>], new: &[Entry<'a>]) -> (Hunks<'a>, Hunks<'a>) {
+    let myers = Myers::default();
+    let edit_script = myers.diff(old, new);
+    let edit_script_len = edit_script.len();
+
+    let mut old_edits = Vec::with_capacity(edit_script_len);
+    let mut new_edits = Vec::with_capacity(edit_script_len);
+
+    for edit in edit_script {
+        match edit {
+            EditType::Deletion(&e) => old_edits.push(e),
+            EditType::Addition(&e) => new_edits.push(e),
+        };
+    }
+
+    // Convert the vectors of edits into consolidated edit hunks
+    let old_hunks = old_edits.into_iter().collect();
+    let new_hunks = new_edits.into_iter().collect();
+    (old_hunks, new_hunks)
 }
 
 #[cfg(test)]

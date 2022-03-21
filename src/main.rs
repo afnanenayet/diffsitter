@@ -1,20 +1,20 @@
-mod ast;
 mod cli;
 mod config;
 mod diff;
 mod formatting;
+mod input_processing;
 mod neg_idx_vec;
 mod parse;
 
 use crate::parse::supported_languages;
 use anyhow::Result;
-use ast::{Vector, VectorData};
 use clap::IntoApp;
 use clap::Parser;
 use cli::{Args, ColorOutputPolicy};
 use config::{Config, ReadError};
 use console::Term;
 use formatting::{DisplayParameters, DocumentDiffData};
+use input_processing::VectorData;
 use log::{debug, error, info, warn, LevelFilter};
 use parse::{generate_language, language_from_ext, GrammarConfig};
 use serde_json as json;
@@ -96,19 +96,6 @@ fn generate_ast_vector_data(
     Ok(VectorData { text, tree, path })
 }
 
-/// Generate an AST vector from the underlying data.
-///
-/// This will break up the AST vector data into a list of AST nodes that correspond to graphemes.
-fn generate_ast_vector(data: &VectorData) -> Vector<'_> {
-    let ast_vec = Vector::from_ts_tree(&data.tree, &data.text);
-    info!(
-        "Constructed a diff vector with {} nodes for {}",
-        ast_vec.len(),
-        data.path.to_string_lossy(),
-    );
-    ast_vec
-}
-
 /// Check if the input files are supported by this program.
 ///
 /// If the user provides a language override, this will check that the language is supported by the
@@ -165,10 +152,15 @@ fn run_diff(args: &Args, config: &Config) -> Result<()> {
     let ast_data_a = generate_ast_vector_data(path_a.clone(), file_type, &config.grammar)?;
     let ast_data_b = generate_ast_vector_data(path_b.clone(), file_type, &config.grammar)?;
 
-    let diff_vec_a = generate_ast_vector(&ast_data_a);
-    let diff_vec_b = generate_ast_vector(&ast_data_b);
+    let diff_vec_a = config
+        .input_processing
+        .process(&ast_data_a.tree, &ast_data_a.text);
 
-    let (old_hunks, new_hunks) = ast::compute_edit_script(&diff_vec_a, &diff_vec_b);
+    let diff_vec_b = config
+        .input_processing
+        .process(&ast_data_b.tree, &ast_data_b.text);
+
+    let (old_hunks, new_hunks) = diff::compute_edit_script(&diff_vec_a, &diff_vec_b);
     let params = DisplayParameters {
         old: DocumentDiffData {
             filename: &ast_data_a.path.to_string_lossy(),
@@ -330,23 +322,28 @@ mod tests {
         (path_a, path_b)
     }
 
-    #[test_case("short", "rust", "rs")]
-    #[test_case("short", "python", "py")]
-    #[test_case("medium", "rust", "rs")]
-    #[test_case("medium", "cpp", "cpp")]
-    fn diff_hunks_snapshot(test_type: &str, name: &str, ext: &str) {
+    #[test_case("short", "rust", "rs", true)]
+    #[test_case("short", "python", "py", true)]
+    #[test_case("medium", "rust", "rs", true)]
+    #[test_case("medium", "rust", "rs", false)]
+    #[test_case("medium", "cpp", "cpp", true)]
+    #[test_case("medium", "cpp", "cpp", false)]
+    fn diff_hunks_snapshot(test_type: &str, name: &str, ext: &str, split_graphemes: bool) {
         let (path_a, path_b) = get_test_paths(test_type, name, ext);
         let config = GrammarConfig::default();
         let ast_data_a = generate_ast_vector_data(path_a, None, &config).unwrap();
         let ast_data_b = generate_ast_vector_data(path_b, None, &config).unwrap();
-        let diff_vec_a = generate_ast_vector(&ast_data_a);
-        let diff_vec_b = generate_ast_vector(&ast_data_b);
-        let diff_hunks = ast::compute_edit_script(&diff_vec_a, &diff_vec_b);
+
+        let processor = input_processing::TreeSitterProcessor { split_graphemes };
+
+        let diff_vec_a = processor.process(&ast_data_a.tree, &ast_data_a.text);
+        let diff_vec_b = processor.process(&ast_data_b.tree, &ast_data_b.text);
+        let diff_hunks = diff::compute_edit_script(&diff_vec_a, &diff_vec_b);
 
         // We have to set the snapshot name manually, otherwise there appear to be threading issues
         // and we end up with more snapshot files than there are tests, which cause
         // nondeterministic errors.
-        let snapshot_name = format!("{test_type}_{name}");
+        let snapshot_name = format!("{test_type}_{name}_{split_graphemes}");
         assert_debug_snapshot!(snapshot_name, diff_hunks);
     }
 }
