@@ -59,7 +59,7 @@ libloading = "0.7.3"
 unicode-segmentation = "1.9.0"
 
 [dev-dependencies]
-test-case = "2.0.0"
+test-case = "2.0.1"
 pretty_assertions = "1.2.0"
 
 # We need the backtrace feature to enable snapshot name generation in
