@@ -50,7 +50,7 @@ serde = { version = "1.0.136", features = ["derive"] }
 serde_json = "1.0.79"
 json5 = "0.4.1"
 pretty_env_logger = "0.4.0"
-log = { version = "0.4.15", features = ["std"] }
+log = { version = "0.4.16", features = ["std"] }
 thiserror = "1.0.30"
 logging_timer = "1.1.0"
 build-info = { version = "0.0.26", optional = true }
@@ -59,13 +59,13 @@ libloading = "0.7.3"
 unicode-segmentation = "1.9.0"
 
 [dev-dependencies]
-test-case = "2.0.0"
+test-case = "2.0.2"
 pretty_assertions = "1.2.0"
 
 # We need the backtrace feature to enable snapshot name generation in
 # single-threaded tests (tests using cargo cross run single-threaded due to
 # limitations with QEMU).
-insta = { version = "1.13.0", features = ["backtrace"] }
+insta = { version = "1.14.0", features = ["backtrace"] }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 # We use directories next to get the windows config path
