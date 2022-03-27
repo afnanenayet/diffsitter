@@ -102,3 +102,5 @@ static-grammar-libs = []
 inherits = "release"
 lto = true
 codegen-units = 1
+# Makes the binary a little smaller
+strip = true
