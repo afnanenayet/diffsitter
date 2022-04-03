@@ -151,25 +151,22 @@ fn run_diff(args: &Args, config: &Config) -> Result<()> {
 
     let ast_data_a = generate_ast_vector_data(path_a.clone(), file_type, &config.grammar)?;
     let ast_data_b = generate_ast_vector_data(path_b.clone(), file_type, &config.grammar)?;
-
     let diff_vec_a = config
         .input_processing
         .process(&ast_data_a.tree, &ast_data_a.text);
-
     let diff_vec_b = config
         .input_processing
         .process(&ast_data_b.tree, &ast_data_b.text);
 
-    let (old_hunks, new_hunks) = diff::compute_edit_script(&diff_vec_a, &diff_vec_b);
+    let hunks = diff::compute_edit_script(&diff_vec_a, &diff_vec_b)?;
     let params = DisplayParameters {
+        hunks,
         old: DocumentDiffData {
             filename: &ast_data_a.path.to_string_lossy(),
-            hunks: &old_hunks,
             text: &ast_data_a.text,
         },
         new: DocumentDiffData {
             filename: &ast_data_b.path.to_string_lossy(),
-            hunks: &new_hunks,
             text: &ast_data_b.text,
         },
     };

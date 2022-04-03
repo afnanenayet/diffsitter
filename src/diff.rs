@@ -5,7 +5,6 @@ use crate::input_processing::{EditType, Entry};
 use crate::neg_idx_vec::NegIdxVec;
 use anyhow::Result;
 use logging_timer::time;
-use std::collections::VecDeque;
 use std::fmt::Debug;
 use std::iter::FromIterator;
 use std::ops::Range;
@@ -20,11 +19,13 @@ fn common_prefix_len<T: PartialEq>(
 ) -> usize {
     let mut l = 0;
 
-    while a_range.start + l < a_range.end
-        && b_range.start + l < b_range.end
-        && a[a_range.start + l] == b[b_range.start + l]
-    {
-        l += 1;
+    unsafe {
+        while a_range.start + l < a_range.end
+            && b_range.start + l < b_range.end
+            && a.get_unchecked(a_range.start + l) == b.get_unchecked(b_range.start + l)
+        {
+            l += 1;
+        }
     }
     l
 }
@@ -54,11 +55,13 @@ fn common_suffix_len<T: PartialEq>(
 ) -> usize {
     let mut l = 1;
 
-    while (a_range.end as isize) - (l as isize) >= a_range.start as isize
-        && (b_range.end as isize) - (l as isize) >= b_range.start as isize
-        && a[a_range.end - l] == b[b_range.end - l]
-    {
-        l += 1;
+    unsafe {
+        while (a_range.end as isize) - (l as isize) >= a_range.start as isize
+            && (b_range.end as isize) - (l as isize) >= b_range.start as isize
+            && a.get_unchecked(a_range.end - l) == b.get_unchecked(b_range.end - l)
+        {
+            l += 1;
+        }
     }
     l - 1
 }
@@ -69,14 +72,14 @@ pub struct Line<'a> {
     /// The index of the line in the original document
     pub line_index: usize,
     /// The entries corresponding to the line
-    pub entries: VecDeque<Entry<'a>>,
+    pub entries: Vec<Entry<'a>>,
 }
 
 impl<'a> Line<'a> {
     pub fn new(line_index: usize) -> Self {
         Line {
             line_index,
-            entries: VecDeque::new(),
+            entries: Vec::new(),
         }
     }
 }
@@ -85,7 +88,7 @@ impl<'a> Line<'a> {
 ///
 /// Every line in a hunk must be consecutive and in ascending order.
 #[derive(Debug, Clone, PartialEq)]
-pub struct Hunk<'a>(pub VecDeque<Line<'a>>);
+pub struct Hunk<'a>(pub Vec<Line<'a>>);
 
 /// Types of errors that come up when inserting an entry to a hunk
 #[derive(Debug, Error)]
@@ -96,16 +99,6 @@ pub enum HunkInsertionError {
     NonAdjacentHunk {
         incoming_line: usize,
         last_line: usize,
-    },
-    #[error("Attempted to prepend an entry with a line index ({incoming_line:?}) greater than the first line's index ({first_line:?})")]
-    LaterLine {
-        incoming_line: usize,
-        first_line: usize,
-    },
-    #[error("Attempted to prepend an entry with a column ({incoming_col:?}) greater than the first entry's column ({first_col:?})")]
-    LaterColumn {
-        incoming_col: usize,
-        first_col: usize,
     },
 
     #[error("Attempted to append an entry with a line index ({incoming_line:?}) less than the first line's index ({last_line:?})")]
@@ -126,83 +119,21 @@ pub enum HunkInsertionError {
 impl<'a> Hunk<'a> {
     /// Create a new, empty hunk
     pub fn new() -> Self {
-        Hunk(VecDeque::new())
+        Hunk(Vec::new())
     }
 
     /// Returns the first line number of the hunk
     ///
     /// This will return [None] if the internal vector is empty
     pub fn first_line(&self) -> Option<usize> {
-        self.0.front().map(|x| x.line_index)
+        self.0.first().map(|x| x.line_index)
     }
 
     /// Returns the last line number of the hunk
     ///
     /// This will return [None] if the internal vector is empty
     pub fn last_line(&self) -> Option<usize> {
-        self.0.back().map(|x| x.line_index)
-    }
-
-    /// Prepend an [entry](Entry) to a hunk
-    ///
-    /// Entries can only be prepended in descending order (from last to first)
-    pub fn push_front(&mut self, entry: Entry<'a>) -> Result<(), HunkInsertionError> {
-        let incoming_line_idx = entry.start_position().row;
-
-        // Add a new line vector if the entry has a greater line index, or if the vector is empty.
-        // We ensure that the last line has the same line index as the incoming entry.
-        if let Some(first_line) = self.0.front() {
-            let first_line_idx = first_line.line_index;
-
-            if incoming_line_idx > first_line_idx {
-                return Err(HunkInsertionError::LaterLine {
-                    incoming_line: incoming_line_idx,
-                    first_line: first_line_idx,
-                });
-            }
-
-            if first_line_idx - incoming_line_idx > 1 {
-                return Err(HunkInsertionError::NonAdjacentHunk {
-                    incoming_line: incoming_line_idx,
-                    last_line: first_line_idx,
-                });
-            }
-
-            // Only add a new line here if the the incoming line index is one after the last entry
-            // If this isn't the case, the incoming line index must be the same as the last line
-            // index, so we don't have to add a new line.
-            if first_line_idx - incoming_line_idx == 1 {
-                self.0.push_front(Line::new(incoming_line_idx));
-            }
-        } else {
-            // line is empty
-            self.0.push_front(Line::new(incoming_line_idx));
-        }
-
-        // Add the entry to the last line
-        let first_line = self.0.front_mut().unwrap();
-
-        // Entries must be added in order, so ensure the last entry in the line has an ending
-        // column less than the incoming entry's starting column.
-        // TODO(afnan) should this actually be checking the first entry?
-        if let Some(&first_entry) = first_line.entries.back() {
-            //if let Some(&first_entry) = first_line.entries.front() {
-            // TODO(afnan) ^ this instead?
-            // TODO(afnan) should this be start_position() instead of end?
-            let first_col = first_entry.end_position().column;
-            //let first_col = first_entry.start_position().column;
-            // TODO(afnan) ^ this instead?
-            let incoming_col = entry.end_position().column;
-
-            if incoming_col > first_col {
-                return Err(HunkInsertionError::LaterColumn {
-                    incoming_col,
-                    first_col,
-                });
-            }
-        }
-        first_line.entries.push_front(entry);
-        Ok(())
+        self.0.last().map(|x| x.line_index)
     }
 
     /// Append an [entry](Entry) to a hunk.
@@ -215,7 +146,7 @@ impl<'a> Hunk<'a> {
 
         // Create a new line if the incoming entry is on the next line. This will throw an error
         // if we have an entry on a non-adjacent line or an out-of-order insertion.
-        if let Some(last_line) = self.0.back() {
+        if let Some(last_line) = self.0.last() {
             let last_line_idx = last_line.line_index;
 
             if incoming_line_idx < last_line_idx {
@@ -233,17 +164,17 @@ impl<'a> Hunk<'a> {
             }
 
             if incoming_line_idx - last_line_idx == 1 {
-                self.0.push_back(Line::new(incoming_line_idx));
+                self.0.push(Line::new(incoming_line_idx));
             }
         }
         // The lines are empty, we need to add the first one
         else {
-            self.0.push_back(Line::new(incoming_line_idx));
+            self.0.push(Line::new(incoming_line_idx));
         }
 
-        let last_line = self.0.back_mut().unwrap();
+        let last_line = self.0.last_mut().unwrap();
 
-        if let Some(&last_entry) = last_line.entries.back() {
+        if let Some(&last_entry) = last_line.entries.last() {
             let last_col = last_entry.end_position().column;
             let last_line = last_entry.end_position().row;
             let incoming_col = entry.start_position().column;
@@ -258,53 +189,169 @@ impl<'a> Hunk<'a> {
                 });
             }
         }
-        last_line.entries.push_back(entry);
+        last_line.entries.push(entry);
         Ok(())
     }
 }
+
+/// A generic type for diffs that source from one of two documents.
+///
+/// A lot of items in the diff are delineated by whether they come from the old document or the new
+/// one. This enum generically defines an enum wrapper over those document types.
+#[derive(Debug, Clone, PartialEq)]
+pub enum DocumentType<T: Debug + Clone + PartialEq> {
+    Old(T),
+    New(T),
+}
+
+impl<T> AsRef<T> for DocumentType<T>
+where
+    T: Debug + Clone + PartialEq,
+{
+    fn as_ref(&self) -> &T {
+        match self {
+            Self::Old(x) | Self::New(x) => x,
+        }
+    }
+}
+
+impl<T> AsMut<T> for DocumentType<T>
+where
+    T: Debug + Clone + PartialEq,
+{
+    fn as_mut(&mut self) -> &mut T {
+        match self {
+            Self::Old(x) | Self::New(x) => x,
+        }
+    }
+}
+
+impl<T: Debug + Clone + PartialEq> DocumentType<T> {
+    /// Move the inner object out and consume it.
+    fn consume(self) -> T {
+        match self {
+            Self::Old(x) | Self::New(x) => x,
+        }
+    }
+}
+
+/// A hunk with metadata about which document it came from.
+pub type RichHunk<'a> = DocumentType<Hunk<'a>>;
 
 /// The hunks that correspond to a document
 ///
 /// This type implements a helper builder function that can take
 #[derive(Debug, Clone, PartialEq)]
-pub struct Hunks<'a>(pub VecDeque<Hunk<'a>>);
+pub struct Hunks<'a>(pub Vec<Hunk<'a>>);
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct RichHunks<'a>(pub Vec<RichHunk<'a>>);
+
+/// A builder struct for [`RichHunks`].
+///
+/// The builder struct allows us to maintain some state as we build [`RichHunks`].
+pub struct RichHunksBuilder<'a> {
+    /// The hunks that we're trying to build
+    hunks: RichHunks<'a>,
+
+    /// The last old entry seen so far (if any).
+    last_old: Option<usize>,
+
+    /// The last new entry seen so far (if any).
+    last_new: Option<usize>,
+}
+
+impl<'a> RichHunksBuilder<'a> {
+    pub fn new() -> Self {
+        Self {
+            hunks: RichHunks(Vec::new()),
+            last_old: None,
+            last_new: None,
+        }
+    }
+
+    /// Finalize building the hunks.
+    ///
+    /// This consumes the builder, which means you won't be able to add to it any more.
+    pub fn build(self) -> RichHunks<'a> {
+        self.hunks
+    }
+
+    /// Initialize a new hunk struct for the incoming entry if necessary.
+    ///
+    /// This returns the hunk that the entry should be added to.
+    fn get_hunk_for_insertion(
+        &mut self,
+        incoming_entry: &DocumentType<Entry<'a>>,
+    ) -> Result<usize, HunkInsertionError> {
+        let (mut last_idx, new_hunk) = match incoming_entry {
+            DocumentType::Old(_) => (self.last_old, DocumentType::Old(Hunk::new())),
+            DocumentType::New(_) => (self.last_new, DocumentType::New(Hunk::new())),
+        };
+
+        match last_idx {
+            // If there is no hunk for this type, we create a new one and will add the incoming
+            // entry to it.
+            None => {
+                self.hunks.0.push(new_hunk);
+                last_idx = Some(self.hunks.0.len() - 1);
+            }
+            // If there is a reference to the last hunk that corresponds to the incoming entry's
+            // document type, we check the line numbers and create a new hunk if necessary.
+            Some(idx) => {
+                let last_hunk = self.hunks.0[idx].as_ref();
+                let last_line = last_hunk.last_line();
+
+                // If the hunk is populated, we only add to it if the incoming entry is on the same
+                // line as the last hunk for the same type. Otherwise we break and create a new
+                // one. If the hunk is empty, we can obviously add to it, so we do nothing.
+                if let Some(last_line) = last_line {
+                    let incoming_line = incoming_entry.as_ref().end_position.row;
+
+                    if incoming_line < last_line {
+                        return Err(HunkInsertionError::PriorLine {
+                            incoming_line,
+                            last_line,
+                        });
+                    }
+
+                    // If we have a non-adjacent edit, we need to create a new hunk. If the last
+                    // hunk for this document type isn't the last edit, we need to create a new
+                    // hunk because the edit chain has been broken.
+                    if incoming_line - last_line > 1 {
+                        self.hunks.0.push(new_hunk);
+                        last_idx = Some(self.hunks.0.len() - 1);
+                    }
+
+                    // Otherwise, the line number must be equal
+                }
+            }
+        };
+
+        match incoming_entry {
+            DocumentType::Old(_) => self.last_old = last_idx,
+            DocumentType::New(_) => self.last_new = last_idx,
+        }
+        Ok(last_idx.unwrap())
+    }
+
+    /// Add an entry to the hunks.
+    pub fn push_back(&mut self, entry_wrapper: DocumentType<Entry<'a>>) -> Result<()> {
+        let insertion_idx = self.get_hunk_for_insertion(&entry_wrapper)?;
+        self.hunks.0[insertion_idx]
+            .as_mut()
+            .push_back(entry_wrapper.consume())?;
+        Ok(())
+    }
+}
 
 impl<'a> Hunks<'a> {
     pub fn new() -> Self {
-        Hunks(VecDeque::new())
-    }
-
-    /// Push an entry to the front of the hunks
-    ///
-    /// This will expand the list of hunks if necessary, though the entry must precede the foremost
-    /// hunk in the document (by row/column). Failing to do so will result in an error.
-    #[allow(dead_code)]
-    pub fn push_front(&mut self, entry: Entry<'a>) -> Result<()> {
-        // If the hunk isn't empty, attempt to prepend an entry into the first hunk
-        if let Some(hunk) = self.0.front_mut() {
-            let res = hunk.push_front(entry);
-
-            // If the hunk insertion fails because an entry isn't adjacent, then we can create a
-            // new hunk. Otherwise we propagate the error since it is a logic error.
-            if let Err(HunkInsertionError::NonAdjacentHunk {
-                incoming_line: _,
-                last_line: _,
-            }) = res
-            {
-                self.0.push_front(Hunk::new());
-                self.0.front_mut().unwrap().push_front(entry)?;
-            } else {
-                res.map_err(|x| anyhow::anyhow!(x))?;
-            }
-        } else {
-            self.0.push_front(Hunk::new());
-            self.0.front_mut().unwrap().push_front(entry)?;
-        }
-        Ok(())
+        Hunks(Vec::new())
     }
 
     pub fn push_back(&mut self, entry: Entry<'a>) -> Result<()> {
-        if let Some(hunk) = self.0.back_mut() {
+        if let Some(hunk) = self.0.last_mut() {
             let res = hunk.push_back(entry);
 
             // If the incoming edit is not adjacent that means we need to create a new edit hunk
@@ -313,14 +360,14 @@ impl<'a> Hunks<'a> {
                 last_line: _,
             }) = res
             {
-                self.0.push_back(Hunk::new());
-                self.0.back_mut().unwrap().push_front(entry)?;
+                self.0.push(Hunk::new());
+                self.0.last_mut().unwrap().push_back(entry)?;
             } else {
                 res.map_err(|x| anyhow::anyhow!(x))?;
             }
         } else {
-            self.0.push_back(Hunk::new());
-            self.0.back_mut().unwrap().push_back(entry)?;
+            self.0.push(Hunk::new());
+            self.0.last_mut().unwrap().push_back(entry)?;
         }
         Ok(())
     }
@@ -343,44 +390,6 @@ impl<'a> FromIterator<Entry<'a>> for HunkAppender<'a> {
             hunks.push_back(i).expect("Invalid iterator");
         }
         HunkAppender(hunks)
-    }
-}
-
-pub struct HunkPrepender<'a>(pub Hunks<'a>);
-
-impl<'a> FromIterator<Entry<'a>> for HunkPrepender<'a> {
-    /// Create an instance of `Hunks` from an iterator over [entries](Entry).
-    ///
-    /// The user is responsible for making sure that the hunks are in proper order, otherwise this
-    /// constructor may panic.
-    fn from_iter<T>(iter: T) -> Self
-    where
-        T: IntoIterator<Item = Entry<'a>>,
-    {
-        let mut hunks = Hunks::new();
-
-        for i in iter {
-            hunks.push_front(i).expect("Invalid iterator");
-        }
-        HunkPrepender(hunks)
-    }
-}
-
-impl<'a> FromIterator<Entry<'a>> for Hunks<'a> {
-    /// Create an instance of `Hunks` from an iterator over [entries](Entry).
-    ///
-    /// The user is responsible for making sure that the hunks are in proper order, otherwise this
-    /// constructor may panic.
-    fn from_iter<T>(iter: T) -> Self
-    where
-        T: IntoIterator<Item = Entry<'a>>,
-    {
-        let mut hunks = Hunks::new();
-
-        for i in iter {
-            hunks.push_back(i).expect("Invalid iterator");
-        }
-        hunks
     }
 }
 
@@ -692,6 +701,24 @@ impl Myers {
     }
 }
 
+impl<'a> TryFrom<Vec<EditType<&Entry<'a>>>> for RichHunks<'a> {
+    type Error = anyhow::Error;
+
+    fn try_from(edits: Vec<EditType<&Entry<'a>>>) -> Result<Self, Self::Error> {
+        let mut builder = RichHunksBuilder::new();
+
+        for edit_wrapper in edits {
+            let edit = match edit_wrapper {
+                EditType::Addition(&edit) => DocumentType::New(edit),
+                EditType::Deletion(&edit) => DocumentType::Old(edit),
+            };
+            builder.push_back(edit)?;
+        }
+
+        Ok(builder.build())
+    }
+}
+
 /// Compute the hunks corresponding to the minimum edit path between two documents.
 ///
 /// This will process the the AST vectors with the user-provided settings.
@@ -699,25 +726,10 @@ impl Myers {
 /// This will return two groups of [hunks](diff::Hunks) in a tuple of the form
 /// `(old_hunks, new_hunks)`.
 #[time("info", "diff::{}")]
-pub fn compute_edit_script<'a>(old: &[Entry<'a>], new: &[Entry<'a>]) -> (Hunks<'a>, Hunks<'a>) {
+pub fn compute_edit_script<'a>(old: &[Entry<'a>], new: &[Entry<'a>]) -> Result<RichHunks<'a>> {
     let myers = Myers::default();
     let edit_script = myers.diff(old, new);
-    let edit_script_len = edit_script.len();
-
-    let mut old_edits = Vec::with_capacity(edit_script_len);
-    let mut new_edits = Vec::with_capacity(edit_script_len);
-
-    for edit in edit_script {
-        match edit {
-            EditType::Deletion(&e) => old_edits.push(e),
-            EditType::Addition(&e) => new_edits.push(e),
-        };
-    }
-
-    // Convert the vectors of edits into consolidated edit hunks
-    let old_hunks = old_edits.into_iter().collect();
-    let new_hunks = new_edits.into_iter().collect();
-    (old_hunks, new_hunks)
+    RichHunks::try_from(edit_script)
 }
 
 #[cfg(test)]
