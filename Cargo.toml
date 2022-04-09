@@ -43,7 +43,6 @@ clap_complete = "3.1.1"
 anyhow = "1.0.56"
 phf = { version = "0.10.1", features = ["macros"] }
 console = "0.15.0"
-paw = "1.0.0"
 strum = { version = "0.24.0", features = ["derive"] }
 strum_macros = "0.24.0"
 serde = { version = "1.0.136", features = ["derive"] }
