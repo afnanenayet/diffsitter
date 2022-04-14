@@ -79,7 +79,7 @@ cc = { version = "1.0.73", features = ["parallel"] }
 phf = { version = "0.10.1", features = ["macros"] }
 anyhow = "1.0.56"
 cargo-emit = "0.2.1"
-rayon = "1.5.1"
+rayon = "1.5.2"
 thiserror = "1.0.30"
 build-info-build = { version = "0.0.26", optional = true }
 
