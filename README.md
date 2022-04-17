@@ -46,7 +46,7 @@ languages supported by tree-sitter.
 
 Take the following files:
 
-[`a.rs`](test_data/test_1_a.rs)
+[`a.rs`](test_data/short/rust/a.rs)
 
 ```rust
 fn main() {
@@ -57,7 +57,7 @@ fn add_one {
 }
 ```
 
-[`b.rs`](test_data/test_1_b.rs)
+[`b.rs`](test_data/short/rust/b.rs)
 
 ```rust
 fn
@@ -108,17 +108,9 @@ function, even though they aren't semantically different.
 
 Check out the output from `diffsitter`:
 
-```text
-test_data/test_1_a.rs -> test_data/test_1_b.rs
-==============================================
-
-1:
---
--     let x = 1;
-
-4:
---
-- fn add_one {
+```
+test_data/short/rust/a.rs -> test_data/short/rust/b.rs
+======================================================
 
 9:
 --
@@ -128,9 +120,17 @@ test_data/test_1_a.rs -> test_data/test_1_b.rs
 ---
 + fn addition() {
 
+1:
+--
+-     let x = 1;
+
 14:
 ---
 + fn add_two() {
+
+4:
+--
+- fn add_one {
 ```
 
 *Note: the numbers correspond to line numbers from the original files.*

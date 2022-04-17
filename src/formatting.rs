@@ -1,14 +1,14 @@
 //! Utilities related to displaying/formatting the edits computed as the difference between two
 //! ASTs
 
-use crate::diff::{Hunk, Hunks, Line};
+use crate::diff::{Hunk, Line, RichHunk, RichHunks};
 use anyhow::Result;
 use console::{Color, Style, Term};
 use log::{debug, info};
 use logging_timer::time;
 use serde::{Deserialize, Serialize};
 use std::{
-    cmp::{max, Ordering},
+    cmp::max,
     io::{BufWriter, Write},
 };
 use strum_macros::EnumString;
@@ -162,6 +162,8 @@ impl Default for DiffWriter {
 /// User supplied parameters that are required to display a diff
 #[derive(Debug, Clone, PartialEq)]
 pub struct DisplayParameters<'a> {
+    /// The hunks constituting the diff.
+    pub hunks: RichHunks<'a>,
     /// The parameters that correspond to the old document
     pub old: DocumentDiffData<'a>,
     /// The parameters that correspond to the new document
@@ -173,8 +175,6 @@ pub struct DisplayParameters<'a> {
 pub struct DocumentDiffData<'a> {
     /// The filename of the document
     pub filename: &'a str,
-    /// The edit hunks for the document
-    pub hunks: &'a Hunks<'a>,
     /// The full text of the document
     pub text: &'a str,
 }
@@ -206,7 +206,7 @@ impl DiffWriter {
     /// between lines.
     #[time("info", "formatting::{}")]
     pub fn print(&self, term: &mut BufWriter<Term>, params: &DisplayParameters) -> Result<()> {
-        let DisplayParameters { old, new } = &params;
+        let DisplayParameters { hunks, old, new } = &params;
         let old_fmt = FormattingDirectives::from(&self.deletion);
         let new_fmt = FormattingDirectives::from(&self.addition);
 
@@ -218,52 +218,15 @@ impl DiffWriter {
 
         self.print_title(term, old.filename, new.filename, &old_fmt, &new_fmt)?;
 
-        // Iterate through the edits on both documents. We know that both of the vectors are
-        // sorted, and we can use that property to iterate through the entries in O(n).
-        let mut it_old = 0;
-        let mut it_new = 0;
-
-        while it_old < old.hunks.0.len() && it_new < new.hunks.0.len() {
-            let old_hunk = &old.hunks.0[it_old];
-            let new_hunk = &new.hunks.0[it_new];
-
-            // We can unwrap here because the loop invariant enforces that there is at least one
-            // element in the deque, otherwise the loop wouldn't run at all.
-            let old_line_num = old_hunk.first_line().unwrap();
-            let new_line_num = new_hunk.first_line().unwrap();
-
-            match old_line_num.cmp(&new_line_num) {
-                Ordering::Equal => {
-                    self.print_hunk(term, &old_lines, old_hunk, &old_fmt)?;
-                    self.print_hunk(term, &new_lines, new_hunk, &new_fmt)?;
-                    it_old += 1;
-                    it_new += 1;
+        for hunk_wrapper in &hunks.0 {
+            match hunk_wrapper {
+                RichHunk::Old(hunk) => {
+                    self.print_hunk(term, &old_lines, hunk, &old_fmt)?;
                 }
-                Ordering::Less => {
-                    self.print_hunk(term, &old_lines, old_hunk, &old_fmt)?;
-                    it_old += 1;
+                RichHunk::New(hunk) => {
+                    self.print_hunk(term, &new_lines, hunk, &new_fmt)?;
                 }
-                Ordering::Greater => {
-                    self.print_hunk(term, &new_lines, new_hunk, &new_fmt)?;
-                    it_new += 1;
-                }
-            };
-        }
-
-        debug!("Printing remaining old hunks");
-
-        while it_old < old.hunks.0.len() {
-            let hunk = &old.hunks.0[it_old];
-            self.print_hunk(term, &old_lines, hunk, &old_fmt)?;
-            it_old += 1;
-        }
-
-        debug!("Printing remaining new hunks");
-
-        while it_new < new.hunks.0.len() {
-            let hunk = &new.hunks.0[it_new];
-            self.print_hunk(term, &new_lines, hunk, &new_fmt)?;
-            it_new += 1;
+            }
         }
         Ok(())
     }
