@@ -6,6 +6,7 @@ mod input_processing;
 mod neg_idx_vec;
 mod parse;
 
+#[cfg(feature = "static-grammar-libs")]
 use crate::parse::supported_languages;
 use anyhow::Result;
 use clap::IntoApp;
