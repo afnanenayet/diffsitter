@@ -149,6 +149,10 @@ It also has extensive logging if you want to debug or see timing information:
 
 ## Installation
 
+<a href="https://repology.org/project/diffsitter/versions">
+  <img src="https://repology.org/badge/vertical-allrepos/diffsitter.svg" alt="Packaging status" align="right">
+</a>
+
 ### Published binaries
 
 This project uses Github actions to build and publish binaries for each tagged
