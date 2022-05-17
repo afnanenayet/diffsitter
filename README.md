@@ -149,6 +149,10 @@ It also has extensive logging if you want to debug or see timing information:
 
 ## Installation
 
+<a href="https://repology.org/project/diffsitter/versions">
+  <img src="https://repology.org/badge/vertical-allrepos/diffsitter.svg" alt="Packaging status" align="right">
+</a>
+
 ### Published binaries
 
 This project uses Github actions to build and publish binaries for each tagged
@@ -174,6 +178,17 @@ brew install diffsitter
 
 @samhh has packaged diffsitter for arch on the AUR. Use your favorite AUR
 helper to install [`diffsitter-bin`](https://aur.archlinux.org/packages/diffsitter-bin/).
+
+### Alpine Linux
+
+Install package [diffsitter](https://pkgs.alpinelinux.org/packages?name=diffsitter) from the Alpine Linux repositories (on v3.16+ or Edge):
+
+```sh
+apk add diffsitter
+```
+
+Tree-sitter grammars are packaged separately (search for [tree-sitter-\*](https://pkgs.alpinelinux.org/packages?name=tree-sitter-*&arch=x86_64)).
+You can install individual packages you need or the virtual package `tree-sitter-grammars` to install all of them.
 
 ## Usage
 
