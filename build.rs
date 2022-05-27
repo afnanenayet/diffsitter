@@ -96,6 +96,17 @@ fn compile_grammar(
     cpp_sources: &[PathBuf],
     output_name: &str,
 ) -> Result<(), cc::Error> {
+    // NOTE: that we have to compile the C sources first because the scanner depends on the parser.
+    // Right now the only C libraries are parsers, so we build them before the C++ files, which
+    // are only scanners. This resolves a linker error we were seeing on Linux.
+    if !c_sources.is_empty() {
+        cc::Build::new()
+            .include(include)
+            .files(c_sources)
+            .warnings(false)
+            .try_compile(output_name)?;
+    }
+
     if !cpp_sources.is_empty() {
         cc::Build::new()
             .cpp(true)
@@ -106,13 +117,6 @@ fn compile_grammar(
             .try_compile(&format!("{}-cpp-compile-diffsiter", &output_name))?;
     }
 
-    if !c_sources.is_empty() {
-        cc::Build::new()
-            .include(include)
-            .files(c_sources)
-            .warnings(false)
-            .try_compile(output_name)?;
-    }
     Ok(())
 }
 
@@ -158,15 +162,16 @@ fn preprocess_compile_info(grammar: &GrammarCompileInfo) -> CompileParams {
     // The directory to the source files
     let dir = grammar.path.join("src");
 
-    // Prepend {grammar-repo}/src path to each file
-    let c_sources: Vec<_> = grammar
-        .c_sources
-        .iter()
-        .map(|&filename| dir.join(filename))
-        .collect();
     let cpp_sources: Vec<_> = grammar
         .cpp_sources
         .iter()
+        // Prepend {grammar-repo}/src path to each file
+        .map(|&filename| dir.join(filename))
+        .collect();
+    let c_sources: Vec<_> = grammar
+        .c_sources
+        .iter()
+        // Prepend {grammar-repo}/src path to each file
         .map(|&filename| dir.join(filename))
         .collect();
 
