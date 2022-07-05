@@ -91,7 +91,7 @@ version = "0.0.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "242c6293ad5acf5d9adb75231c1bd0c9cb0aecb64dd40e6579e36e0da7260f9b"
 dependencies = [
- "build-info-common",
+ "build-info-common 0.0.26",
  "build-info-proc",
  "lazy_static",
  "proc-macro-hack",
@@ -99,14 +99,14 @@ dependencies = [
 
 [[package]]
 name = "build-info-build"
-version = "0.0.26"
+version = "0.0.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1ebfef0dcb94d65cc2cd98ce285de89ed40c9a1d2bb10175f548867d0e26cda0"
+checksum = "9c271ac5066e0d47fdc0c101a8bc32ee9588b11b2aa5c0577101dddab53a156d"
 dependencies = [
  "anyhow",
  "base64",
  "bincode",
- "build-info-common",
+ "build-info-common 0.0.27",
  "cargo_metadata",
  "chrono",
  "git2",
@@ -131,6 +131,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "build-info-common"
+version = "0.0.27"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "634c4b5393399f9bdd65950764ee1f002300ed65535ce18f3ec686badf9c15d3"
+dependencies = [
+ "chrono",
+ "derive_more",
+ "semver",
+ "serde",
+]
+
+[[package]]
 name = "build-info-proc"
 version = "0.0.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -139,7 +151,7 @@ dependencies = [
  "anyhow",
  "base64",
  "bincode",
- "build-info-common",
+ "build-info-common 0.0.26",
  "chrono",
  "format-buf",
  "num-bigint",
@@ -191,9 +203,9 @@ dependencies = [
 
 [[package]]
 name = "cargo_metadata"
-version = "0.14.2"
+version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4acbb09d9ee8e23699b9634375c72795d095bf268439da88562cf9b501f181fa"
+checksum = "3abb7553d5b9b8421c6de7cb02606ff15e0c6eea7d8eadd75ef013fd636bec36"
 dependencies = [
  "camino",
  "cargo-platform",
@@ -1151,9 +1163,9 @@ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 
 [[package]]
 name = "semver"
-version = "1.0.6"
+version = "1.0.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a4a3381e03edd24287172047536f20cabde766e2cd3e65e6b00fb3af51c4f38d"
+checksum = "a2333e6df6d6598f2b1974829f853c2b4c5f4a6e503c10af918081aa6f8564e1"
 dependencies = [
  "serde",
 ]
