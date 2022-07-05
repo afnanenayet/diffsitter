@@ -52,7 +52,7 @@ pretty_env_logger = "0.4.0"
 log = { version = "0.4.17", features = ["std"] }
 thiserror = "1.0.31"
 logging_timer = "1.1.0"
-build-info = { version = "0.0.26", optional = true }
+build-info = { version = "0.0.27", optional = true }
 jemallocator = { version = "0.5.0", optional = true }
 libloading = "0.7.3"
 unicode-segmentation = "1.9.0"
