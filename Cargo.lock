@@ -87,9 +87,9 @@ dependencies = [
 
 [[package]]
 name = "build-info"
-version = "0.0.26"
+version = "0.0.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "242c6293ad5acf5d9adb75231c1bd0c9cb0aecb64dd40e6579e36e0da7260f9b"
+checksum = "ffbdd72be39a511fbc2b58408f01716edf1183296c0b3b5ce61df0c041b4120c"
 dependencies = [
  "build-info-common",
  "build-info-proc",
@@ -99,9 +99,9 @@ dependencies = [
 
 [[package]]
 name = "build-info-build"
-version = "0.0.26"
+version = "0.0.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1ebfef0dcb94d65cc2cd98ce285de89ed40c9a1d2bb10175f548867d0e26cda0"
+checksum = "9c271ac5066e0d47fdc0c101a8bc32ee9588b11b2aa5c0577101dddab53a156d"
 dependencies = [
  "anyhow",
  "base64",
@@ -120,9 +120,9 @@ dependencies = [
 
 [[package]]
 name = "build-info-common"
-version = "0.0.26"
+version = "0.0.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db629469a6955021b15eb99cf5983ae8dcf9d0432ba2a8295715efee232da912"
+checksum = "634c4b5393399f9bdd65950764ee1f002300ed65535ce18f3ec686badf9c15d3"
 dependencies = [
  "chrono",
  "derive_more",
@@ -132,16 +132,15 @@ dependencies = [
 
 [[package]]
 name = "build-info-proc"
-version = "0.0.26"
+version = "0.0.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0965fa7159aa2cee4c5428ccec2d09dabb6ac5db2fe80d81cb8a158f5c47b335"
+checksum = "726d98512f105b7fe09d33fa3f6c41b78afa040e351c24308d0c8963f3e3bf9f"
 dependencies = [
  "anyhow",
  "base64",
  "bincode",
  "build-info-common",
  "chrono",
- "format-buf",
  "num-bigint",
  "num-traits",
  "proc-macro-error",
@@ -191,9 +190,9 @@ dependencies = [
 
 [[package]]
 name = "cargo_metadata"
-version = "0.14.2"
+version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4acbb09d9ee8e23699b9634375c72795d095bf268439da88562cf9b501f181fa"
+checksum = "3abb7553d5b9b8421c6de7cb02606ff15e0c6eea7d8eadd75ef013fd636bec36"
 dependencies = [
  "camino",
  "cargo-platform",
@@ -499,12 +498,6 @@ dependencies = [
  "matches",
  "percent-encoding",
 ]
-
-[[package]]
-name = "format-buf"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f7aea5a5909a74969507051a3b17adc84737e31a5f910559892aedce026f4d53"
 
 [[package]]
 name = "fs_extra"
@@ -1151,9 +1144,9 @@ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 
 [[package]]
 name = "semver"
-version = "1.0.6"
+version = "1.0.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a4a3381e03edd24287172047536f20cabde766e2cd3e65e6b00fb3af51c4f38d"
+checksum = "a2333e6df6d6598f2b1974829f853c2b4c5f4a6e503c10af918081aa6f8564e1"
 dependencies = [
  "serde",
 ]
