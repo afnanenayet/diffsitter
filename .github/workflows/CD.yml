@@ -130,10 +130,6 @@ jobs:
             artifact_name: diffsitter
             target: x86_64-apple-darwin
             use-cross: false
-          - os: windows-latest
-            artifact_name: diffsitter.exe
-            target: x86_64-pc-windows-msvc
-            use-cross: false
 
     steps:
       - uses: actions/checkout@v2
