@@ -322,6 +322,7 @@ mod tests {
 
     #[test_case("short", "rust", "rs", true)]
     #[test_case("short", "python", "py", true)]
+    #[test_case("short", "go", "go", true)]
     #[test_case("medium", "rust", "rs", true)]
     #[test_case("medium", "rust", "rs", false)]
     #[test_case("medium", "cpp", "cpp", true)]
