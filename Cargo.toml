@@ -33,7 +33,7 @@ include = [
 
 [dependencies]
 tree-sitter = "0.20.8"
-clap = { version = "3.2.12", features = [
+clap = { version = "3.2.15", features = [
   "derive",
   "env",
   "unicode",
@@ -41,11 +41,11 @@ clap = { version = "3.2.12", features = [
 ] }
 clap_complete = "3.2.3"
 anyhow = "1.0.58"
-phf = { version = "0.10.1", features = ["macros"] }
-console = "0.15.0"
+phf = { version = "0.11.0", features = ["macros"] }
+console = "0.15.1"
 strum = { version = "0.24.1", features = ["derive"] }
 strum_macros = "0.24.2"
-serde = { version = "1.0.139", features = ["derive"] }
+serde = { version = "1.0.140", features = ["derive"] }
 serde_json = "1.0.82"
 json5 = "0.4.1"
 pretty_env_logger = "0.4.0"
@@ -58,13 +58,13 @@ libloading = "0.7.3"
 unicode-segmentation = "1.9.0"
 
 [dev-dependencies]
-test-case = "2.1.0"
+test-case = "2.2.1"
 pretty_assertions = "1.2.1"
 
 # We need the backtrace feature to enable snapshot name generation in
 # single-threaded tests (tests using cargo cross run single-threaded due to
 # limitations with QEMU).
-insta = { version = "1.15.0", features = ["backtrace"] }
+insta = { version = "1.17.0", features = ["backtrace"] }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 # We use directories next to get the windows config path
@@ -76,7 +76,7 @@ xdg = "2.4.1"
 
 [build-dependencies]
 cc = { version = "1.0.73", features = ["parallel"] }
-phf = { version = "0.10.1", features = ["macros"] }
+phf = { version = "0.11.0", features = ["macros"] }
 anyhow = "1.0.58"
 cargo-emit = "0.2.1"
 rayon = "1.5.3"
