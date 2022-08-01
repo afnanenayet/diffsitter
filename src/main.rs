@@ -15,6 +15,7 @@ use cli::{Args, ColorOutputPolicy};
 use config::{Config, ReadError};
 use console::Term;
 use formatting::{DisplayParameters, DocumentDiffData};
+use human_panic::setup_panic;
 use input_processing::VectorData;
 use log::{debug, error, info, warn, LevelFilter};
 use parse::{generate_language, language_from_ext, GrammarConfig};
@@ -249,6 +250,7 @@ fn print_shell_completion(shell: clap_complete::Shell) {
 }
 
 fn main() -> Result<()> {
+    setup_panic!();
     use cli::Command;
     let args = Args::parse();
 
