@@ -33,7 +33,7 @@ include = [
 
 [dependencies]
 tree-sitter = "0.20.8"
-clap = { version = "3.2.15", features = [
+clap = { version = "3.2.16", features = [
   "derive",
   "env",
   "unicode",
@@ -64,7 +64,7 @@ pretty_assertions = "1.2.1"
 # We need the backtrace feature to enable snapshot name generation in
 # single-threaded tests (tests using cargo cross run single-threaded due to
 # limitations with QEMU).
-insta = { version = "1.17.0", features = ["backtrace"] }
+insta = { version = "1.17.1", features = ["backtrace"] }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 # We use directories next to get the windows config path
