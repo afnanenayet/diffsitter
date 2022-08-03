@@ -9,8 +9,8 @@ mod parse;
 #[cfg(feature = "static-grammar-libs")]
 use crate::parse::supported_languages;
 use anyhow::Result;
+use clap::FromArgMatches;
 use clap::IntoApp;
-use clap::Parser;
 use cli::{Args, ColorOutputPolicy};
 use config::{Config, ReadError};
 use console::Term;
@@ -28,7 +28,7 @@ use std::{
 };
 
 #[cfg(feature = "better-build-info")]
-build_info::build_info!(fn build_info);
+use shadow_rs::shadow;
 
 #[cfg(feature = "jemallocator")]
 use jemallocator::Jemalloc;
@@ -191,21 +191,6 @@ fn dump_default_config() -> Result<()> {
     Ok(())
 }
 
-/// Print extended version information to the terminal
-#[cfg(feature = "better-build-info")]
-fn print_build_info() {
-    println!(
-        "{}",
-        build_info::format!("{} v{} ({} {}) built with {}",
-            $.crate_info.name,
-            $.crate_info.version,
-            $.version_control?.git()?.commit_short_id,
-            $.timestamp,
-            $.compiler
-        )
-    );
-}
-
 /// Run the diff fallback command using the command and the given paths.
 fn diff_fallback(cmd: &str, old: &Path, new: &Path) -> io::Result<Child> {
     debug!("Spawning diff fallback process");
@@ -250,9 +235,22 @@ fn print_shell_completion(shell: clap_complete::Shell) {
 }
 
 fn main() -> Result<()> {
+    // Set up a panic handler that will yield more human-readable errors.
     setup_panic!();
+
+    #[cfg(feature = "better-build-info")]
+    shadow!(build);
+
     use cli::Command;
-    let args = Args::parse();
+
+    #[cfg(feature = "better-build-info")]
+    let command = Args::command().version(build::CLAP_LONG_VERSION);
+
+    #[cfg(not(feature = "better-build-info"))]
+    let command = Args::command();
+
+    let matches = command.get_matches();
+    let args = Args::from_arg_matches(&matches)?;
 
     // We parse the config as early as possible so users can get quick feedback if anything is off
     // with their config.
@@ -264,8 +262,6 @@ fn main() -> Result<()> {
             Command::List => list_supported_languages(),
             Command::DumpDefaultConfig => dump_default_config()?,
 
-            #[cfg(feature = "better-build-info")]
-            Command::BuildInfo => print_build_info(),
             Command::GenCompletion { shell } => {
                 print_shell_completion(shell.into());
             }

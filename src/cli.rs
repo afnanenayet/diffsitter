@@ -108,10 +108,6 @@ pub enum Command {
     /// Dump the default config to stdout
     DumpDefaultConfig,
 
-    /// Print extended build information
-    #[cfg(feature = "better-build-info")]
-    BuildInfo,
-
     /// Generate shell completion scripts for diffsitter
     GenCompletion {
         /// The shell to generate completion scripts for.

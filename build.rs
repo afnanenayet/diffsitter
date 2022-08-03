@@ -396,12 +396,12 @@ use phf::phf_map;
     Ok(())
 }
 
-fn main() -> Result<()> {
+fn main() -> anyhow::Result<()> {
     #[cfg(feature = "static-grammar-libs")]
     compile_static_grammars()?;
 
     #[cfg(feature = "better-build-info")]
-    build_info_build::build_script();
+    shadow_rs::new().map_err(|e| return anyhow::anyhow!(e.to_string()))?;
 
     // TODO(afnan): add generaetd shell completion scripts
     Ok(())
