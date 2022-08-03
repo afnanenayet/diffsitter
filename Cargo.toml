@@ -52,11 +52,11 @@ pretty_env_logger = "0.4.0"
 log = { version = "0.4.17", features = ["std"] }
 thiserror = "1.0.31"
 logging_timer = "1.1.0"
-build-info = { version = "0.0.27", optional = true }
 jemallocator = { version = "0.5.0", optional = true }
 libloading = "0.7.3"
 unicode-segmentation = "1.9.0"
 human-panic = "1.0.3"
+shadow-rs = { version = "0.16.1", optional = true }
 
 [dev-dependencies]
 test-case = "2.2.1"
@@ -82,14 +82,14 @@ anyhow = "1.0.58"
 cargo-emit = "0.2.1"
 rayon = "1.5.3"
 thiserror = "1.0.31"
-build-info-build = { version = "0.0.27", optional = true }
+shadow-rs = { version = "0.16.1", optional = true }
 
 [features]
 default = ["static-grammar-libs"]
 
 # Enable full build info as a subcommand. This takes longer to build so it's
 # generally just enabled for releases.
-better-build-info = ["build-info", "build-info-build"]
+better-build-info = ["shadow-rs"]
 
 # Enable dynamically loading libraries instead of compiling the libraries as
 # submodules.
