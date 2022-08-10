@@ -44,7 +44,7 @@ anyhow = "1.0.58"
 phf = { version = "0.11.0", features = ["macros"] }
 console = "0.15.1"
 strum = { version = "0.24.1", features = ["derive"] }
-strum_macros = "0.24.2"
+strum_macros = "0.24.3"
 serde = { version = "1.0.142", features = ["derive"] }
 serde_json = "1.0.82"
 json5 = "0.4.1"
