@@ -7,34 +7,72 @@
 {
     // Set options for terminal formatting here
     "formatting": {
-        // Set the style for diff hunks from the new document
-        "addition": {
-            // The color of the highlight around emphasized added text
-            "highlight": null,
-            // The foreground color for regular text
-            "regular-foreground": "green",
-            // The foreground color for emphasized text
-            // Note that colors can either be a string or a 256 bit color value
-            "emphasized-foreground": {
-                "color256": 0,
-            },
-            // Whether emphasized text should be bolded
-            "bold": true,
-            // Whether emphasized text should be underlined
-            "underline": false,
-            // The prefix string prepend to the contents of the diff hunk, for
-            // an addition hunk
-            "prefix": "+",
+        "unified": {
+          // Set the style for diff hunks from the new document
+          "addition": {
+              // The color of the highlight around emphasized added text
+              "highlight": null,
+              // The foreground color for regular text
+              "regular-foreground": "green",
+              // The foreground color for emphasized text
+              // Note that colors can either be a string or a 256 bit color value
+              "emphasized-foreground": {
+                  "color256": 0,
+              },
+              // Whether emphasized text should be bolded
+              "bold": true,
+              // Whether emphasized text should be underlined
+              "underline": false,
+              // The prefix string prepend to the contents of the diff hunk, for
+              // an addition hunk
+              "prefix": "+",
+          },
+          // Set the style for diff hunks from the old document
+          // These are the same as the options for "addition", the only
+          // difference is that they apply to the deletion hunks
+          "deletion": {
+              "regular-foreground": "red",
+              "emphasized-foreground": "red",
+              "bold": true,
+              "underline": false,
+              "prefix": "-",
+          },
         },
-        // Set the style for diff hunks from the old document
-        // These are the same as the options for "addition", the only
-        // difference is that they apply to the deletion hunks
-        "deletion": {
-            "regular-foreground": "red",
-            "emphasized-foreground": "red",
-            "bold": true,
-            "underline": false,
-            "prefix": "-",
+        // We can also define custom render modes which are defined as a
+        // key-value mapping of tags to rendering configs.
+        "custom": {
+          "custom_render_mode": {
+            "type": "unified",
+            // Set the style for diff hunks from the new document
+            "addition": {
+                // The color of the highlight around emphasized added text
+                "highlight": null,
+                // The foreground color for regular text
+                "regular-foreground": "green",
+                // The foreground color for emphasized text
+                // Note that colors can either be a string or a 256 bit color value
+                "emphasized-foreground": {
+                    "color256": 0,
+                },
+                // Whether emphasized text should be bolded
+                "bold": true,
+                // Whether emphasized text should be underlined
+                "underline": false,
+                // The prefix string prepend to the contents of the diff hunk, for
+                // an addition hunk
+                "prefix": "+",
+            },
+            // Set the style for diff hunks from the old document
+            // These are the same as the options for "addition", the only
+            // difference is that they apply to the deletion hunks
+            "deletion": {
+                "regular-foreground": "red",
+                "emphasized-foreground": "red",
+                "bold": true,
+                "underline": false,
+                "prefix": "-",
+            },
+          },
         },
     },
     // Set options related to grammars here
