@@ -62,7 +62,7 @@ fn from_ts_tree<'a>(tree: &'a TSTree, text: &'a str) -> Vector<'a> {
 /// The leaves of an AST vector
 ///
 /// This is used as an intermediate struct for flattening the tree structure.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct VectorLeaf<'a> {
     pub reference: TSNode<'a>,
     pub text: &'a str,

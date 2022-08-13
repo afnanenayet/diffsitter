@@ -127,7 +127,7 @@ impl From<&Config> for EmphasizedStyle {
 /// A writer that can render a diff to a terminal
 ///
 /// This struct contains the formatting options for the diff
-#[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize, Clone)]
 #[serde(default, rename_all = "kebab-case")]
 pub struct DiffWriter {
     /// The formatting options to use with text addition
@@ -171,7 +171,7 @@ pub struct DisplayParameters<'a> {
 }
 
 /// The parameters required to display a diff for a particular document
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DocumentDiffData<'a> {
     /// The filename of the document
     pub filename: &'a str,
@@ -414,7 +414,7 @@ impl DiffWriter {
 /// The formatting directives to use with emphasized text in the line of a diff
 ///
 /// `Bold` is used as the default emphasis strategy between two lines.
-#[derive(Debug, PartialEq, EnumString, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Eq, EnumString, Serialize, Deserialize)]
 #[strum(serialize_all = "snake_case")]
 pub enum Emphasis {
     /// Don't emphasize anything
@@ -438,7 +438,7 @@ impl Default for Emphasis {
 
 /// The colors to use when highlighting additions and deletions
 // TODO(afnan) implement the proper defaults for this struct
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct HighlightColors {
     /// The background color to use with an addition
     #[serde(with = "ColorDef")]
