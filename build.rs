@@ -20,6 +20,7 @@ use std::{
 };
 
 use anyhow::Result;
+use std::fmt::Write;
 
 /// Compilation information as it pertains to a tree-sitter grammar
 ///
@@ -369,10 +370,11 @@ use phf::phf_map;
 
         // If compilation succeeded with either case, link the language. If it failed, we'll never
         // get to this step.
-        codegen += &format!(
+        write!(
+            codegen,
             "extern \"C\" {{ pub fn tree_sitter_{}() -> Language; }}\n",
             language
-        );
+        )?;
         languages.push(language.as_str());
 
         // We recompile the libraries if any grammar sources or this build file change, since Cargo
