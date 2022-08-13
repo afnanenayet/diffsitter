@@ -67,7 +67,7 @@ fn common_suffix_len<T: PartialEq>(
 }
 
 /// The edit information representing a line
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Line<'a> {
     /// The index of the line in the original document
     pub line_index: usize,
@@ -87,7 +87,7 @@ impl<'a> Line<'a> {
 /// A grouping of consecutive edit lines for a document
 ///
 /// Every line in a hunk must be consecutive and in ascending order.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Hunk<'a>(pub Vec<Line<'a>>);
 
 /// Types of errors that come up when inserting an entry to a hunk
@@ -198,7 +198,7 @@ impl<'a> Hunk<'a> {
 ///
 /// A lot of items in the diff are delineated by whether they come from the old document or the new
 /// one. This enum generically defines an enum wrapper over those document types.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DocumentType<T: Debug + Clone + PartialEq> {
     Old(T),
     New(T),

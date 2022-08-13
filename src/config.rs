@@ -20,7 +20,7 @@ use directories_next::ProjectDirs;
 const CFG_FILE_NAME: &str = "config.json5";
 
 /// The config struct for the application
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
 #[serde(rename_all = "kebab-case")]
 pub struct Config {
     /// Custom file extension mappings between a file extension and a language
