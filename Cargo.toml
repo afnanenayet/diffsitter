@@ -40,7 +40,7 @@ clap = { version = "3.2.20", features = [
   "wrap_help",
 ] }
 clap_complete = "3.2.4"
-anyhow = "1.0.63"
+anyhow = "1.0.64"
 phf = { version = "0.11.1", features = ["macros"] }
 console = "0.15.1"
 strum = { version = "0.24.1", features = ["derive"] }
@@ -78,7 +78,7 @@ xdg = "2.4.1"
 [build-dependencies]
 cc = { version = "1.0.73", features = ["parallel"] }
 phf = { version = "0.11.1", features = ["macros"] }
-anyhow = "1.0.63"
+anyhow = "1.0.64"
 cargo-emit = "0.2.1"
 rayon = "1.5.3"
 thiserror = "1.0.34"
