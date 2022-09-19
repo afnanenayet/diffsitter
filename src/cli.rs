@@ -1,6 +1,7 @@
+use crate::console_utils::ColorOutputPolicy;
 use clap::Parser;
 use std::path::PathBuf;
-use strum_macros::{Display, EnumString};
+use strum_macros::EnumString;
 
 #[derive(Debug, Eq, PartialEq, Clone, Parser)]
 #[clap(author, version, about)]
@@ -115,22 +116,4 @@ pub enum Command {
         /// This will print the shell completion script to stdout. bash, zsh, and fish are supported.
         shell: ShellWrapper,
     },
-}
-
-/// Whether the output to the terminal should be colored
-#[derive(Debug, Clone, Copy, PartialEq, Eq, EnumString, Display)]
-#[strum(serialize_all = "snake_case")]
-pub enum ColorOutputPolicy {
-    /// Automatically enable color if printing to a TTY, otherwise disable color
-    Auto,
-    /// Force plaintext output
-    Off,
-    /// Force color output
-    On,
-}
-
-impl Default for ColorOutputPolicy {
-    fn default() -> Self {
-        ColorOutputPolicy::Auto
-    }
 }
