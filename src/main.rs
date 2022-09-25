@@ -1,5 +1,6 @@
 mod cli;
 mod config;
+mod console_utils;
 mod diff;
 mod formatting;
 mod input_processing;
@@ -8,12 +9,12 @@ mod parse;
 
 #[cfg(feature = "static-grammar-libs")]
 use crate::parse::supported_languages;
+use ::console::Term;
 use anyhow::Result;
 use clap::FromArgMatches;
 use clap::IntoApp;
-use cli::{Args, ColorOutputPolicy};
+use cli::Args;
 use config::{Config, ReadError};
-use console::Term;
 use formatting::{DisplayParameters, DocumentDiffData};
 use human_panic::setup_panic;
 use input_processing::VectorData;
@@ -215,17 +216,6 @@ pub fn list_supported_languages() {
     }
 }
 
-/// Set whether the terminal should display colors based on the user's preferences
-///
-/// This method will set the terminal output policy *for the current thread*.
-fn set_term_colors(color_opt: ColorOutputPolicy) {
-    match color_opt {
-        ColorOutputPolicy::Off => console::set_colors_enabled(false),
-        ColorOutputPolicy::On => console::set_colors_enabled(true),
-        ColorOutputPolicy::Auto => (),
-    };
-}
-
 /// Print shell completion scripts to `stdout`.
 ///
 /// This is a basic wrapper for the subcommand.
@@ -275,7 +265,7 @@ fn main() -> Result<()> {
         pretty_env_logger::formatted_timed_builder()
             .filter_level(log_level)
             .init();
-        set_term_colors(args.color_output);
+        console_utils::set_term_colors(args.color_output);
         // First check if the input files can be parsed with tree-sitter.
         let files_supported = are_input_files_supported(&args, &config);
 
