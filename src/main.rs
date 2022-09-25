@@ -220,8 +220,8 @@ pub fn list_supported_languages() {
 /// This method will set the terminal output policy *for the current thread*.
 fn set_term_colors(color_opt: ColorOutputPolicy) {
     match color_opt {
-        ColorOutputPolicy::Off => (console::set_colors_enabled(false)),
-        ColorOutputPolicy::On => (console::set_colors_enabled(true)),
+        ColorOutputPolicy::Off => console::set_colors_enabled(false),
+        ColorOutputPolicy::On => console::set_colors_enabled(true),
         ColorOutputPolicy::Auto => (),
     };
 }
