@@ -39,7 +39,7 @@ clap = { version = "3.2.22", features = [
   "unicode",
   "wrap_help",
 ] }
-clap_complete = "3.2.5"
+clap_complete = "4.0.1"
 anyhow = "1.0.65"
 phf = { version = "0.11.1", features = ["macros"] }
 console = "0.15.1"
