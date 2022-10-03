@@ -160,7 +160,7 @@ impl Default for DiffWriter {
 }
 
 /// User supplied parameters that are required to display a diff
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DisplayParameters<'a> {
     /// The hunks constituting the diff.
     pub hunks: RichHunks<'a>,
