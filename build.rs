@@ -370,9 +370,9 @@ use phf::phf_map;
 
         // If compilation succeeded with either case, link the language. If it failed, we'll never
         // get to this step.
-        write!(
+        writeln!(
             codegen,
-            "extern \"C\" {{ pub fn tree_sitter_{}() -> Language; }}\n",
+            "extern \"C\" {{ pub fn tree_sitter_{}() -> Language; }}",
             language
         )?;
         languages.push(language.as_str());
