@@ -241,10 +241,10 @@ pub type RichHunk<'a> = DocumentType<Hunk<'a>>;
 /// The hunks that correspond to a document
 ///
 /// This type implements a helper builder function that can take
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Hunks<'a>(pub Vec<Hunk<'a>>);
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RichHunks<'a>(pub Vec<RichHunk<'a>>);
 
 /// A builder struct for [`RichHunks`].
