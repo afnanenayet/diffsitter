@@ -27,13 +27,13 @@ pub struct Args {
     ///
     /// Text that is in this file but is not in the new file is considered a deletion
     // #[clap(name = "OLD", parse(from_os_str), required_unless_present = "cmd")]
-    #[clap(name = "OLD", parse(from_os_str))]
+    #[clap(name = "OLD")]
     pub old: Option<PathBuf>,
     /// The file that the old file is compared against
     ///
     /// Text that is in this file but is not in the old file is considered an addition
     // #[clap(name = "NEW", parse(from_os_str), required_unless_present = "cmd")]
-    #[clap(name = "NEW", parse(from_os_str))]
+    #[clap(name = "NEW")]
     pub new: Option<PathBuf>,
     /// Manually set the file type for the given files
     ///
