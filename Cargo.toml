@@ -33,20 +33,20 @@ include = [
 
 [dependencies]
 tree-sitter = "0.20.9"
-clap = { version = "4.0.15", features = [
+clap = { version = "4.0.17", features = [
   "derive",
   "env",
   "unicode",
   "wrap_help",
 ] }
-clap_complete = "4.0.2"
+clap_complete = "4.0.3"
 anyhow = "1.0.65"
 phf = { version = "0.11.1", features = ["macros"] }
 console = "0.15.2"
 strum = { version = "0.24.1", features = ["derive"] }
 strum_macros = "0.24.3"
 serde = { version = "1.0.145", features = ["derive"] }
-serde_json = "1.0.86"
+serde_json = "1.0.87"
 json5 = "0.4.1"
 pretty_env_logger = "0.4.0"
 log = { version = "0.4.17", features = ["std"] }
