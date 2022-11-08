@@ -53,7 +53,7 @@ log = { version = "0.4.17", features = ["std"] }
 thiserror = "1.0.37"
 logging_timer = "1.1.0"
 jemallocator = { version = "0.5.0", optional = true }
-libloading = "0.7.3"
+libloading = "0.7.4"
 unicode-segmentation = "1.10.0"
 human-panic = "1.0.3"
 shadow-rs = { version = "0.17.1", optional = true }
