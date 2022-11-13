@@ -33,13 +33,13 @@ include = [
 
 [dependencies]
 tree-sitter = "0.20.9"
-clap = { version = "4.0.18", features = [
+clap = { version = "4.0.23", features = [
   "derive",
   "env",
   "unicode",
   "wrap_help",
 ] }
-clap_complete = "4.0.3"
+clap_complete = "4.0.5"
 anyhow = "1.0.66"
 phf = { version = "0.11.1", features = ["macros"] }
 console = "0.15.2"
@@ -53,7 +53,7 @@ log = { version = "0.4.17", features = ["std"] }
 thiserror = "1.0.37"
 logging_timer = "1.1.0"
 jemallocator = { version = "0.5.0", optional = true }
-libloading = "0.7.3"
+libloading = "0.7.4"
 unicode-segmentation = "1.10.0"
 human-panic = "1.0.3"
 shadow-rs = { version = "0.17.1", optional = true }
@@ -76,7 +76,7 @@ directories-next = "2.0.0"
 xdg = "2.4.1"
 
 [build-dependencies]
-cc = { version = "1.0.74", features = ["parallel"] }
+cc = { version = "1.0.76", features = ["parallel"] }
 phf = { version = "0.11.1", features = ["macros"] }
 anyhow = "1.0.66"
 cargo-emit = "0.2.1"
