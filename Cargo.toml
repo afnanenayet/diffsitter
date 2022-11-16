@@ -33,7 +33,7 @@ include = [
 
 [dependencies]
 tree-sitter = "0.20.9"
-clap = { version = "4.0.23", features = [
+clap = { version = "4.0.25", features = [
   "derive",
   "env",
   "unicode",
