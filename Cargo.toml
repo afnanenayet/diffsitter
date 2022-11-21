@@ -80,7 +80,7 @@ cc = { version = "1.0.76", features = ["parallel"] }
 phf = { version = "0.11.1", features = ["macros"] }
 anyhow = "1.0.66"
 cargo-emit = "0.2.1"
-rayon = "1.5.3"
+rayon = "1.6.0"
 thiserror = "1.0.37"
 shadow-rs = { version = "0.17.1", optional = true }
 
