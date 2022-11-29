@@ -54,6 +54,8 @@ static FILE_EXTS: phf::Map<&'static str, &'static str> = phf_map! {
     "hpp" => "cpp",
     "tpp" => "tpp",
     "h" => "c",
+    "tf" => "hcl",
+    "js" => "javascript",
 };
 
 /// Possible errors that can arise when loading grammars
