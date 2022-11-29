@@ -294,11 +294,10 @@ fn build<'a>(vector: &RefCell<Vec<VectorLeaf<'a>>>, node: tree_sitter::Node<'a>,
             // puts newlines into their own nodes, which later causes errors when trying to print
             // these nodes. We just ignore those nodes.
             if node_text
-                .replace("\n", "")
+                .replace('\n', "")
                 .replace("\r\n", "")
-                .replace("\r", "")
-                .len()
-                == 0
+                .replace('\r', "")
+                .is_empty()
             {
                 return;
             }
