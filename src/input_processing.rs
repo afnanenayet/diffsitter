@@ -290,6 +290,18 @@ fn build<'a>(vector: &RefCell<Vec<VectorLeaf<'a>>>, node: tree_sitter::Node<'a>,
         // because it would attempt to access the 0th index in an empty text range.
         if !node.byte_range().is_empty() {
             let node_text: &'a str = &text[node.byte_range()];
+            // HACK: this is a workaround that was put in place to work around the Go parser which
+            // puts newlines into their own nodes, which later causes errors when trying to print
+            // these nodes. We just ignore those nodes.
+            if node_text
+                .replace("\n", "")
+                .replace("\r\n", "")
+                .replace("\r", "")
+                .len()
+                == 0
+            {
+                return;
+            }
             vector.borrow_mut().push(VectorLeaf {
                 reference: node,
                 text: node_text,
