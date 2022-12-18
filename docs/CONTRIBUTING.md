@@ -160,7 +160,8 @@ We don't expect the existing unit tests to change as much, but it's very
 plausible that snapshot tests will change. If you change some code and snapshot
 tests change, feel free to update the snapshots if the change is expected. You
 can easily review the changes and create new snapshots using
-[cargo-insta](https://crates.io/crates/cargo-insta).
+[cargo-insta](https://crates.io/crates/cargo-insta). Snapshot tests typically
+break because of updates to the grammars.
 
 To update snapshots, install `cargo-insta` and run the following command:
 
