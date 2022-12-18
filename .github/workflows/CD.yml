@@ -6,12 +6,12 @@ on:
   workflow_dispatch:
     inputs:
       tag_name:
-        description: "Tag name for release"
+        description: 'Tag name for release'
         required: true
         default: nightly
   push:
     tags:
-      - "*"
+      - '*'
 
 jobs:
   create-github-release:
@@ -32,7 +32,7 @@ jobs:
         env:
           default_tag_name: nightly
         run: |
-            echo "VERSION=${{ github.event.inputs.tag_name || env.default_tag_name }}" >> $GITHUB_ENV
+          echo "VERSION=${{ github.event.inputs.tag_name || env.default_tag_name }}" >> $GITHUB_ENV
       - name: Validate version environment variable
         run: |
           echo "Version being built against is version ${{ env.VERSION }}"!
@@ -106,7 +106,7 @@ jobs:
   publish:
     name: Publish for ${{ matrix.job.target }}
     runs-on: ${{ matrix.job.os }}
-    needs: [ create-github-release ]
+    needs: [create-github-release]
     strategy:
       matrix:
         job:
@@ -129,6 +129,10 @@ jobs:
           - os: macOS-latest
             artifact_name: diffsitter
             target: x86_64-apple-darwin
+            use-cross: false
+          - os: windows-latest
+            artifact_name: diffsitter.exe
+            target: x86_64-pc-windows-msvc
             use-cross: false
 
     steps:
@@ -169,7 +173,7 @@ jobs:
 
       - uses: actions/setup-python@v2
         with:
-          python-version: "3.9"
+          python-version: '3.9'
 
       - name: Get release download URL
         uses: actions/download-artifact@v2
