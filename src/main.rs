@@ -2,10 +2,10 @@ mod cli;
 mod config;
 mod console_utils;
 mod diff;
-mod formatting;
 mod input_processing;
 mod neg_idx_vec;
 mod parse;
+mod render;
 
 #[cfg(feature = "static-grammar-libs")]
 use crate::parse::supported_languages;
@@ -15,11 +15,11 @@ use clap::CommandFactory;
 use clap::FromArgMatches;
 use cli::Args;
 use config::{Config, ReadError};
-use formatting::{DisplayParameters, DocumentDiffData};
 use human_panic::setup_panic;
 use input_processing::VectorData;
 use log::{debug, error, info, warn, LevelFilter};
 use parse::{generate_language, language_from_ext, GrammarConfig};
+use render::{DisplayData, DocumentDiffData, Renderer};
 use serde_json as json;
 use std::{
     fs,
@@ -143,7 +143,7 @@ fn are_input_files_supported(args: &Args, config: &Config) -> bool {
 }
 
 /// Take the diff of two files
-fn run_diff(args: &Args, config: &Config) -> Result<()> {
+fn run_diff(args: Args, config: Config) -> Result<()> {
     let file_type = args.file_type.as_deref();
     let path_a = args.old.as_ref().unwrap();
     let path_b = args.new.as_ref().unwrap();
@@ -162,7 +162,7 @@ fn run_diff(args: &Args, config: &Config) -> Result<()> {
         .process(&ast_data_b.tree, &ast_data_b.text);
 
     let hunks = diff::compute_edit_script(&diff_vec_a, &diff_vec_b)?;
-    let params = DisplayParameters {
+    let params = DisplayData {
         hunks,
         old: DocumentDiffData {
             filename: &ast_data_a.path.to_string_lossy(),
@@ -179,8 +179,10 @@ fn run_diff(args: &Args, config: &Config) -> Result<()> {
     // terminal does partial updates or anything like that. If the user is curious about progress,
     // they can enable logging and see when hunks are processed and written to the buffer.
     let mut buf_writer = BufWriter::new(Term::stdout());
-    config.formatting.print(&mut buf_writer, &params)?;
-    // Just in case we forgot to flush anything in the `print` function
+    let render_config = config.formatting;
+    let render_param = args.renderer;
+    let renderer = render_config.get_renderer(render_param)?;
+    renderer.render(&mut buf_writer, &params)?;
     buf_writer.flush()?;
     Ok(())
 }
@@ -238,7 +240,6 @@ fn main() -> Result<()> {
 
     #[cfg(not(feature = "better-build-info"))]
     let command = Args::command();
-
     let matches = command.get_matches();
     let args = Args::from_arg_matches(&matches)?;
 
@@ -251,7 +252,6 @@ fn main() -> Result<()> {
         match cmd {
             Command::List => list_supported_languages(),
             Command::DumpDefaultConfig => dump_default_config()?,
-
             Command::GenCompletion { shell } => {
                 print_shell_completion(shell.into());
             }
@@ -272,7 +272,7 @@ fn main() -> Result<()> {
         // If the files are supported by our grammars, awesome. Otherwise fall back to a diff
         // utility if one is specified.
         if files_supported {
-            run_diff(&args, &config)?;
+            run_diff(args, config)?;
         } else if let Some(cmd) = config.fallback_cmd {
             info!("Input files are not supported but user has configured diff fallback");
             diff_fallback(&cmd, &args.old.unwrap(), &args.new.unwrap())?;

@@ -1,17 +1,13 @@
-//! Utilities related to displaying/formatting the edits computed as the difference between two
-//! ASTs
-
 use crate::diff::{Hunk, Line, RichHunk, RichHunks};
-use anyhow::Result;
-use console::{Color, Style, Term};
-use log::{debug, info};
-use logging_timer::time;
-use serde::{Deserialize, Serialize};
-use std::{
-    cmp::max,
-    io::{BufWriter, Write},
+use crate::render::{
+    default_option, opt_color_def, ColorDef, DisplayData, EmphasizedStyle, RegularStyle, Renderer,
+    TermWriter,
 };
-use strum_macros::EnumString;
+use anyhow::Result;
+use console::{Color, Style};
+use log::{debug, info};
+use serde::{Deserialize, Serialize};
+use std::{cmp::max, io::Write};
 
 /// The ascii separator used after the diff title
 const TITLE_SEPARATOR: &str = "=";
@@ -19,50 +15,26 @@ const TITLE_SEPARATOR: &str = "=";
 /// The ascii separator used after the hunk title
 const HUNK_TITLE_SEPARATOR: &str = "-";
 
-/// A copy of the [Color](console::Color) enum so we can serialize using serde, and get around the
-/// orphan rule.
-#[derive(Debug, PartialEq, Eq, Copy, Clone, Serialize, Deserialize)]
-#[serde(remote = "Color", rename_all = "snake_case")]
-enum ColorDef {
-    Color256(u8),
-    Black,
-    Red,
-    Green,
-    Yellow,
-    Blue,
-    Magenta,
-    Cyan,
-    White,
-}
-
-impl From<ColorDef> for Color {
-    fn from(c: ColorDef) -> Self {
-        match c {
-            ColorDef::Black => Color::Black,
-            ColorDef::White => Color::White,
-            ColorDef::Red => Color::Red,
-            ColorDef::Green => Color::Green,
-            ColorDef::Yellow => Color::Yellow,
-            ColorDef::Blue => Color::Blue,
-            ColorDef::Magenta => Color::Magenta,
-            ColorDef::Cyan => Color::Cyan,
-            ColorDef::Color256(c) => Color::Color256(c),
-        }
-    }
-}
-
-impl Default for ColorDef {
-    fn default() -> Self {
-        ColorDef::Black
-    }
-}
-
-/// Formatting directives for text
+/// Something similar to the unified diff format.
 ///
-/// This was abstracted out because the exact same settings apply for both additions and deletions
+/// NOTE: is a huge misnomer because this isn't really a unified diff.
+///
+/// The format is 'in-line', where differences from each document are displayed to the terminal in
+/// lockstep.
+// TODO(afnan): change this name
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Clone)]
 #[serde(rename_all = "kebab-case")]
-pub struct Config {
+pub struct Unified {
+    pub addition: TextStyle,
+    pub deletion: TextStyle,
+}
+
+/// Text style options for additions or deleetions.
+///
+/// This allows users to define text options like foreground, background colors, etc.
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Clone)]
+#[serde(rename_all = "kebab-case")]
+pub struct TextStyle {
     /// The highlight/background color to use with emphasized text
     #[serde(with = "opt_color_def", default = "default_option")]
     pub highlight: Option<Color>,
@@ -80,66 +52,10 @@ pub struct Config {
     pub prefix: String,
 }
 
-/// A helper function for the serde serializer
-///
-/// Due to the shenanigans we're using to serialize the optional color, we need to supply this
-/// method so serde can infer a default value for an option when its key is missing.
-fn default_option<T>() -> Option<T> {
-    None
-}
-
-/// The style that applies to regular text in a diff
-#[derive(Clone, Debug, PartialEq, Eq)]
-struct RegularStyle(Style);
-
-/// The style that applies to emphasized text in a diff
-#[derive(Clone, Debug, PartialEq, Eq)]
-struct EmphasizedStyle(Style);
-
-impl From<&Config> for RegularStyle {
-    fn from(fmt: &Config) -> Self {
-        let mut style = Style::default();
-        style = style.fg(fmt.regular_foreground);
-        RegularStyle(style)
-    }
-}
-
-impl From<&Config> for EmphasizedStyle {
-    fn from(fmt: &Config) -> Self {
-        let mut style = Style::default();
-        style = style.fg(fmt.emphasized_foreground);
-
-        if fmt.bold {
-            style = style.bold();
-        }
-
-        if fmt.underline {
-            style = style.underlined();
-        }
-
-        if let Some(color) = fmt.highlight {
-            style = style.bg(color);
-        }
-        EmphasizedStyle(style)
-    }
-}
-
-/// A writer that can render a diff to a terminal
-///
-/// This struct contains the formatting options for the diff
-#[derive(Debug, PartialEq, Eq, Serialize, Deserialize, Clone)]
-#[serde(default, rename_all = "kebab-case")]
-pub struct DiffWriter {
-    /// The formatting options to use with text addition
-    pub addition: Config,
-    /// The formatting options to use with text addition
-    pub deletion: Config,
-}
-
-impl Default for DiffWriter {
+impl Default for Unified {
     fn default() -> Self {
-        DiffWriter {
-            addition: Config {
+        Unified {
+            addition: TextStyle {
                 regular_foreground: Color::Green,
                 emphasized_foreground: Color::Green,
                 highlight: None,
@@ -147,7 +63,7 @@ impl Default for DiffWriter {
                 underline: false,
                 prefix: "+ ".into(),
             },
-            deletion: Config {
+            deletion: TextStyle {
                 regular_foreground: Color::Red,
                 emphasized_foreground: Color::Red,
                 highlight: None,
@@ -157,6 +73,25 @@ impl Default for DiffWriter {
             },
         }
     }
+}
+
+/// The formatting directives to use with different types of text in a diff
+struct FormattingDirectives<'a> {
+    /// The formatting to use with normal unchanged text in a diff line
+    pub regular: RegularStyle,
+    /// The formatting to use with emphasized text in a diff line
+    pub emphasis: EmphasizedStyle,
+    /// The prefix (if any) to use with the line
+    pub prefix: &'a dyn AsRef<str>,
+}
+
+/// The parameters required to display a diff for a particular document
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DocumentDiffData<'a> {
+    /// The filename of the document
+    pub filename: &'a str,
+    /// The full text of the document
+    pub text: &'a str,
 }
 
 /// User supplied parameters that are required to display a diff
@@ -170,27 +105,8 @@ pub struct DisplayParameters<'a> {
     pub new: DocumentDiffData<'a>,
 }
 
-/// The parameters required to display a diff for a particular document
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct DocumentDiffData<'a> {
-    /// The filename of the document
-    pub filename: &'a str,
-    /// The full text of the document
-    pub text: &'a str,
-}
-
-/// The formatting directives to use with different types of text in a diff
-struct FormattingDirectives<'a> {
-    /// The formatting to use with normal unchanged text in a diff line
-    pub regular: RegularStyle,
-    /// The formatting to use with emphasized text in a diff line
-    pub emphasis: EmphasizedStyle,
-    /// The prefix (if any) to use with the line
-    pub prefix: &'a dyn AsRef<str>,
-}
-
-impl<'a> From<&'a Config> for FormattingDirectives<'a> {
-    fn from(fmt_opts: &'a Config) -> Self {
+impl<'a> From<&'a TextStyle> for FormattingDirectives<'a> {
+    fn from(fmt_opts: &'a TextStyle) -> Self {
         Self {
             regular: fmt_opts.into(),
             emphasis: fmt_opts.into(),
@@ -199,14 +115,9 @@ impl<'a> From<&'a Config> for FormattingDirectives<'a> {
     }
 }
 
-impl DiffWriter {
-    /// A helper function for printing a line-by-line diff
-    ///
-    /// This will process the "raw" [diff vector](AstVector) and turn extract the differences
-    /// between lines.
-    #[time("info", "formatting::{}")]
-    pub fn print(&self, term: &mut BufWriter<Term>, params: &DisplayParameters) -> Result<()> {
-        let DisplayParameters { hunks, old, new } = &params;
+impl Renderer for Unified {
+    fn render(&self, writer: &mut TermWriter, data: &DisplayData) -> Result<()> {
+        let DisplayData { hunks, old, new } = &data;
         let old_fmt = FormattingDirectives::from(&self.deletion);
         let new_fmt = FormattingDirectives::from(&self.addition);
 
@@ -216,28 +127,30 @@ impl DiffWriter {
         let old_lines: Vec<_> = old.text.lines().collect();
         let new_lines: Vec<_> = new.text.lines().collect();
 
-        self.print_title(term, old.filename, new.filename, &old_fmt, &new_fmt)?;
+        self.print_title(writer, old.filename, new.filename, &old_fmt, &new_fmt)?;
 
         for hunk_wrapper in &hunks.0 {
             match hunk_wrapper {
                 RichHunk::Old(hunk) => {
-                    self.print_hunk(term, &old_lines, hunk, &old_fmt)?;
+                    self.print_hunk(writer, &old_lines, hunk, &old_fmt)?;
                 }
                 RichHunk::New(hunk) => {
-                    self.print_hunk(term, &new_lines, hunk, &new_fmt)?;
+                    self.print_hunk(writer, &new_lines, hunk, &new_fmt)?;
                 }
             }
         }
         Ok(())
     }
+}
 
+impl Unified {
     /// Print the title for the diff
     ///
     /// This will print the two files being compared. This will also attempt to modify the layout
     /// (stacking horizontally or vertically) based on the terminal width.
     fn print_title(
         &self,
-        term: &mut BufWriter<Term>,
+        term: &mut TermWriter,
         old_fname: &str,
         new_fname: &str,
         old_fmt: &FormattingDirectives,
@@ -303,6 +216,35 @@ impl DiffWriter {
         Ok(())
     }
 
+    /// Print a [hunk](Hunk) to `stdout`
+    fn print_hunk(
+        &self,
+        term: &mut dyn Write,
+        lines: &[&str],
+        hunk: &Hunk,
+        fmt: &FormattingDirectives,
+    ) -> Result<()> {
+        debug!(
+            "Printing hunk (lines {} - {})",
+            hunk.first_line().unwrap(),
+            hunk.last_line().unwrap()
+        );
+        self.print_hunk_title(term, hunk, fmt)?;
+
+        for line in &hunk.0 {
+            let text = lines[line.line_index];
+            debug!("Printing line {}", line.line_index);
+            self.print_line(term, text, line, fmt)?;
+            debug!("End line {}", line.line_index);
+        }
+        debug!(
+            "End hunk (lines {} - {})",
+            hunk.first_line().unwrap(),
+            hunk.last_line().unwrap()
+        );
+        Ok(())
+    }
+
     /// Print the title of a hunk to stdout
     ///
     /// This will print the line numbers that correspond to the hunk using the color directive for
@@ -330,35 +272,6 @@ impl DiffWriter {
         let separator = HUNK_TITLE_SEPARATOR.repeat(title_str.trim().len());
         writeln!(term, "{}", fmt.regular.0.apply_to(title_str))?;
         writeln!(term, "{}", separator)?;
-        Ok(())
-    }
-
-    /// Print a [hunk](Hunk) to `stdout`
-    fn print_hunk(
-        &self,
-        term: &mut dyn Write,
-        lines: &[&str],
-        hunk: &Hunk,
-        fmt: &FormattingDirectives,
-    ) -> Result<()> {
-        debug!(
-            "Printing hunk (lines {} - {})",
-            hunk.first_line().unwrap(),
-            hunk.last_line().unwrap()
-        );
-        self.print_hunk_title(term, hunk, fmt)?;
-
-        for line in &hunk.0 {
-            let text = lines[line.line_index];
-            debug!("Printing line {}", line.line_index);
-            self.print_line(term, text, line, fmt)?;
-            debug!("End line {}", line.line_index);
-        }
-        debug!(
-            "End hunk (lines {} - {})",
-            hunk.first_line().unwrap(),
-            hunk.last_line().unwrap()
-        );
         Ok(())
     }
 
@@ -411,76 +324,30 @@ impl DiffWriter {
     }
 }
 
-/// The formatting directives to use with emphasized text in the line of a diff
-///
-/// `Bold` is used as the default emphasis strategy between two lines.
-#[derive(Debug, PartialEq, Eq, EnumString, Serialize, Deserialize)]
-#[strum(serialize_all = "snake_case")]
-pub enum Emphasis {
-    /// Don't emphasize anything
-    ///
-    /// This field exists because the absence of a value implies that the user wants to use the
-    /// default emphasis strategy.
-    None,
-    /// Bold the differences between the two lines for emphasis
-    Bold,
-    /// Underline the differences between two lines for emphasis
-    Underline,
-    /// Use a colored highlight for emphasis
-    Highlight(HighlightColors),
-}
-
-impl Default for Emphasis {
-    fn default() -> Self {
-        Emphasis::Bold
+impl From<&TextStyle> for RegularStyle {
+    fn from(fmt: &TextStyle) -> Self {
+        let mut style = Style::default();
+        style = style.fg(fmt.regular_foreground);
+        RegularStyle(style)
     }
 }
 
-/// The colors to use when highlighting additions and deletions
-// TODO(afnan) implement the proper defaults for this struct
-#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct HighlightColors {
-    /// The background color to use with an addition
-    #[serde(with = "ColorDef")]
-    pub addition: Color,
-    /// The background color to use with a deletion
-    #[serde(with = "ColorDef")]
-    pub deletion: Color,
-}
+impl From<&TextStyle> for EmphasizedStyle {
+    fn from(fmt: &TextStyle) -> Self {
+        let mut style = Style::default();
+        style = style.fg(fmt.emphasized_foreground);
 
-impl Default for HighlightColors {
-    fn default() -> Self {
-        HighlightColors {
-            addition: Color::Color256(0),
-            deletion: Color::Color256(0),
+        if fmt.bold {
+            style = style.bold();
         }
-    }
-}
 
-/// Workaround so we can use the `ColorDef` remote serialization mechanism with optional types
-mod opt_color_def {
-    use super::{Color, ColorDef};
-    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+        if fmt.underline {
+            style = style.underlined();
+        }
 
-    #[allow(clippy::trivially_copy_pass_by_ref)]
-    pub fn serialize<S>(value: &Option<Color>, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        #[derive(Serialize)]
-        struct Helper<'a>(#[serde(with = "ColorDef")] &'a Color);
-
-        value.as_ref().map(Helper).serialize(serializer)
-    }
-
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<Color>, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        #[derive(Deserialize)]
-        struct Helper(#[serde(with = "ColorDef")] Color);
-
-        let helper = Option::deserialize(deserializer)?;
-        Ok(helper.map(|Helper(external)| external))
+        if let Some(color) = fmt.highlight {
+            style = style.bg(color);
+        }
+        EmphasizedStyle(style)
     }
 }

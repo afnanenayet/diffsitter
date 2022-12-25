@@ -61,6 +61,12 @@ pub struct Args {
     /// default settings.
     #[clap(short, long)]
     pub no_config: bool,
+
+    /// Specify which renderer tag to use.
+    ///
+    /// If no option is supplied then this will fall back to the default renderer.
+    #[clap(short, long)]
+    pub renderer: Option<String>,
 }
 
 /// A wrapper struct for `clap_complete::Shell`.

@@ -1,7 +1,7 @@
 //! Utilities and definitions for config handling
 
 use crate::input_processing::TreeSitterProcessor;
-use crate::{formatting::DiffWriter, parse::GrammarConfig};
+use crate::{parse::GrammarConfig, render::RenderConfig};
 use anyhow::{Context, Result};
 use json5 as json;
 use log::info;
@@ -31,7 +31,7 @@ pub struct Config {
     pub file_associations: Option<HashMap<String, String>>,
 
     /// Formatting options for display
-    pub formatting: DiffWriter,
+    pub formatting: RenderConfig,
 
     /// Options for loading
     pub grammar: GrammarConfig,
