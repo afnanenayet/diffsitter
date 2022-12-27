@@ -1,4 +1,7 @@
 //! Utilities for processing the ASTs provided by `tree_sitter`
+//!
+//! These methods handle preprocessing the input data so it can be fed into the diff engines to
+//! compute diff data.
 
 use logging_timer::time;
 use serde::{Deserialize, Serialize};
@@ -68,13 +71,28 @@ pub struct VectorLeaf<'a> {
     pub text: &'a str,
 }
 
+/// A proxy for (Point)[tree_sitter::Point] for [serde].
+///
+/// This is a copy of an external struct that we use with serde so we can create json objects with
+/// serde.
+#[derive(Serialize, Deserialize)]
+#[serde(remote = "Point")]
+struct PointWrapper {
+    pub row: usize,
+    pub column: usize,
+}
+
 /// A mapping between a tree-sitter node and the text it corresponds to
-#[derive(Debug, Clone, Copy)]
+///
+/// This is also all of the metadata the diff rendering interface has access to, and also defines
+/// the data that will be output by the JSON serializer.
+#[derive(Debug, Clone, Copy, Serialize)]
 pub struct Entry<'a> {
     /// The node an entry in the diff vector refers to
     ///
     /// We keep a reference to the leaf node so that we can easily grab the text and other metadata
     /// surrounding the syntax
+    #[serde(skip_serializing)]
     pub reference: TSNode<'a>,
 
     /// A reference to the text the node refers to
@@ -84,9 +102,11 @@ pub struct Entry<'a> {
     pub text: &'a str,
 
     /// The entry's start position in the document.
+    #[serde(with = "PointWrapper")]
     pub start_position: Point,
 
     /// The entry's end position in the document.
+    #[serde(with = "PointWrapper")]
     pub end_position: Point,
 
     /// The cached kind_id from the TSNode reference.

@@ -5,6 +5,7 @@ use crate::input_processing::{EditType, Entry};
 use crate::neg_idx_vec::NegIdxVec;
 use anyhow::Result;
 use logging_timer::time;
+use serde::Serialize;
 use std::fmt::Debug;
 use std::iter::FromIterator;
 use std::ops::Range;
@@ -67,7 +68,7 @@ fn common_suffix_len<T: PartialEq>(
 }
 
 /// The edit information representing a line
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct Line<'a> {
     /// The index of the line in the original document
     pub line_index: usize,
@@ -87,7 +88,7 @@ impl<'a> Line<'a> {
 /// A grouping of consecutive edit lines for a document
 ///
 /// Every line in a hunk must be consecutive and in ascending order.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct Hunk<'a>(pub Vec<Line<'a>>);
 
 /// Types of errors that come up when inserting an entry to a hunk
@@ -198,15 +199,15 @@ impl<'a> Hunk<'a> {
 ///
 /// A lot of items in the diff are delineated by whether they come from the old document or the new
 /// one. This enum generically defines an enum wrapper over those document types.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum DocumentType<T: Debug + Clone + PartialEq> {
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub enum DocumentType<T: Debug + Clone + PartialEq + Serialize> {
     Old(T),
     New(T),
 }
 
 impl<T> AsRef<T> for DocumentType<T>
 where
-    T: Debug + Clone + PartialEq,
+    T: Debug + Clone + PartialEq + Serialize,
 {
     fn as_ref(&self) -> &T {
         match self {
@@ -217,7 +218,7 @@ where
 
 impl<T> AsMut<T> for DocumentType<T>
 where
-    T: Debug + Clone + PartialEq,
+    T: Debug + Clone + PartialEq + Serialize,
 {
     fn as_mut(&mut self) -> &mut T {
         match self {
@@ -226,7 +227,7 @@ where
     }
 }
 
-impl<T: Debug + Clone + PartialEq> DocumentType<T> {
+impl<T: Debug + Clone + PartialEq + Serialize> DocumentType<T> {
     /// Move the inner object out and consume it.
     fn consume(self) -> T {
         match self {
@@ -244,7 +245,7 @@ pub type RichHunk<'a> = DocumentType<Hunk<'a>>;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Hunks<'a>(pub Vec<Hunk<'a>>);
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct RichHunks<'a>(pub Vec<RichHunk<'a>>);
 
 /// A builder struct for [`RichHunks`].
