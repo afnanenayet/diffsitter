@@ -208,6 +208,22 @@ the `DIFFSITTER_CONFIG` environment variable.
 *Note: the tests for this crate check to make sure the provided sample config
 is a valid config.*
 
+### Git integration
+
+To see the changes to the current git repo in diffsitter, you can add
+the following to your repo's `.git/config` and run `git difftool`.
+
+```
+[diff]
+        tool = diffsitter
+
+[difftool]
+        prompt = false
+
+[difftool "diffsitter"]
+        cmd = diffsitter "$LOCAL" "$REMOTE"
+```
+
 ### Shell Completion
 
 You can generate shell completion scripts using the binary using the
