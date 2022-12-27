@@ -1,42 +1,106 @@
 // This is a JSON5 file, so you can use comments and trailing commas, which
 // makes it a lot more convenient for configs.
+// diffsitter looks for config files in
+// ${XDG_HOME:-$HOME}/.config/diffsitter/config.json5 by default. You can
+// override this behavior by passing the `--config` flag or setting the
+// "DIFFSITTER_CONFIG" environment variable.
 {
-    // You can set different file associations here, these will be merged with
-    // the default associations, where the associations in the config take
-    // precedence
-    "file-associations": {
-        "rs": "rust",
-    },
     // Set options for terminal formatting here
     "formatting": {
-        // Set the style for diff hunks from the new document
-        "addition": {
-            // The color of the highlight around emphasized added text
-            "highlight": null,
-            // The foreground color for regular text
-            "regular-foreground": "green",
-            // The foreground color for emphasized text
-            // Note that colors can either be a string or a 256 bit color value
-            "emphasized-foreground": {
-                "color256": 0,
-            },
-            // Whether emphasized text should be bolded
-            "bold": true,
-            // Whether emphasized text should be underlined
-            "underline": false,
-            // The prefix string prepend to the contents of the diff hunk, for
-            // an addition hunk
-            "prefix": "+",
+        "unified": {
+          // Set the style for diff hunks from the new document
+          "addition": {
+              // The color of the highlight around emphasized added text
+              "highlight": null,
+              // The foreground color for regular text
+              "regular-foreground": "green",
+              // The foreground color for emphasized text
+              // Note that colors can either be a string or a 256 bit color value
+              "emphasized-foreground": {
+                  "color256": 0,
+              },
+              // Whether emphasized text should be bolded
+              "bold": true,
+              // Whether emphasized text should be underlined
+              "underline": false,
+              // The prefix string prepend to the contents of the diff hunk, for
+              // an addition hunk
+              "prefix": "+",
+          },
+          // Set the style for diff hunks from the old document
+          // These are the same as the options for "addition", the only
+          // difference is that they apply to the deletion hunks
+          "deletion": {
+              "regular-foreground": "red",
+              "emphasized-foreground": "red",
+              "bold": true,
+              "underline": false,
+              "prefix": "-",
+          },
         },
-        // Set the style for diff hunks from the old document
-        // These are the same as the options for "addition", the only
-        // difference is that they apply to the deletion hunks
-        "deletion": {
-            "regular-foreground": "red",
-            "emphasized-foreground": "red",
-            "bold": true,
-            "underline": false,
-            "prefix": "-",
+        // We can also define custom render modes which are defined as a
+        // key-value mapping of tags to rendering configs.
+        "custom": {
+          "custom_render_mode": {
+            "type": "unified",
+            // Set the style for diff hunks from the new document
+            "addition": {
+                // The color of the highlight around emphasized added text
+                "highlight": null,
+                // The foreground color for regular text
+                "regular-foreground": "green",
+                // The foreground color for emphasized text
+                // Note that colors can either be a string or a 256 bit color value
+                "emphasized-foreground": {
+                    "color256": 0,
+                },
+                // Whether emphasized text should be bolded
+                "bold": true,
+                // Whether emphasized text should be underlined
+                "underline": false,
+                // The prefix string prepend to the contents of the diff hunk, for
+                // an addition hunk
+                "prefix": "+",
+            },
+            // Set the style for diff hunks from the old document
+            // These are the same as the options for "addition", the only
+            // difference is that they apply to the deletion hunks
+            "deletion": {
+                "regular-foreground": "red",
+                "emphasized-foreground": "red",
+                "bold": true,
+                "underline": false,
+                "prefix": "-",
+            },
+          },
         },
     },
+    // Set options related to grammars here
+    "grammar": {
+        // You can set different file associations here, these will be merged with
+        // the default associations, where the associations in the config take
+        // precedence
+        "file-associations": {
+            "rs": "rust",
+        },
+        // You can specify the dynamic library names for each language
+        "dylib-overrides": {
+            // with a filename
+            "rust": "libtree-sitter-rust.so",
+            // with an absolute path
+            "c": "/usr/lib/libtree-sitter-c.so",
+            // with a relative path
+            "cpp": "../libtree-sitter-cpp.so",
+        },
+    },
+    // Specify a fallback command if diffsitter can't parse the given input
+    // files. This is invoked by diffsitter as:
+    //
+    // ```sh
+    // ${fallback_cmd} ${old} ${new}
+    // ```
+    "fallback-cmd": "diff",
+    "input-processing": {
+        "split-graphemes": true,
+    }
 }

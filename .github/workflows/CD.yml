@@ -1,47 +1,98 @@
 name: CD
 
 on:
+  schedule:
+    - cron: '5 5 * * *'
   workflow_dispatch:
     inputs:
-      tag:
-        description: "Which tag to deploy as:"
+      tag_name:
+        description: 'Tag name for release'
         required: true
+        default: nightly
   push:
     tags:
-      - "*"
+      - '*'
 
 jobs:
   create-github-release:
     name: Create github release
     runs-on: ubuntu-latest
     steps:
-      - name: Create artifacts directory
-        run: mkdir artifacts
-
-      - name: Get the release version from the tag
-        if: env.VERSION == ''
+      - name: Get release version from tag
+        if: env.VERSION == '' && github.event_name != 'workflow_dispatch' && github.event_name != 'schedule'
         run: |
-          if [[ -n "${{ github.event.inputs.tag }}" ]]; then
+          if [[ -n "${{ github.event.inputs.tag_name }}" ]]; then
             echo "Manual run against a tag; overriding actual tag in the environment..."
-            echo "VERSION=${{ github.event.inputs.tag }}" >> $GITHUB_ENV
+            echo "VERSION=${{ github.event.inputs.tag_name }}" >> $GITHUB_ENV
           else
             echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
           fi
+      - name: Get release version from inputs
+        if: env.VERSION == '' && (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
+        env:
+          default_tag_name: nightly
+        run: |
+          echo "VERSION=${{ github.event.inputs.tag_name || env.default_tag_name }}" >> $GITHUB_ENV
       - name: Validate version environment variable
         run: |
           echo "Version being built against is version ${{ env.VERSION }}"!
-      - name: Create GitHub release
-        id: release
-        uses: actions/create-release@v1
+
+      - uses: actions/checkout@v2
+        if: env.VERSION == 'nightly'
+
+      # We need to update the nightly tag every night, otherwise the CD
+      # pipeline will release the same revision every time
+      - name: Nightly set up
+        if: env.VERSION == 'nightly'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release delete nightly --yes || true
+          git push origin :nightly
+          git tag -d nightly || true
+          git tag nightly
+          git push origin nightly
+          echo "PRELEASE=true" >> $GITHUB_ENV
+
+      - if: env.VERSION != 'nightly'
+        run: |
+          echo "PRELEASE=false" >> $GITHUB_ENV
+
+      - name: Create GitHub release (tag)
+        if: github.event_name != 'workflow_dispatch' && github.event_name != 'schedule'
+        id: release_tag
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          draft: true
+          name: ${{ env.VERSION }}
+          prerelease: ${{ env.PRELEASE }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          draft: true
-          tag_name: ${{ env.VERSION }}
-          release_name: ${{ env.VERSION }}
 
-      - name: Save release upload URL to artifact
-        run: echo "${{ steps.release.outputs.upload_url }}" > artifacts/release-upload-url
+      - name: Create GitHub release (schedule/workflow dispatch)
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+        id: release_dispatch
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          allowUpdates: true
+          name: ${{ env.VERSION }}
+          tag: ${{ env.VERSION }}
+          prerelease: ${{ env.PRELEASE }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create artifacts directory
+        run: mkdir artifacts
+
+      - name: Save release upload URL to artifact (tag)
+        if: github.event_name != 'workflow_dispatch' && github.event_name != 'schedule'
+        run: echo "${{ steps.release_tag.outputs.upload_url }}" > artifacts/release-upload-url
+
+      - name: Save release upload URL to artifact (workflow/schedule)
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+        run: echo "${{ steps.release_dispatch.outputs.upload_url }}" > artifacts/release-upload-url
 
       - name: Save version number to artifact
         run: echo "${{ env.VERSION }}" > artifacts/release-version
@@ -55,7 +106,7 @@ jobs:
   publish:
     name: Publish for ${{ matrix.job.target }}
     runs-on: ${{ matrix.job.os }}
-    needs: [ create-github-release ]
+    needs: [create-github-release]
     strategy:
       matrix:
         job:
@@ -88,6 +139,15 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: 'recursive'
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.job.target }}
+          profile: minimal
+          override: true
+
       - name: Build optimized binary
         env:
           MACOS_DEPLOYMENT_TARGET: 10.7
@@ -95,15 +155,10 @@ jobs:
         with:
           command: build
           use-cross: ${{ matrix.job.use-cross }}
-          args: --release --locked --target ${{ matrix.job.target }} --features better-build-info
-      - uses: actions/cache@v2
+          args: --profile production --locked --target ${{ matrix.job.target }} --features better-build-info,static-grammar-libs
+      - uses: Swatinem/rust-cache@v1
         with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ matrix.job.target }}-cargo-optimized-${{ hashFiles('**/Cargo.lock') }}
-
+          key: ${{ matrix.job.target }}-release
       - name: Install packages (Windows)
         if: matrix.job.os == 'windows-latest'
         uses: crazy-max/ghaction-chocolatey@v1.4.0
@@ -118,7 +173,7 @@ jobs:
 
       - uses: actions/setup-python@v2
         with:
-          version: "3.9"
+          python-version: '3.9'
 
       - name: Get release download URL
         uses: actions/download-artifact@v2
@@ -138,8 +193,8 @@ jobs:
         id: archive_release_assets_windows
         if: matrix.job.os == 'windows-latest'
         run: |
-          cp .\target\${{ matrix.job.target }}\release\${{ matrix.job.artifact_name }} ${{ matrix.job.artifact_name }}
-          cp .\assets\git-diffsitter .\git-diffsitter
+          cp .\target\${{ matrix.job.target }}\production\${{ matrix.job.artifact_name }} ${{ matrix.job.artifact_name }}
+          cp .\bin\git-diffsitter .\git-diffsitter
           zip -r diffsitter-${{ matrix.job.target }}.zip ${{ matrix.job.artifact_name }} git-diffsitter
 
       - name: Archive release assets
@@ -148,8 +203,8 @@ jobs:
         shell: bash
         run: |
           mkdir -p diffsitter-${{ matrix.job.target }}
-          cp target/${{ matrix.job.target }}/release/${{ matrix.job.artifact_name }} diffsitter-${{ matrix.job.target }}
-          cp assets/git-diffsitter diffsitter-${{ matrix.job.target }}
+          cp target/${{ matrix.job.target }}/production/${{ matrix.job.artifact_name }} diffsitter-${{ matrix.job.target }}
+          cp bin/git-diffsitter diffsitter-${{ matrix.job.target }}
           tar -czvf diffsitter-${{ matrix.job.target }}.tar.gz diffsitter-${{ matrix.job.target }}
 
       - name: Generate SHA256 checksum for binary
@@ -214,14 +269,14 @@ jobs:
           asset_content_type: application/octet-stream
 
       - name: Build Debian release (x86_64-unknown-linux-gnu)
-        if: matrix.triple.target == 'x86_64-unknown-linux-gnu'
+        if: matrix.job.target == 'x86_64-unknown-linux-gnu'
         run: |
           cargo install cargo-deb --version 1.29.2
           cargo deb
           cp ./target/debian/diffsitter_*.deb ./diffsitter_${{ env.RELEASE_VERSION }}_amd64.deb
 
       - name: Upload Debian file (x86_64-unknown-linux-gnu)
-        if: matrix.triple.target == 'x86_64-unknown-linux-gnu'
+        if: matrix.job.target == 'x86_64-unknown-linux-gnu'
         uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -229,4 +284,21 @@ jobs:
           upload_url: ${{ env.RELEASE_UPLOAD_URL }}
           asset_path: diffsitter_${{ env.RELEASE_VERSION }}_amd64.deb
           asset_name: diffsitter_${{ env.RELEASE_VERSION }}_amd64.deb
+          asset_content_type: application/octet-stream
+
+      - name: Generate tarball with submodules
+        if: matrix.job.target == 'x86_64-unknown-linux-gnu'
+        shell: bash
+        run: |
+          bash deployment/git-archive-all.bash --prefix "diffsitter_src/" --format tar.gz diffsitter_src.tar.gz
+
+      - name: Upload tarball with submodules
+        if: matrix.job.target == 'x86_64-unknown-linux-gnu'
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
+          asset_path: diffsitter_src.tar.gz
+          asset_name: diffsitter_src.tar.gz
           asset_content_type: application/octet-stream

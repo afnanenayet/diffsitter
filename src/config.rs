@@ -1,6 +1,7 @@
 //! Utilities and definitions for config handling
 
-use crate::formatting::DiffWriter;
+use crate::input_processing::TreeSitterProcessor;
+use crate::{parse::GrammarConfig, render::RenderConfig};
 use anyhow::{Context, Result};
 use json5 as json;
 use log::info;
@@ -19,7 +20,7 @@ use directories_next::ProjectDirs;
 const CFG_FILE_NAME: &str = "config.json5";
 
 /// The config struct for the application
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
 #[serde(rename_all = "kebab-case")]
 pub struct Config {
     /// Custom file extension mappings between a file extension and a language
@@ -30,21 +31,29 @@ pub struct Config {
     pub file_associations: Option<HashMap<String, String>>,
 
     /// Formatting options for display
-    pub formatting: DiffWriter,
-}
+    pub formatting: RenderConfig,
 
-impl Default for Config {
-    fn default() -> Self {
-        Config {
-            file_associations: None,
-            formatting: DiffWriter::default(),
-        }
-    }
+    /// Options for loading
+    pub grammar: GrammarConfig,
+
+    /// Options for processing tree-sitter input.
+    #[serde(default)]
+    pub input_processing: TreeSitterProcessor,
+
+    /// The program to invoke if the given files can not be parsed by the available tree-sitter
+    /// parsers.
+    ///
+    /// This will invoke the program with with the old and new file as arguments, like so:
+    ///
+    /// ```sh
+    /// ${FALLBACK_PROGRAM} ${OLD} ${NEW}
+    /// ```
+    pub fallback_cmd: Option<String>,
 }
 
 /// The possible errors that can arise when attempting to read a config
 #[derive(Error, Debug)]
-pub enum ConfigReadError {
+pub enum ReadError {
     #[error("The file failed to deserialize")]
     DeserializationFailure(#[from] anyhow::Error),
     #[error("Failed to read the config file")]
@@ -59,8 +68,8 @@ impl Config {
     /// If a path is supplied, this method will attempt to read the contents of that path and parse
     /// it to a string. If a path isn't supplied, the function will attempt to figure out what the
     /// default config file path is supposed to be (based on OS conventions, see
-    /// [default_config_file_path]).
-    pub fn try_from_file<P: AsRef<Path>>(path: Option<&P>) -> Result<Self, ConfigReadError> {
+    /// [`default_config_file_path`]).
+    pub fn try_from_file<P: AsRef<Path>>(path: Option<&P>) -> Result<Self, ReadError> {
         // rustc will emit an incorrect warning that this variable isn't used, which is untrue.
         // While the variable isn't read *directly*, it is used to store the owned PathBuf from
         // `default_config_file_path` so we can use the reference to the variable in `config_fp`.
@@ -70,21 +79,20 @@ impl Config {
         let config_fp = if let Some(p) = path {
             p.as_ref()
         } else {
-            default_config_fp =
-                default_config_file_path().map_err(|_| ConfigReadError::NoDefault)?;
+            default_config_fp = default_config_file_path().map_err(|_| ReadError::NoDefault)?;
             default_config_fp.as_ref()
         };
         info!("Reading config at {}", config_fp.to_string_lossy());
         let config_contents = fs::read_to_string(config_fp)?;
         let config = json::from_str(&config_contents)
             .with_context(|| format!("Failed to parse config at {}", config_fp.to_string_lossy()))
-            .map_err(ConfigReadError::DeserializationFailure)?;
+            .map_err(ReadError::DeserializationFailure)?;
         Ok(config)
     }
 }
 
-/// Return the default location for the config file (for *nix, Linux and MacOS), this will use
-/// $XDG_CONFIG/.config, where `$XDG_CONFIG` is `$HOME/.config` by default.
+/// Return the default location for the config file (for *nix, Linux and `MacOS`), this will use
+/// $`XDG_CONFIG/.config`, where `$XDG_CONFIG` is `$HOME/.config` by default.
 #[cfg(not(target_os = "windows"))]
 fn default_config_file_path() -> Result<PathBuf> {
     let xdg_dirs = xdg::BaseDirectories::with_prefix("diffsitter")?;

@@ -1,6 +1,16 @@
-use anyhow::Result;
+#[cfg(feature = "static-grammar-libs")]
+use anyhow::bail;
+
+#[cfg(feature = "static-grammar-libs")]
+use thiserror::Error;
+
+#[cfg(feature = "static-grammar-libs")]
 use cargo_emit::{rerun_if_changed, rerun_if_env_changed};
+
+#[cfg(feature = "static-grammar-libs")]
 use rayon::prelude::*;
+
+#[cfg(feature = "static-grammar-libs")]
 use std::{
     env,
     fmt::Display,
@@ -9,9 +19,13 @@ use std::{
     vec,
 };
 
+use anyhow::Result;
+use std::fmt::Write;
+
 /// Compilation information as it pertains to a tree-sitter grammar
 ///
 /// This contains information about a parser that is required at build time
+#[cfg(feature = "static-grammar-libs")]
 #[derive(Debug, Default)]
 struct GrammarCompileInfo<'a> {
     /// The language's display name
@@ -31,6 +45,7 @@ struct GrammarCompileInfo<'a> {
 ///
 /// This is a convenience method that was created so we can store parameters in a vector and use
 /// a parallel iterator to compile all of the grammars at once over a threadpool.
+#[cfg(feature = "static-grammar-libs")]
 struct CompileParams {
     pub dir: PathBuf,
     pub c_sources: Vec<PathBuf>,
@@ -38,13 +53,32 @@ struct CompileParams {
     pub display_name: String,
 }
 
+/// An error that can arise when sanity check compilation parameters
+#[cfg(feature = "static-grammar-libs")]
+#[derive(Debug, Error)]
+enum CompileParamError {
+    #[error("Subdirectory for grammar {0} was not found")]
+    SubdirectoryNotFound(String),
+
+    #[error("Source files {source_files:?} not found for {grammar}")]
+    SourceFilesNotFound {
+        /// The name of the grammar that had an error
+        grammar: String,
+
+        /// The missing source files
+        source_files: Vec<String>,
+    },
+}
+
 /// Environment variables that the build system relies on
 ///
 /// If any of these are changed, Cargo will rebuild the project.
+#[cfg(feature = "static-grammar-libs")]
 const BUILD_ENV_VARS: &[&str] = &["CC", "CXX", "LD_LIBRARY_PATH", "PATH"];
 
 /// Generated the code fo the map between the language identifiers and the function to initialize
 /// the language parser
+#[cfg(feature = "static-grammar-libs")]
 fn codegen_language_map<T: ToString + Display>(languages: &[T]) -> String {
     let body: String = languages
         .iter()
@@ -56,12 +90,24 @@ fn codegen_language_map<T: ToString + Display>(languages: &[T]) -> String {
 }
 
 /// Compile a language's grammar
+#[cfg(feature = "static-grammar-libs")]
 fn compile_grammar(
     include: &Path,
     c_sources: &[PathBuf],
     cpp_sources: &[PathBuf],
     output_name: &str,
 ) -> Result<(), cc::Error> {
+    // NOTE: that we have to compile the C sources first because the scanner depends on the parser.
+    // Right now the only C libraries are parsers, so we build them before the C++ files, which
+    // are only scanners. This resolves a linker error we were seeing on Linux.
+    if !c_sources.is_empty() {
+        cc::Build::new()
+            .include(include)
+            .files(c_sources)
+            .warnings(false)
+            .try_compile(output_name)?;
+    }
+
     if !cpp_sources.is_empty() {
         cc::Build::new()
             .cpp(true)
@@ -72,24 +118,115 @@ fn compile_grammar(
             .try_compile(&format!("{}-cpp-compile-diffsiter", &output_name))?;
     }
 
-    if !c_sources.is_empty() {
-        cc::Build::new()
-            .include(include)
-            .files(c_sources)
-            .warnings(false)
-            .try_compile(&output_name)?;
-    }
     Ok(())
 }
 
 /// Print any other cargo-emit directives
+#[cfg(feature = "static-grammar-libs")]
 fn extra_cargo_directives() {
     for &env_var in BUILD_ENV_VARS {
         rerun_if_env_changed!(env_var);
     }
 }
 
-fn main() -> Result<()> {
+/// Preprocess grammar compilation info so the build script can find all of the source files.
+///
+/// This will augment the C and C++ source files so that they have the full relative path from the
+/// repository root rather, which prepends the repository path and `src/` to the file.
+///
+/// For example, a `GrammarCompileInfo` instance for Rust:
+///
+/// ```rust
+/// GrammarCompileInfo {
+///     display_name: "rust",
+///     path: PathBuf::from("grammars/tree-sitter-rust"),
+///     c_sources: vec!["parser.c", "scanner.c"],
+///     ..GrammarCompileInfo::default()
+/// };
+/// ```
+///
+/// will get turned to:
+///
+/// ```rust
+/// CompileParams {
+///     display_name: "rust",
+///     path: PathBuf::from("grammars/tree-sitter-rust"),
+///     c_sources: vec![
+///         "grammars/tree-sitter-rust/src/parser.c",
+///         "grammars/tree-sitter-rust/src/scanner.c"
+///     ],
+///     cpp_sources: vec![],
+/// };
+/// ```
+#[cfg(feature = "static-grammar-libs")]
+fn preprocess_compile_info(grammar: &GrammarCompileInfo) -> CompileParams {
+    // The directory to the source files
+    let dir = grammar.path.join("src");
+
+    let cpp_sources: Vec<_> = grammar
+        .cpp_sources
+        .iter()
+        // Prepend {grammar-repo}/src path to each file
+        .map(|&filename| dir.join(filename))
+        .collect();
+    let c_sources: Vec<_> = grammar
+        .c_sources
+        .iter()
+        // Prepend {grammar-repo}/src path to each file
+        .map(|&filename| dir.join(filename))
+        .collect();
+
+    CompileParams {
+        dir,
+        c_sources,
+        cpp_sources,
+        display_name: grammar.display_name.into(),
+    }
+}
+
+/// Sanity check the contents of a compilation info unit.
+///
+/// This should give clearer errors up front compared to the more obscure errors you can get from
+/// the C/C++ toolchains when files are missing.
+#[cfg(feature = "static-grammar-libs")]
+fn verify_compile_params(compile_params: &CompileParams) -> Result<(), CompileParamError> {
+    if !compile_params.dir.exists() {
+        return Err(CompileParamError::SubdirectoryNotFound(
+            compile_params.display_name.to_string(),
+        ));
+    }
+
+    let missing_sources = compile_params
+        .c_sources
+        .iter()
+        .chain(compile_params.cpp_sources.iter())
+        .filter_map(|file| {
+            // Filter for files that *don't* exist
+            if file.exists() {
+                None
+            } else {
+                Some(file.to_string_lossy().to_string())
+            }
+        })
+        .collect::<Vec<String>>();
+
+    if !missing_sources.is_empty() {
+        return Err(CompileParamError::SourceFilesNotFound {
+            grammar: compile_params.display_name.to_string(),
+            source_files: missing_sources,
+        });
+    }
+
+    Ok(())
+}
+
+/// Grammar compilation information for diffsitter.
+///
+/// This defines all of the grammars that are used by the build script. If you want to add new
+/// grammars, add them to this list. This would ideally be a global static vector, but we can't
+/// create a `const static` because the `PathBuf` constructors can't be evaluated at compile time.
+#[cfg(feature = "static-grammar-libs")]
+fn grammars() -> Vec<GrammarCompileInfo<'static>> {
     let grammars = vec![
         GrammarCompileInfo {
             display_name: "rust",
@@ -157,8 +294,38 @@ fn main() -> Result<()> {
             c_sources: vec!["parser.c"],
             cpp_sources: vec!["scanner.cc"],
         },
+        GrammarCompileInfo {
+            display_name: "json",
+            path: PathBuf::from("grammars/tree-sitter-json"),
+            c_sources: vec!["parser.c"],
+            ..GrammarCompileInfo::default()
+        },
+        GrammarCompileInfo {
+            display_name: "hcl",
+            path: PathBuf::from("grammars/tree-sitter-hcl"),
+            c_sources: vec!["parser.c"],
+            cpp_sources: vec!["scanner.cc"],
+        },
+        GrammarCompileInfo {
+            display_name: "typescript",
+            path: PathBuf::from("grammars/tree-sitter-typescript/typescript"),
+            c_sources: vec!["parser.c", "scanner.c"],
+            cpp_sources: vec![],
+        },
+        GrammarCompileInfo {
+            display_name: "tsx",
+            path: PathBuf::from("grammars/tree-sitter-typescript/tsx"),
+            c_sources: vec!["parser.c", "scanner.c"],
+            cpp_sources: vec![],
+        }, // Add new grammars here...
     ];
+    grammars
+}
 
+/// Compile the submodules as static grammars for the binary.
+#[cfg(feature = "static-grammar-libs")]
+fn compile_static_grammars() -> Result<()> {
+    let grammars = grammars();
     // The string represented the generated code that we get from the tree sitter grammars
     let mut codegen = String::from(
         r#"
@@ -174,31 +341,14 @@ use phf::phf_map;
 
     // We create a vector of parameters so we can use Rayon's parallel iterators to compile
     // grammars in parallel
-    let compile_params: Vec<CompileParams> = grammars
-        .iter()
-        .map(|grammar| {
-            // The directory to the source files
-            let dir = grammar.path.join("src");
+    let compile_params: Vec<CompileParams> = grammars.iter().map(preprocess_compile_info).collect();
 
-            // Prepend {grammar-repo}/src path to each file
-            let c_sources: Vec<_> = grammar
-                .c_sources
-                .iter()
-                .map(|&filename| dir.join(filename))
-                .collect();
-            let cpp_sources: Vec<_> = grammar
-                .cpp_sources
-                .iter()
-                .map(|&filename| dir.join(filename))
-                .collect();
-            CompileParams {
-                dir,
-                c_sources,
-                cpp_sources,
-                display_name: grammar.display_name.into(),
-            }
-        })
-        .collect();
+    // Verify each preprocessed compile param entry -- this will short circuit the build script if
+    // there are any errors
+    compile_params
+        .iter()
+        .map(verify_compile_params)
+        .collect::<Result<Vec<_>, CompileParamError>>()?;
 
     // Any of the compilation steps failing will short circuit the entire `collect` function and
     // error out
@@ -220,16 +370,21 @@ use phf::phf_map;
 
         // If compilation succeeded with either case, link the language. If it failed, we'll never
         // get to this step.
-        codegen += &format!(
-            "extern \"C\" {{ pub fn tree_sitter_{}() -> Language; }}\n",
+        writeln!(
+            codegen,
+            "extern \"C\" {{ pub fn tree_sitter_{}() -> Language; }}",
             language
-        );
-        languages.push(language);
+        )?;
+        languages.push(language.as_str());
 
         // We recompile the libraries if any grammar sources or this build file change, since Cargo
         // will cache based on the Rust modules and isn't aware of the linked C libraries.
         for source in params.c_sources.iter().chain(params.cpp_sources.iter()) {
-            rerun_if_changed!(&source.as_path().to_string_lossy());
+            if let Some(grammar_path) = &source.as_path().to_str() {
+                rerun_if_changed!((*grammar_path).to_string());
+            } else {
+                bail!("Path to grammar for {} is not a valid string", language);
+            }
         }
     }
 
@@ -240,8 +395,16 @@ use phf::phf_map;
     let codegen_out_dir = env::var_os("OUT_DIR").unwrap();
     let codegen_path = Path::new(&codegen_out_dir).join("generated_grammar.rs");
     fs::write(&codegen_path, codegen)?;
+    Ok(())
+}
+
+fn main() -> anyhow::Result<()> {
+    #[cfg(feature = "static-grammar-libs")]
+    compile_static_grammars()?;
 
     #[cfg(feature = "better-build-info")]
-    build_info_build::build_script();
+    shadow_rs::new().map_err(|e| return anyhow::anyhow!(e.to_string()))?;
+
+    // TODO(afnan): add generaetd shell completion scripts
     Ok(())
 }

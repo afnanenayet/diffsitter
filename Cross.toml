@@ -1,4 +1,2 @@
-[target]
-volumes = [
-    "BUILD_DIR",
-]
+[build.env]
+volumes = ["BUILD_DIR"]
