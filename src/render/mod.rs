@@ -8,6 +8,7 @@
 //!
 //! This module also defines utilities that may be useful for `Renderer` implementations.
 
+mod json;
 mod unified;
 
 use crate::diff::RichHunks;
@@ -20,8 +21,10 @@ use std::io::BufWriter;
 use strum::{self, Display, EnumIter, EnumString};
 use unified::Unified;
 
+use self::json::Json;
+
 /// The parameters required to display a diff for a particular document
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct DocumentDiffData<'a> {
     /// The filename of the document
     pub filename: &'a str,
@@ -30,7 +33,7 @@ pub struct DocumentDiffData<'a> {
 }
 
 /// The parameters a [Renderer] instance receives to render a diff.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct DisplayData<'a> {
     /// The hunks constituting the diff.
     pub hunks: RichHunks<'a>,
@@ -49,6 +52,7 @@ type TermWriter = BufWriter<Term>;
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum Renderers {
     Unified,
+    Json,
 }
 
 impl Default for Renderers {
@@ -207,6 +211,7 @@ pub struct RenderConfig {
     default: String,
 
     unified: unified::Unified,
+    json: json::Json,
 
     /// A mapping of tags to custom rendering configurations.
     ///
@@ -221,6 +226,7 @@ impl Default for RenderConfig {
         RenderConfig {
             default: default_renderer.to_string(),
             unified: Unified::default(),
+            json: Json::default(),
             custom: HashMap::default(),
         }
     }
@@ -262,6 +268,7 @@ impl RenderConfig {
         // TODO(afnan): automate this with a proc macro so we don't have to
         // manually sync each renderer engine by hand.
         render_map.insert("unified".into(), Renderers::from(self.unified));
+        render_map.insert("json".into(), Renderers::from(self.json));
 
         if let Some(renderer) = render_map.remove(&final_tag) {
             Ok(renderer)
@@ -277,6 +284,7 @@ impl RenderConfig {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use test_case::test_case;
 
     #[test]
     fn test_default_render_keys() {
@@ -284,16 +292,29 @@ mod tests {
         assert!(cfg.check_custom_render_keys().is_ok());
     }
 
-    #[test]
-    fn test_custom_renderer_tags_collision() {
-        let custom_map: HashMap<String, Renderers> = HashMap::from([(
-            "unified".to_string(),
-            Renderers::Unified(Unified::default()),
-        )]);
+    #[test_case("unified", true)]
+    #[test_case("json", true)]
+    #[test_case("gibberish", false)]
+    fn test_custom_renderer_tags_collision(tag: &str, expect_err: bool) {
+        let custom_map: HashMap<String, Renderers> =
+            HashMap::from([(tag.to_string(), Renderers::Unified(Unified::default()))]);
         let cfg = RenderConfig {
             custom: custom_map,
             ..Default::default()
         };
-        assert!(cfg.check_custom_render_keys().is_err());
+        let res = cfg.check_custom_render_keys();
+        if expect_err {
+            assert!(res.is_err());
+        } else {
+            assert!(res.is_ok());
+        }
+    }
+
+    #[test_case("unified")]
+    #[test_case("json")]
+    fn test_get_renderer_default_map(tag: &str) {
+        let cfg = RenderConfig::default();
+        let res = cfg.get_renderer(Some(tag.into()));
+        assert!(res.is_ok());
     }
 }
