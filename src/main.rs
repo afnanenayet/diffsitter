@@ -144,6 +144,12 @@ fn are_input_files_supported(args: &Args, config: &Config) -> bool {
 
 /// Take the diff of two files
 fn run_diff(args: Args, config: Config) -> Result<()> {
+    // Check whether we can get the renderer up front. This is more ergonomic than running the diff
+    // and then informing the user their renderer choice is incorrect/that the config is invalid.
+    let render_config = config.formatting;
+    let render_param = args.renderer;
+    let renderer = render_config.get_renderer(render_param)?;
+
     let file_type = args.file_type.as_deref();
     let path_a = args.old.as_ref().unwrap();
     let path_b = args.new.as_ref().unwrap();
@@ -179,9 +185,6 @@ fn run_diff(args: Args, config: Config) -> Result<()> {
     // terminal does partial updates or anything like that. If the user is curious about progress,
     // they can enable logging and see when hunks are processed and written to the buffer.
     let mut buf_writer = BufWriter::new(Term::stdout());
-    let render_config = config.formatting;
-    let render_param = args.renderer;
-    let renderer = render_config.get_renderer(render_param)?;
     renderer.render(&mut buf_writer, &params)?;
     buf_writer.flush()?;
     Ok(())
