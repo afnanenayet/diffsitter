@@ -68,7 +68,7 @@ pretty_assertions = "1.3.0"
 # We need the backtrace feature to enable snapshot name generation in
 # single-threaded tests (tests using cargo cross run single-threaded due to
 # limitations with QEMU).
-insta = { version = "1.23.0" }
+insta = { version = "1.24.1" }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 # We use directories next to get the windows config path
