@@ -754,7 +754,7 @@ mod tests {
     use test_case::test_case;
 
     /// A convenience function to invoke the a Myers diff
-    fn myers_diff<'a, T>(a: &'a Vec<T>, b: &'a Vec<T>) -> Vec<EditType<&'a T>>
+    fn myers_diff<'a, T>(a: &'a [T], b: &'a [T]) -> Vec<EditType<&'a T>>
     where
         T: 'a + Eq + Debug,
     {
