@@ -759,7 +759,7 @@ mod tests {
         T: 'a + Eq + Debug,
     {
         let myers = Myers::default();
-        myers.diff(&a[..], &b[..])
+        myers.diff(a, b)
     }
 
     #[test]
