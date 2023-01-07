@@ -82,10 +82,10 @@ const BUILD_ENV_VARS: &[&str] = &["CC", "CXX", "LD_LIBRARY_PATH", "PATH"];
 fn codegen_language_map<T: ToString + Display>(languages: &[T]) -> String {
     let body: String = languages
         .iter()
-        .map(|lang| format!("\"{}\" => tree_sitter_{},\n", lang, lang))
+        .map(|lang| format!("\"{lang}\" => tree_sitter_{lang},\n"))
         .collect();
     let map_decl = format!(
-        "\nstatic LANGUAGES: phf::Map<&'static str, unsafe extern \"C\" fn() -> Language> = phf_map! {{\n {}\n }};\n", body);
+        "\nstatic LANGUAGES: phf::Map<&'static str, unsafe extern \"C\" fn() -> Language> = phf_map! {{\n {body}\n }};\n");
     map_decl
 }
 
@@ -394,7 +394,7 @@ use phf::phf_map;
     // Write the generated code to a file in the resulting build directory
     let codegen_out_dir = env::var_os("OUT_DIR").unwrap();
     let codegen_path = Path::new(&codegen_out_dir).join("generated_grammar.rs");
-    fs::write(&codegen_path, codegen)?;
+    fs::write(codegen_path, codegen)?;
     Ok(())
 }
 
