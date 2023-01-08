@@ -367,7 +367,7 @@ mod tests {
             }
         }
 
-        assert!(failures.is_empty(), "{:#?}", failures);
+        assert!(failures.is_empty(), "{failures:#?}");
     }
 
     #[cfg(feature = "dynamic-grammar-libs")]

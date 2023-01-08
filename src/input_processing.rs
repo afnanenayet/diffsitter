@@ -71,7 +71,7 @@ pub struct VectorLeaf<'a> {
     pub text: &'a str,
 }
 
-/// A proxy for (Point)[tree_sitter::Point] for [serde].
+/// A proxy for (Point)[`tree_sitter::Point`] for [serde].
 ///
 /// This is a copy of an external struct that we use with serde so we can create json objects with
 /// serde.

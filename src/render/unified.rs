@@ -167,7 +167,7 @@ impl Unified {
 
         // We construct the fully horizontal title string. If wider than the terminal, then we
         // format another title string that's vertically stacked
-        let title_len = format!("{}{}{}", old_fname, divider, new_fname).len();
+        let title_len = format!("{old_fname}{divider}{new_fname}").len();
 
         // We only display the horizontal title format if we know we have enough horizontal space
         // to display it. If we can't determine the terminal width, play it safe and default to
@@ -211,8 +211,8 @@ impl Unified {
                 (styled_title_str, title_sep)
             }
         };
-        writeln!(term, "{}", styled_title_str)?;
-        writeln!(term, "{}", title_sep)?;
+        writeln!(term, "{styled_title_str}")?;
+        writeln!(term, "{title_sep}")?;
         Ok(())
     }
 
@@ -260,9 +260,9 @@ impl Unified {
 
         // We don't need to display a range `x - x:` since `x:` is terser and clearer
         let title_str = if last_line - first_line == 0 {
-            format!("\n{}:", first_line)
+            format!("\n{first_line}:")
         } else {
-            format!("\n{} - {}:", first_line, last_line)
+            format!("\n{first_line} - {last_line}:")
         };
 
         debug!("Title string has length of {}", title_str.len());
@@ -271,7 +271,7 @@ impl Unified {
         // length of the string, which is why we call `trim()`
         let separator = HUNK_TITLE_SEPARATOR.repeat(title_str.trim().len());
         writeln!(term, "{}", fmt.regular.0.apply_to(title_str))?;
-        writeln!(term, "{}", separator)?;
+        writeln!(term, "{separator}")?;
         Ok(())
     }
 

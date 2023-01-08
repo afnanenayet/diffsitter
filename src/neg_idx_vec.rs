@@ -51,16 +51,16 @@ impl<T> NegIdxVec<T> {
     /// If the index is less zero then the index will be transformed by adding `idx` to the offset
     /// so negative indices are relative to the end of the vector.
     fn idx_helper(&self, idx: i32) -> usize {
-        let len = self.len;
+        let len: i32 = self.len.try_into().unwrap();
 
         let final_index = if idx >= 0 {
-            idx as usize
+            idx.try_into().unwrap()
         } else {
-            let offset_idx = (len as i32) + idx;
+            let offset_idx = len + idx;
             debug_assert!(offset_idx >= 0);
-            offset_idx as usize
+            offset_idx.try_into().unwrap()
         };
-        debug_assert!(final_index < len);
+        debug_assert!(final_index < len.try_into().unwrap());
         final_index
     }
 

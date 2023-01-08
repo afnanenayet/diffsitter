@@ -211,7 +211,7 @@ pub fn list_supported_languages() {
         println!("This program was compiled with support for:");
 
         for language in languages {
-            println!("- {}", language);
+            println!("- {language}");
         }
     }
 
@@ -294,9 +294,9 @@ mod tests {
 
     /// Get paths to input files for tests
     fn get_test_paths(test_type: &str, test_name: &str, ext: &str) -> (PathBuf, PathBuf) {
-        let test_data_root = PathBuf::from(format!("./test_data/{}/{}", test_type, test_name));
-        let path_a = test_data_root.join(format!("a.{}", ext));
-        let path_b = test_data_root.join(format!("b.{}", ext));
+        let test_data_root = PathBuf::from(format!("./test_data/{test_type}/{test_name}"));
+        let path_a = test_data_root.join(format!("a.{ext}"));
+        let path_b = test_data_root.join(format!("b.{ext}"));
         assert!(
             path_a.exists(),
             "test data path {} does not exist",

@@ -46,6 +46,18 @@ where
     pub new: T,
 }
 
+/// Convert a range with into another numeric type.
+///
+/// This will panic if the values cannot be converted to the target type. This is better than using
+/// `as` because it will explicitly panic instead of silently wrapping around.
+fn convert_range<FromType, IntoType>(range: Range<FromType>) -> Range<IntoType>
+where
+    FromType: TryInto<IntoType>,
+    <FromType as TryInto<IntoType>>::Error: std::fmt::Debug,
+{
+    range.start.try_into().unwrap()..range.end.try_into().unwrap()
+}
+
 /// Find the length of the common suffix between the ranges specified for `a` and `b`.
 /// The ranges are assumed to be [inclusive, exclusive).
 fn common_suffix_len<T: PartialEq>(
@@ -54,17 +66,19 @@ fn common_suffix_len<T: PartialEq>(
     b: &[T],
     b_range: Range<usize>,
 ) -> usize {
-    let mut l = 1;
-
+    let mut l: isize = 1;
+    let a_range: Range<isize> = convert_range(a_range);
+    let b_range: Range<isize> = convert_range(b_range);
     unsafe {
-        while (a_range.end as isize) - (l as isize) >= a_range.start as isize
-            && (b_range.end as isize) - (l as isize) >= b_range.start as isize
-            && a.get_unchecked(a_range.end - l) == b.get_unchecked(b_range.end - l)
+        while a_range.end - l >= a_range.start
+            && b_range.end - l >= b_range.start
+            && a.get_unchecked::<usize>((a_range.end - l).try_into().unwrap())
+                == b.get_unchecked::<usize>((b_range.end - l).try_into().unwrap())
         {
             l += 1;
         }
     }
-    l - 1
+    (l - 1).try_into().unwrap()
 }
 
 /// The edit information representing a line
@@ -740,12 +754,12 @@ mod tests {
     use test_case::test_case;
 
     /// A convenience function to invoke the a Myers diff
-    fn myers_diff<'a, T>(a: &'a Vec<T>, b: &'a Vec<T>) -> Vec<EditType<&'a T>>
+    fn myers_diff<'a, T>(a: &'a [T], b: &'a [T]) -> Vec<EditType<&'a T>>
     where
         T: 'a + Eq + Debug,
     {
         let myers = Myers::default();
-        myers.diff(&a[..], &b[..])
+        myers.diff(a, b)
     }
 
     #[test]
