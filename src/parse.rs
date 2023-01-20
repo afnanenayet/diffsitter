@@ -139,7 +139,7 @@ fn fn_name_from_lang(lang: &str) -> String {
 fn lib_name_from_lang(lang: &str) -> String {
     let extension = if cfg!(target_os = "macos") {
         "dylib"
-    } else if cfg!(target_os = "linux") {
+    } else if cfg!(any(target_os = "linux", target_os = "netbsd")) {
         "so"
     } else if cfg!(target_os = "windows") {
         "dll"
