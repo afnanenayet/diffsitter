@@ -324,7 +324,10 @@ mod tests {
         let ast_data_a = generate_ast_vector_data(path_a, None, &config).unwrap();
         let ast_data_b = generate_ast_vector_data(path_b, None, &config).unwrap();
 
-        let processor = input_processing::TreeSitterProcessor { split_graphemes };
+        let processor = input_processing::TreeSitterProcessor {
+            split_graphemes,
+            ..Default::default()
+        };
 
         let diff_vec_a = processor.process(&ast_data_a.tree, &ast_data_a.text);
         let diff_vec_b = processor.process(&ast_data_b.tree, &ast_data_b.text);

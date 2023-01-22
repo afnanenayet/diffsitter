@@ -135,6 +135,9 @@ test_data/short/rust/a.rs -> test_data/short/rust/b.rs
 
 *Note: the numbers correspond to line numbers from the original files.*
 
+You can also filter which tree sitter nodes are considered in the diff through 
+the config file.
+
 Since it uses the AST to calculate the difference, it knows that the formatting
 differences in `main` between the two files isn't a meaningful difference, so
 it doesn't show up in the diff.
@@ -146,6 +149,25 @@ it doesn't show up in the diff.
 It also has extensive logging if you want to debug or see timing information:
 
 ![screenshot of rust diff with logs](assets/rust_example_logs.png)
+
+### Node filtering
+
+You can filter the nodes that are considered in the diff by setting 
+`include_nodes` or `exclude_nodes` in the config file. `exclude_nodes` always 
+takes precedence over `include_nodes`, and the type of a node is the `kind`
+of a tree-sitter node.
+
+This feature currently only applies to leaf nodes, but we could exclude nodes
+recursively if there's demand for it.
+
+```json5
+"input-processing": {
+    // You can exclude different tree sitter node types - this rule takes precedence over `include_kinds`.
+    "exclude_kinds": ["string"],
+    // You can specifically allow only certain tree sitter node types
+    "include_kinds": ["method_definition"],
+}
+```
 
 ## Installation
 
