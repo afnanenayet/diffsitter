@@ -5,12 +5,23 @@
 
 use logging_timer::time;
 use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
 use std::{cell::RefCell, ops::Index, path::PathBuf};
 use tree_sitter::Node as TSNode;
 use tree_sitter::Point;
 use tree_sitter::Tree as TSTree;
 use unicode_segmentation as us;
+
+#[cfg(test)]
+use mockall::{automock, predicate::*};
+
+/// A wrapper trait that exists so we can mock TS nodes.
+#[cfg_attr(test, automock)]
+trait TSNodeTrait {
+    /// Return the kind string that corresponds to a node.
+    fn kind(&self) -> &str;
+}
 
 /// The configuration options for processing tree-sitter output.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -21,13 +32,35 @@ pub struct TreeSitterProcessor {
     /// If this is disabled, then the direct tree-sitter nodes will be used and diffs will be less
     /// granular. This has the advantage of being faster and using less memory.
     pub split_graphemes: bool,
+
+    /// The kinds of nodes to exclude from processing. This takes precedence over `include_kinds`.
+    ///
+    /// This is a set of strings that correspond to the tree sitter node types.
+    pub exclude_kinds: Option<HashSet<String>>,
+
+    /// The kinds of nodes to explicitly include when processing. The nodes specified here will be overridden by the
+    /// nodes specified in `exclude_kinds`.
+    ///
+    /// This is a set of strings that correspond to the tree sitter node types.
+    pub include_kinds: Option<HashSet<String>>,
 }
 
 impl Default for TreeSitterProcessor {
     fn default() -> Self {
         Self {
             split_graphemes: true,
+            exclude_kinds: None,
+            include_kinds: None,
         }
+    }
+}
+
+#[derive(Debug)]
+struct TSNodeWrapper<'a>(TSNode<'a>);
+
+impl<'a> TSNodeTrait for TSNodeWrapper<'a> {
+    fn kind(&self) -> &str {
+        self.0.kind()
     }
 }
 
@@ -35,16 +68,36 @@ impl TreeSitterProcessor {
     #[time("info", "ast::{}")]
     pub fn process<'a>(&self, tree: &'a TSTree, text: &'a str) -> Vec<Entry<'a>> {
         let ast_vector = from_ts_tree(tree, text);
-        let entries = if self.split_graphemes {
-            ast_vector
-                .leaves
-                .iter()
-                .flat_map(|leaf| leaf.split_on_graphemes())
-                .collect()
+        let iter = ast_vector
+            .leaves
+            .iter()
+            .filter(|leaf| self.should_include_node(&TSNodeWrapper(leaf.reference)));
+        if self.split_graphemes {
+            iter.flat_map(|leaf| leaf.split_on_graphemes()).collect()
         } else {
-            ast_vector.leaves.iter().map(|&x| Entry::from(x)).collect()
-        };
-        entries
+            iter.map(|&x| Entry::from(x)).collect()
+        }
+    }
+
+    /// A helper method to determine whether a node type should be filtered out based on the user's filtering
+    /// preferences.
+    ///
+    /// This method will first check if the node has been specified for exclusion, which takes precedence. Then it will
+    /// check if the node kind is explicitly included. If either the exclusion or inclusion sets aren't specified,
+    /// then the filter will not be applied.
+    fn should_include_node(&self, node: &dyn TSNodeTrait) -> bool {
+        if let Some(exclude_kinds) = &self.exclude_kinds {
+            if exclude_kinds.contains(node.kind()) {
+                return false;
+            }
+        }
+
+        if let Some(include_kinds) = &self.include_kinds {
+            if !include_kinds.contains(node.kind()) {
+                return false;
+            }
+        }
+        true
     }
 }
 
@@ -344,4 +397,61 @@ pub enum EditType<T> {
 
     /// An element that was deleted in the edit script
     Deletion(T),
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_should_filter_node() {
+        let exclude_kinds: HashSet<String> = HashSet::from(["comment".to_string()]);
+        let mut mock_node = MockTSNodeTrait::new();
+        mock_node.expect_kind().return_const("comment".to_owned());
+
+        // basic scenario - expect that the excluded kind is ignored
+        let processor = TreeSitterProcessor {
+            split_graphemes: false,
+            exclude_kinds: Some(exclude_kinds.clone()),
+            include_kinds: None,
+        };
+        assert!(!processor.should_include_node(&mock_node));
+
+        // expect that it's still excluded if the included list also has an element that was excluded
+        let processor = TreeSitterProcessor {
+            split_graphemes: false,
+            exclude_kinds: Some(exclude_kinds.clone()),
+            include_kinds: Some(exclude_kinds.clone()),
+        };
+        assert!(!processor.should_include_node(&mock_node));
+
+        // Don't exclude anything, but only include types that our node is not
+        let include_kinds: HashSet<String> = HashSet::from([
+            "some_other_type".to_string(),
+            "yet another type".to_string(),
+        ]);
+        let processor = TreeSitterProcessor {
+            split_graphemes: false,
+            exclude_kinds: None,
+            include_kinds: Some(include_kinds.clone()),
+        };
+        assert!(!processor.should_include_node(&mock_node));
+
+        // include our node type
+        let include_kinds: HashSet<String> = HashSet::from(["comment".to_string()]);
+        let processor = TreeSitterProcessor {
+            split_graphemes: false,
+            exclude_kinds: None,
+            include_kinds: Some(include_kinds.clone()),
+        };
+        assert!(processor.should_include_node(&mock_node));
+
+        // don't filter anything
+        let processor = TreeSitterProcessor {
+            split_graphemes: false,
+            exclude_kinds: None,
+            include_kinds: None,
+        };
+        assert!(processor.should_include_node(&mock_node));
+    }
 }
