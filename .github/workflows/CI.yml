@@ -43,9 +43,9 @@ jobs:
               use-cross: false,
             }
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
-          submodules: 'recursive'
+          submodules: true
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
