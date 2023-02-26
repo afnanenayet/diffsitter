@@ -37,7 +37,9 @@ jobs:
         run: |
           echo "Version being built against is version ${{ env.VERSION }}"!
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
         if: env.VERSION == 'nightly'
 
       # We need to update the nightly tag every night, otherwise the CD
