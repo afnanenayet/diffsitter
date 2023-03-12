@@ -49,17 +49,263 @@ RichHunks(
                                 },
                                 kind_id: 103,
                             },
+                            Entry {
+                                reference: {Node string_content (1, 7) - (3, 4)},
+                                text: " ",
+                                start_position: Point {
+                                    row: 1,
+                                    column: 7,
+                                },
+                                end_position: Point {
+                                    row: 1,
+                                    column: 8,
+                                },
+                                kind_id: 209,
+                            },
+                            Entry {
+                                reference: {Node string_content (1, 7) - (3, 4)},
+                                text: "H",
+                                start_position: Point {
+                                    row: 1,
+                                    column: 8,
+                                },
+                                end_position: Point {
+                                    row: 1,
+                                    column: 9,
+                                },
+                                kind_id: 209,
+                            },
+                            Entry {
+                                reference: {Node string_content (1, 7) - (3, 4)},
+                                text: "e",
+                                start_position: Point {
+                                    row: 1,
+                                    column: 9,
+                                },
+                                end_position: Point {
+                                    row: 1,
+                                    column: 10,
+                                },
+                                kind_id: 209,
+                            },
+                            Entry {
+                                reference: {Node string_content (1, 7) - (3, 4)},
+                                text: "l",
+                                start_position: Point {
+                                    row: 1,
+                                    column: 10,
+                                },
+                                end_position: Point {
+                                    row: 1,
+                                    column: 11,
+                                },
+                                kind_id: 209,
+                            },
+                            Entry {
+                                reference: {Node string_content (1, 7) - (3, 4)},
+                                text: "l",
+                                start_position: Point {
+                                    row: 1,
+                                    column: 11,
+                                },
+                                end_position: Point {
+                                    row: 1,
+                                    column: 12,
+                                },
+                                kind_id: 209,
+                            },
+                            Entry {
+                                reference: {Node string_content (1, 7) - (3, 4)},
+                                text: "o",
+                                start_position: Point {
+                                    row: 1,
+                                    column: 12,
+                                },
+                                end_position: Point {
+                                    row: 1,
+                                    column: 13,
+                                },
+                                kind_id: 209,
+                            },
                         ],
                     },
-                ],
-            ),
-        ),
-        New(
-            Hunk(
-                [
+                    Line {
+                        line_index: 2,
+                        entries: [
+                            Entry {
+                                reference: {Node string_content (1, 7) - (3, 4)},
+                                text: " ",
+                                start_position: Point {
+                                    row: 2,
+                                    column: 0,
+                                },
+                                end_position: Point {
+                                    row: 2,
+                                    column: 1,
+                                },
+                                kind_id: 209,
+                            },
+                            Entry {
+                                reference: {Node string_content (1, 7) - (3, 4)},
+                                text: " ",
+                                start_position: Point {
+                                    row: 2,
+                                    column: 1,
+                                },
+                                end_position: Point {
+                                    row: 2,
+                                    column: 2,
+                                },
+                                kind_id: 209,
+                            },
+                            Entry {
+                                reference: {Node string_content (1, 7) - (3, 4)},
+                                text: " ",
+                                start_position: Point {
+                                    row: 2,
+                                    column: 2,
+                                },
+                                end_position: Point {
+                                    row: 2,
+                                    column: 3,
+                                },
+                                kind_id: 209,
+                            },
+                            Entry {
+                                reference: {Node string_content (1, 7) - (3, 4)},
+                                text: " ",
+                                start_position: Point {
+                                    row: 2,
+                                    column: 3,
+                                },
+                                end_position: Point {
+                                    row: 2,
+                                    column: 4,
+                                },
+                                kind_id: 209,
+                            },
+                            Entry {
+                                reference: {Node string_content (1, 7) - (3, 4)},
+                                text: "w",
+                                start_position: Point {
+                                    row: 2,
+                                    column: 4,
+                                },
+                                end_position: Point {
+                                    row: 2,
+                                    column: 5,
+                                },
+                                kind_id: 209,
+                            },
+                            Entry {
+                                reference: {Node string_content (1, 7) - (3, 4)},
+                                text: "o",
+                                start_position: Point {
+                                    row: 2,
+                                    column: 5,
+                                },
+                                end_position: Point {
+                                    row: 2,
+                                    column: 6,
+                                },
+                                kind_id: 209,
+                            },
+                            Entry {
+                                reference: {Node string_content (1, 7) - (3, 4)},
+                                text: "r",
+                                start_position: Point {
+                                    row: 2,
+                                    column: 6,
+                                },
+                                end_position: Point {
+                                    row: 2,
+                                    column: 7,
+                                },
+                                kind_id: 209,
+                            },
+                            Entry {
+                                reference: {Node string_content (1, 7) - (3, 4)},
+                                text: "l",
+                                start_position: Point {
+                                    row: 2,
+                                    column: 7,
+                                },
+                                end_position: Point {
+                                    row: 2,
+                                    column: 8,
+                                },
+                                kind_id: 209,
+                            },
+                            Entry {
+                                reference: {Node string_content (1, 7) - (3, 4)},
+                                text: "d",
+                                start_position: Point {
+                                    row: 2,
+                                    column: 8,
+                                },
+                                end_position: Point {
+                                    row: 2,
+                                    column: 9,
+                                },
+                                kind_id: 209,
+                            },
+                        ],
+                    },
                     Line {
                         line_index: 3,
                         entries: [
+                            Entry {
+                                reference: {Node string_content (1, 7) - (3, 4)},
+                                text: " ",
+                                start_position: Point {
+                                    row: 3,
+                                    column: 0,
+                                },
+                                end_position: Point {
+                                    row: 3,
+                                    column: 1,
+                                },
+                                kind_id: 209,
+                            },
+                            Entry {
+                                reference: {Node string_content (1, 7) - (3, 4)},
+                                text: " ",
+                                start_position: Point {
+                                    row: 3,
+                                    column: 1,
+                                },
+                                end_position: Point {
+                                    row: 3,
+                                    column: 2,
+                                },
+                                kind_id: 209,
+                            },
+                            Entry {
+                                reference: {Node string_content (1, 7) - (3, 4)},
+                                text: " ",
+                                start_position: Point {
+                                    row: 3,
+                                    column: 2,
+                                },
+                                end_position: Point {
+                                    row: 3,
+                                    column: 3,
+                                },
+                                kind_id: 209,
+                            },
+                            Entry {
+                                reference: {Node string_content (1, 7) - (3, 4)},
+                                text: " ",
+                                start_position: Point {
+                                    row: 3,
+                                    column: 3,
+                                },
+                                end_position: Point {
+                                    row: 3,
+                                    column: 4,
+                                },
+                                kind_id: 209,
+                            },
                             Entry {
                                 reference: {Node " (3, 4) - (3, 7)},
                                 text: "\"",
