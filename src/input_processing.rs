@@ -173,48 +173,68 @@ impl<'a> VectorLeaf<'a> {
     ///
     /// Each grapheme will get its own [Entry] struct. This method will resolve the
     /// indices/positioning of each grapheme from the `self.text` field.
+    ///
+    /// This effectively maps out the byte position for each node from the unicode text, accounting
+    /// for both newlines and grapheme splits.
     fn split_on_graphemes(self) -> Vec<Entry<'a>> {
-        let mut entries = Vec::new();
-        let indices: Vec<(usize, &str)> =
-            us::UnicodeSegmentation::grapheme_indices(self.text, true).collect();
-        entries.reserve(indices.len());
-        let mut current_line = self.reference.start_position().row;
+        let mut entries: Vec<Entry<'a>> = Vec::new();
 
-        for (idx, grapheme) in indices {
-            // Every grapheme has to be at least one byte
-            debug_assert!(!grapheme.is_empty());
+        // We have to split lines because newline characters might be in the text for a tree sitter
+        // node. We try to split up each unicode grapheme and assign them a location in the text
+        // with a row and column, so we need to make sure that we are properly resetting the column
+        // offset for and offsetting the row for each new line in a tree sitter node's text.
+        let lines = self.text.lines();
 
-            let original_start_col = self.reference.start_position().column;
-            let new_start_pos = Point {
-                row: current_line,
-                column: original_start_col + idx,
-            };
-            let new_end_pos = Point {
-                row: current_line,
-                column: new_start_pos.column + grapheme.len(),
-            };
+        for (line_offset, line) in lines.enumerate() {
+            let indices: Vec<(usize, &str)> =
+                us::UnicodeSegmentation::grapheme_indices(line, true).collect();
+            entries.reserve(entries.len() + indices.len());
 
-            debug_assert!(new_start_pos.row <= new_end_pos.row);
+            for (idx, grapheme) in indices {
+                // Every grapheme has to be at least one byte
+                debug_assert!(!grapheme.is_empty());
 
-            // If the end position is on the next row, then the column index can be less than or
-            // equal to the the start column. If they are on the same line, then the ending column
-            // *must be* greater than the starting column.
-            debug_assert!(
-                new_start_pos.column < new_end_pos.column || new_start_pos.row < new_end_pos.row
-            );
-
-            let entry = Entry {
-                reference: self.reference,
-                text: &self.text[idx..idx + grapheme.len()],
-                start_position: new_start_pos,
-                end_position: new_end_pos,
-                kind_id: self.reference.kind_id(),
-            };
-            entries.push(entry);
-
-            // If the last entry was a new line, iterate up for the next entry
-            if grapheme == "\n" || grapheme == "\r\n" {
-                current_line += 1;
+                // We simply offset from the start position of the node if we are on the first
+                // line, which implies no newline offset needs to be applied. If the line_offset is
+                // more than 0, we know we've hit a newline so the starting position for the column
+                // is 0, shifted over for the grapheme index.
+                let start_column = if line_offset == 0 {
+                    self.reference.start_position().column + idx
+                } else {
+                    idx
+                };
+                let row = self.reference.start_position().row + line_offset;
+                let new_start_pos = Point {
+                    row,
+                    column: start_column,
+                };
+                let new_end_pos = Point {
+                    row,
+                    column: new_start_pos.column + grapheme.len(),
+                };
+                debug_assert!(new_start_pos.row <= new_end_pos.row);
+                let entry = Entry {
+                    reference: self.reference,
+                    text: &line[idx..idx + grapheme.len()],
+                    start_position: new_start_pos,
+                    end_position: new_end_pos,
+                    kind_id: self.reference.kind_id(),
+                };
+                if let Some(&last_entry) = entries.last() {
+                    // Our invariant is that one of the following must hold true:
+                    // 1. The last entry ended on a previous line (now we don't need to check the
+                    //    column offset).
+                    // 2. The last entry is on the same line, so the column offset for the entry we
+                    //    are about to insert must be greater than or equal to the end column of
+                    //    the last entry. It's valid for them to be equal because the end position
+                    //    is not inclusive.
+                    debug_assert!(
+                        last_entry.end_position().row < entry.start_position().row
+                            || (last_entry.end_position.row == entry.start_position().row
+                                && last_entry.end_position.column <= entry.start_position().column)
+                    );
+                }
+                entries.push(entry);
             }
         }
         entries
