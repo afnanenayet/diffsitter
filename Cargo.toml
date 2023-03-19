@@ -28,6 +28,7 @@ include = [
   "!**/target/**/*",
   "!assets/*",
 ]
+default-run = "diffsitter"
 
 [[bin]]
 name = "diffsitter"
