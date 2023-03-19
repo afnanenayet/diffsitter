@@ -53,7 +53,7 @@ jobs:
           target: ${{ matrix.job.target }}
           profile: minimal
           override: true
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
         with:
           key: ${{ matrix.job.target }}
       - name: Check formatting

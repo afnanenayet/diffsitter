@@ -158,7 +158,7 @@ jobs:
           command: build
           use-cross: ${{ matrix.job.use-cross }}
           args: --profile production --locked --target ${{ matrix.job.target }} --features better-build-info,static-grammar-libs
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
         with:
           key: ${{ matrix.job.target }}-release
       - name: Install packages (Windows)
