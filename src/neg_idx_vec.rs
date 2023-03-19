@@ -67,8 +67,15 @@ impl<T> NegIdxVec<T> {
     }
 
     /// Get the length of the vector
+    #[must_use]
     pub fn len(&self) -> usize {
         self.data.len()
+    }
+
+    /// Returns whether the vector is empty.
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.data.is_empty()
     }
 }
 

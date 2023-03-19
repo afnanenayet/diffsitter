@@ -75,8 +75,10 @@ pub trait Renderer {
 /// orphan rule.
 #[derive(Debug, PartialEq, Eq, Copy, Clone, Serialize, Deserialize)]
 #[serde(remote = "Color", rename_all = "snake_case")]
+#[derive(Default)]
 enum ColorDef {
     Color256(u8),
+    #[default]
     Black,
     Red,
     Green,
@@ -100,12 +102,6 @@ impl From<ColorDef> for Color {
             ColorDef::Cyan => Color::Cyan,
             ColorDef::Color256(c) => Color::Color256(c),
         }
-    }
-}
-
-impl Default for ColorDef {
-    fn default() -> Self {
-        ColorDef::Black
     }
 }
 
@@ -158,6 +154,7 @@ struct EmphasizedStyle(Style);
 /// `Bold` is used as the default emphasis strategy between two lines.
 #[derive(Debug, PartialEq, EnumString, Serialize, Deserialize, Eq)]
 #[strum(serialize_all = "snake_case")]
+#[derive(Default)]
 pub enum Emphasis {
     /// Don't emphasize anything
     ///
@@ -165,17 +162,12 @@ pub enum Emphasis {
     /// default emphasis strategy.
     None,
     /// Bold the differences between the two lines for emphasis
+    #[default]
     Bold,
     /// Underline the differences between two lines for emphasis
     Underline,
     /// Use a colored highlight for emphasis
     Highlight(HighlightColors),
-}
-
-impl Default for Emphasis {
-    fn default() -> Self {
-        Emphasis::Bold
-    }
 }
 
 /// The colors to use when highlighting additions and deletions
