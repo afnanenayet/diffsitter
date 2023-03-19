@@ -12,12 +12,11 @@ mod json;
 mod unified;
 
 use crate::diff::RichHunks;
-use console::Term;
-use console::{Color, Style};
+use console::{Color, Style, Term};
 use enum_dispatch::enum_dispatch;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::io::BufWriter;
+use std::io::Write;
 use strum::{self, Display, EnumIter, EnumString};
 use unified::Unified;
 
@@ -43,9 +42,6 @@ pub struct DisplayData<'a> {
     pub new: DocumentDiffData<'a>,
 }
 
-/// A buffered writer for a [terminal](Term) object.
-type TermWriter = BufWriter<Term>;
-
 #[enum_dispatch]
 #[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize, Display, EnumIter, EnumString)]
 #[strum(serialize_all = "snake_case")]
@@ -68,7 +64,17 @@ pub trait Renderer {
     ///
     /// We use anyhow for errors so errors are free form for implementors, as they are not
     /// recoverable.
-    fn render(&self, writer: &mut TermWriter, data: &DisplayData) -> anyhow::Result<()>;
+    ///
+    /// `writer` can be any generic writer - it's not guaranteed that we're writing to a particular sink (could be a
+    /// pager, stdout, etc). `data` is the data that the renderer needs to display, this has information about the
+    /// document being written out. `term_info` is an optional reference to a term object that can be used by the
+    /// renderer to access information about the terminal if the current process is a TTY output.
+    fn render(
+        &self,
+        writer: &mut dyn Write,
+        data: &DisplayData,
+        term_info: Option<&Term>,
+    ) -> anyhow::Result<()>;
 }
 
 /// A copy of the [Color](console::Color) enum so we can serialize using serde, and get around the

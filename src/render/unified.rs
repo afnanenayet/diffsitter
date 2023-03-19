@@ -1,10 +1,9 @@
 use crate::diff::{Hunk, Line, RichHunk, RichHunks};
 use crate::render::{
     default_option, opt_color_def, ColorDef, DisplayData, EmphasizedStyle, RegularStyle, Renderer,
-    TermWriter,
 };
 use anyhow::Result;
-use console::{Color, Style};
+use console::{Color, Style, Term};
 use log::{debug, info};
 use serde::{Deserialize, Serialize};
 use std::{cmp::max, io::Write};
@@ -116,7 +115,12 @@ impl<'a> From<&'a TextStyle> for FormattingDirectives<'a> {
 }
 
 impl Renderer for Unified {
-    fn render(&self, writer: &mut TermWriter, data: &DisplayData) -> Result<()> {
+    fn render(
+        &self,
+        writer: &mut dyn Write,
+        data: &DisplayData,
+        term_info: Option<&Term>,
+    ) -> Result<()> {
         let DisplayData { hunks, old, new } = &data;
         let old_fmt = FormattingDirectives::from(&self.deletion);
         let new_fmt = FormattingDirectives::from(&self.addition);
@@ -127,7 +131,14 @@ impl Renderer for Unified {
         let old_lines: Vec<_> = old.text.lines().collect();
         let new_lines: Vec<_> = new.text.lines().collect();
 
-        self.print_title(writer, old.filename, new.filename, &old_fmt, &new_fmt)?;
+        self.print_title(
+            writer,
+            old.filename,
+            new.filename,
+            &old_fmt,
+            &new_fmt,
+            term_info,
+        )?;
 
         for hunk_wrapper in &hunks.0 {
             match hunk_wrapper {
@@ -150,11 +161,12 @@ impl Unified {
     /// (stacking horizontally or vertically) based on the terminal width.
     fn print_title(
         &self,
-        term: &mut TermWriter,
+        term: &mut dyn Write,
         old_fname: &str,
         new_fname: &str,
         old_fmt: &FormattingDirectives,
         new_fmt: &FormattingDirectives,
+        term_info: Option<&Term>,
     ) -> std::io::Result<()> {
         // The different ways we can stack the title
         #[derive(Debug, Eq, PartialEq, PartialOrd, Ord, strum_macros::Display)]
@@ -168,18 +180,22 @@ impl Unified {
         // We construct the fully horizontal title string. If wider than the terminal, then we
         // format another title string that's vertically stacked
         let title_len = format!("{old_fname}{divider}{new_fname}").len();
-
+        // Set terminal width equal to the title length if there is no terminal info is available, then the title will
+        // stack horizontally be default
+        let term_width = if let Some(term_info) = term_info {
+            if let Some((_height, width)) = term_info.size_checked() {
+                width.try_into().unwrap()
+            } else {
+                title_len
+            }
+        } else {
+            title_len
+        };
         // We only display the horizontal title format if we know we have enough horizontal space
         // to display it. If we can't determine the terminal width, play it safe and default to
         // vertical stacking.
-        let stack_style = if let Some((_, term_width)) = term.get_ref().size_checked() {
-            info!("Detected terminal width: {} columns", term_width);
-
-            if title_len <= term_width as usize {
-                TitleStack::Horizontal
-            } else {
-                TitleStack::Vertical
-            }
+        let stack_style = if title_len <= term_width {
+            TitleStack::Horizontal
         } else {
             TitleStack::Vertical
         };

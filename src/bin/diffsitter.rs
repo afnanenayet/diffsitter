@@ -16,7 +16,7 @@ use libdiffsitter::render::{DisplayData, DocumentDiffData, Renderer};
 use log::{debug, error, info, warn, LevelFilter};
 use serde_json as json;
 use std::{
-    io::{self, BufWriter, Write},
+    io,
     path::Path,
     process::{Child, Command},
 };
@@ -149,8 +149,9 @@ fn run_diff(args: Args, config: Config) -> Result<()> {
     // the user just cares about the output at the end, we don't care about how frequently the
     // terminal does partial updates or anything like that. If the user is curious about progress,
     // they can enable logging and see when hunks are processed and written to the buffer.
-    let mut buf_writer = BufWriter::new(Term::stdout());
-    renderer.render(&mut buf_writer, &params)?;
+    let mut buf_writer = Term::buffered_stdout();
+    let term_info = buf_writer.clone();
+    renderer.render(&mut buf_writer, &params, Some(&term_info))?;
     buf_writer.flush()?;
     Ok(())
 }
