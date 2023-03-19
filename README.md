@@ -184,7 +184,18 @@ as well as tagged [stable releases](https://github.com/afnanenayet/diffsitter/re
 
 ### Cargo
 
-You can install using `cargo` the standard way with `cargo install diffsitter`.
+You can build from source with `cargo` using the following command:
+
+```sh
+cargo install diffsitter --bin diffsitter
+```
+
+If you want to generate completion files and other assets you can install the 
+`diffsitter_completions` binary with the following command:
+
+```sh
+cargo install diffsitter --bin diffsitter_completions
+```
 
 ### Homebrew
 
