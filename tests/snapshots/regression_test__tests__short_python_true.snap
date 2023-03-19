@@ -1,5 +1,5 @@
 ---
-source: src/main.rs
+source: tests/regression_test.rs
 expression: diff_hunks
 ---
 RichHunks(

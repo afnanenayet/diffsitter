@@ -1,5 +1,5 @@
 ---
-source: src/main.rs
+source: tests/regression_test.rs
 expression: diff_hunks
 ---
 RichHunks(
@@ -19,7 +19,7 @@ RichHunks(
                                 },
                                 end_position: Point {
                                     row: 12,
-                                    column: 12,
+                                    column: 13,
                                 },
                                 kind_id: 1,
                             },
@@ -32,7 +32,7 @@ RichHunks(
                                 },
                                 end_position: Point {
                                     row: 12,
-                                    column: 24,
+                                    column: 25,
                                 },
                                 kind_id: 1,
                             },
@@ -45,7 +45,7 @@ RichHunks(
                                 },
                                 end_position: Point {
                                     row: 12,
-                                    column: 36,
+                                    column: 37,
                                 },
                                 kind_id: 1,
                             },
@@ -69,7 +69,7 @@ RichHunks(
                                 },
                                 end_position: Point {
                                     row: 17,
-                                    column: 12,
+                                    column: 13,
                                 },
                                 kind_id: 1,
                             },
@@ -82,7 +82,7 @@ RichHunks(
                                 },
                                 end_position: Point {
                                     row: 17,
-                                    column: 24,
+                                    column: 25,
                                 },
                                 kind_id: 1,
                             },
@@ -95,7 +95,7 @@ RichHunks(
                                 },
                                 end_position: Point {
                                     row: 17,
-                                    column: 36,
+                                    column: 37,
                                 },
                                 kind_id: 1,
                             },
@@ -112,27 +112,66 @@ RichHunks(
                         entries: [
                             Entry {
                                 reference: {Node namespace_identifier (43, 4) - (43, 7)},
-                                text: "std",
+                                text: "s",
                                 start_position: Point {
                                     row: 43,
                                     column: 4,
                                 },
                                 end_position: Point {
                                     row: 43,
-                                    column: 4,
+                                    column: 5,
+                                },
+                                kind_id: 440,
+                            },
+                            Entry {
+                                reference: {Node namespace_identifier (43, 4) - (43, 7)},
+                                text: "t",
+                                start_position: Point {
+                                    row: 43,
+                                    column: 5,
+                                },
+                                end_position: Point {
+                                    row: 43,
+                                    column: 6,
+                                },
+                                kind_id: 440,
+                            },
+                            Entry {
+                                reference: {Node namespace_identifier (43, 4) - (43, 7)},
+                                text: "d",
+                                start_position: Point {
+                                    row: 43,
+                                    column: 6,
+                                },
+                                end_position: Point {
+                                    row: 43,
+                                    column: 7,
                                 },
                                 kind_id: 440,
                             },
                             Entry {
                                 reference: {Node :: (43, 7) - (43, 9)},
-                                text: "::",
+                                text: ":",
                                 start_position: Point {
                                     row: 43,
                                     column: 7,
                                 },
                                 end_position: Point {
                                     row: 43,
-                                    column: 7,
+                                    column: 8,
+                                },
+                                kind_id: 43,
+                            },
+                            Entry {
+                                reference: {Node :: (43, 7) - (43, 9)},
+                                text: ":",
+                                start_position: Point {
+                                    row: 43,
+                                    column: 8,
+                                },
+                                end_position: Point {
+                                    row: 43,
+                                    column: 9,
                                 },
                                 kind_id: 43,
                             },
@@ -143,27 +182,66 @@ RichHunks(
                         entries: [
                             Entry {
                                 reference: {Node namespace_identifier (44, 4) - (44, 7)},
-                                text: "std",
+                                text: "s",
                                 start_position: Point {
                                     row: 44,
                                     column: 4,
                                 },
                                 end_position: Point {
                                     row: 44,
-                                    column: 4,
+                                    column: 5,
+                                },
+                                kind_id: 440,
+                            },
+                            Entry {
+                                reference: {Node namespace_identifier (44, 4) - (44, 7)},
+                                text: "t",
+                                start_position: Point {
+                                    row: 44,
+                                    column: 5,
+                                },
+                                end_position: Point {
+                                    row: 44,
+                                    column: 6,
+                                },
+                                kind_id: 440,
+                            },
+                            Entry {
+                                reference: {Node namespace_identifier (44, 4) - (44, 7)},
+                                text: "d",
+                                start_position: Point {
+                                    row: 44,
+                                    column: 6,
+                                },
+                                end_position: Point {
+                                    row: 44,
+                                    column: 7,
                                 },
                                 kind_id: 440,
                             },
                             Entry {
                                 reference: {Node :: (44, 7) - (44, 9)},
-                                text: "::",
+                                text: ":",
                                 start_position: Point {
                                     row: 44,
                                     column: 7,
                                 },
                                 end_position: Point {
                                     row: 44,
-                                    column: 7,
+                                    column: 8,
+                                },
+                                kind_id: 43,
+                            },
+                            Entry {
+                                reference: {Node :: (44, 7) - (44, 9)},
+                                text: ":",
+                                start_position: Point {
+                                    row: 44,
+                                    column: 8,
+                                },
+                                end_position: Point {
+                                    row: 44,
+                                    column: 9,
                                 },
                                 kind_id: 43,
                             },
@@ -174,27 +252,66 @@ RichHunks(
                         entries: [
                             Entry {
                                 reference: {Node namespace_identifier (45, 4) - (45, 7)},
-                                text: "std",
+                                text: "s",
                                 start_position: Point {
                                     row: 45,
                                     column: 4,
                                 },
                                 end_position: Point {
                                     row: 45,
-                                    column: 4,
+                                    column: 5,
+                                },
+                                kind_id: 440,
+                            },
+                            Entry {
+                                reference: {Node namespace_identifier (45, 4) - (45, 7)},
+                                text: "t",
+                                start_position: Point {
+                                    row: 45,
+                                    column: 5,
+                                },
+                                end_position: Point {
+                                    row: 45,
+                                    column: 6,
+                                },
+                                kind_id: 440,
+                            },
+                            Entry {
+                                reference: {Node namespace_identifier (45, 4) - (45, 7)},
+                                text: "d",
+                                start_position: Point {
+                                    row: 45,
+                                    column: 6,
+                                },
+                                end_position: Point {
+                                    row: 45,
+                                    column: 7,
                                 },
                                 kind_id: 440,
                             },
                             Entry {
                                 reference: {Node :: (45, 7) - (45, 9)},
-                                text: "::",
+                                text: ":",
                                 start_position: Point {
                                     row: 45,
                                     column: 7,
                                 },
                                 end_position: Point {
                                     row: 45,
-                                    column: 7,
+                                    column: 8,
+                                },
+                                kind_id: 43,
+                            },
+                            Entry {
+                                reference: {Node :: (45, 7) - (45, 9)},
+                                text: ":",
+                                start_position: Point {
+                                    row: 45,
+                                    column: 8,
+                                },
+                                end_position: Point {
+                                    row: 45,
+                                    column: 9,
                                 },
                                 kind_id: 43,
                             },
@@ -205,27 +322,66 @@ RichHunks(
                         entries: [
                             Entry {
                                 reference: {Node namespace_identifier (46, 4) - (46, 7)},
-                                text: "std",
+                                text: "s",
                                 start_position: Point {
                                     row: 46,
                                     column: 4,
                                 },
                                 end_position: Point {
                                     row: 46,
-                                    column: 4,
+                                    column: 5,
+                                },
+                                kind_id: 440,
+                            },
+                            Entry {
+                                reference: {Node namespace_identifier (46, 4) - (46, 7)},
+                                text: "t",
+                                start_position: Point {
+                                    row: 46,
+                                    column: 5,
+                                },
+                                end_position: Point {
+                                    row: 46,
+                                    column: 6,
+                                },
+                                kind_id: 440,
+                            },
+                            Entry {
+                                reference: {Node namespace_identifier (46, 4) - (46, 7)},
+                                text: "d",
+                                start_position: Point {
+                                    row: 46,
+                                    column: 6,
+                                },
+                                end_position: Point {
+                                    row: 46,
+                                    column: 7,
                                 },
                                 kind_id: 440,
                             },
                             Entry {
                                 reference: {Node :: (46, 7) - (46, 9)},
-                                text: "::",
+                                text: ":",
                                 start_position: Point {
                                     row: 46,
                                     column: 7,
                                 },
                                 end_position: Point {
                                     row: 46,
-                                    column: 7,
+                                    column: 8,
+                                },
+                                kind_id: 43,
+                            },
+                            Entry {
+                                reference: {Node :: (46, 7) - (46, 9)},
+                                text: ":",
+                                start_position: Point {
+                                    row: 46,
+                                    column: 8,
+                                },
+                                end_position: Point {
+                                    row: 46,
+                                    column: 9,
                                 },
                                 kind_id: 43,
                             },

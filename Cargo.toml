@@ -29,6 +29,18 @@ include = [
   "!assets/*",
 ]
 
+[[bin]]
+name = "diffsitter"
+path = "src/bin/diffsitter.rs"
+
+[[bin]]
+name = "diffsitter_completions"
+path = "src/bin/diffsitter_completions.rs"
+
+[lib]
+name = "libdiffsitter"
+path = "src/lib.rs"
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
