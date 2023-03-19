@@ -6,10 +6,11 @@ use std::ops::{Index, IndexMut};
 
 /// A vector that can be indexed with a negative index, like with Python.
 ///
-/// ```
+/// ```rust
+/// use libdiffsitter::neg_idx_vec::NegIdxVec;
 /// let v = NegIdxVec::from(vec![1, 2, 3]);
 /// let last_negative = v[-1];
-/// let last = v[v.0.len() - 1];
+/// let last = v[(v.len() - 1).try_into().unwrap()];
 /// ```
 ///
 /// A negative index corresponds to an offset from the end of the vector.
@@ -30,8 +31,9 @@ impl<T> NegIdxVec<T> {
     /// This will create an internal vector and all offsets will be pegged relative to the size of
     /// this vector.
     ///
-    /// ```
-    /// let v = NegIdxVec::new(1, Default::default);
+    /// ```rust
+    /// use libdiffsitter::neg_idx_vec::NegIdxVec;
+    /// let v: NegIdxVec<usize> = NegIdxVec::new(1, Default::default);
     /// ```
     pub fn new<F>(len: usize, f: F) -> Self
     where
