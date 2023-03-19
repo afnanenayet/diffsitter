@@ -1,10 +1,9 @@
-use std::io::Write;
-
+use super::DisplayData;
 use crate::render::Renderer;
+use console::Term;
 use logging_timer::time;
 use serde::{Deserialize, Serialize};
-
-use super::DisplayData;
+use std::io::Write;
 
 /// A renderer that outputs json data about the diff.
 ///
@@ -18,8 +17,9 @@ pub struct Json {
 impl Renderer for Json {
     fn render(
         &self,
-        writer: &mut super::TermWriter,
+        writer: &mut dyn Write,
         data: &super::DisplayData,
+        _term_info: Option<&Term>,
     ) -> anyhow::Result<()> {
         let json_str = self.generate_json_str(data)?;
         write!(writer, "{}", &json_str)?;
