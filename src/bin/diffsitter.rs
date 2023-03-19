@@ -7,14 +7,14 @@ use human_panic::setup_panic;
 use libdiffsitter::cli;
 use libdiffsitter::cli::Args;
 use libdiffsitter::config::{Config, ReadError};
-use libdiffsitter::console_utils;
-use libdiffsitter::diff;
 use libdiffsitter::generate_ast_vector_data;
 #[cfg(feature = "static-grammar-libs")]
 use libdiffsitter::parse::supported_languages;
 use libdiffsitter::parse::{generate_language, language_from_ext};
 use libdiffsitter::render::{DisplayData, DocumentDiffData, Renderer};
+use libdiffsitter::{console_utils, diff};
 use log::{debug, error, info, warn, LevelFilter};
+use minus::Pager;
 use serde_json as json;
 use std::{
     io,
@@ -150,11 +150,10 @@ fn run_diff(args: Args, config: Config) -> Result<()> {
     // the user just cares about the output at the end, we don't care about how frequently the
     // terminal does partial updates or anything like that. If the user is curious about progress,
     // they can enable logging and see when hunks are processed and written to the buffer.
-    let mut buf_writer = Term::buffered_stdout();
-    let term_info = buf_writer.clone();
-    renderer.render(&mut buf_writer, &params, Some(&term_info))?;
-    buf_writer.flush()?;
-    Ok(())
+    let mut pager = Pager::new();
+    // So we can write from another thread
+    let term_info = Term::stdout();
+    renderer.render(&mut pager, &params, Some(&term_info))
 }
 
 /// Serialize the default options struct to a json file and print that to stdout

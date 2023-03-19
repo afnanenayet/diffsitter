@@ -3,7 +3,7 @@ use crate::render::Renderer;
 use console::Term;
 use logging_timer::time;
 use serde::{Deserialize, Serialize};
-use std::io::Write;
+use std::fmt::Write;
 
 /// A renderer that outputs json data about the diff.
 ///

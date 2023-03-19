@@ -16,7 +16,7 @@ use console::{Color, Style, Term};
 use enum_dispatch::enum_dispatch;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::io::Write;
+use std::fmt::Write;
 use strum::{self, Display, EnumIter, EnumString};
 use unified::Unified;
 
