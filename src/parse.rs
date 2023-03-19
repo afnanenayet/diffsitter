@@ -245,6 +245,7 @@ pub fn generate_language(lang: &str, config: &GrammarConfig) -> Result<Language,
 /// The user is optionally allowed to supply a map of overrides for these extensions, if none are
 /// supplied, or if the given extension is not found in the map, this method will fall back to the
 /// default map, `FILE_EXTS`.
+#[must_use]
 pub fn resolve_language_str<'a>(
     ext: &str,
     overrides: Option<&'a HashMap<String, String>>,
@@ -335,6 +336,7 @@ pub fn parse_file(
 
 /// Return the languages supported by this instance of the tool in alphabetically sorted order
 #[cfg(feature = "static-grammar-libs")]
+#[must_use]
 pub fn supported_languages() -> Vec<&'static str> {
     if cfg!(feature = "static-grammar-libs") {
         let mut keys: Vec<&'static str> = LANGUAGES.keys().copied().collect();

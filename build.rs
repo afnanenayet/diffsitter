@@ -372,8 +372,7 @@ use phf::phf_map;
         // get to this step.
         writeln!(
             codegen,
-            "extern \"C\" {{ pub fn tree_sitter_{}() -> Language; }}",
-            language
+            "extern \"C\" {{ pub fn tree_sitter_{language}() -> Language; }}"
         )?;
         languages.push(language.as_str());
 

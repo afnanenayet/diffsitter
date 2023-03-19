@@ -6,19 +6,15 @@ use strum::{Display, EnumString};
 /// Whether the output to the terminal should be colored
 #[derive(Debug, Clone, Copy, PartialEq, Eq, EnumString, Display)]
 #[strum(serialize_all = "snake_case")]
+#[derive(Default)]
 pub enum ColorOutputPolicy {
     /// Automatically enable color if printing to a TTY, otherwise disable color
+    #[default]
     Auto,
     /// Force plaintext output
     Off,
     /// Force color output
     On,
-}
-
-impl Default for ColorOutputPolicy {
-    fn default() -> Self {
-        ColorOutputPolicy::Auto
-    }
 }
 
 /// Set terminal color settings based on the output policy.

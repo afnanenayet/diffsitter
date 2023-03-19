@@ -91,6 +91,7 @@ pub struct Line<'a> {
 }
 
 impl<'a> Line<'a> {
+    #[must_use]
     pub fn new(line_index: usize) -> Self {
         Line {
             line_index,
@@ -133,6 +134,7 @@ pub enum HunkInsertionError {
 
 impl<'a> Hunk<'a> {
     /// Create a new, empty hunk
+    #[must_use]
     pub fn new() -> Self {
         Hunk(Vec::new())
     }
@@ -140,6 +142,7 @@ impl<'a> Hunk<'a> {
     /// Returns the first line number of the hunk
     ///
     /// This will return [None] if the internal vector is empty
+    #[must_use]
     pub fn first_line(&self) -> Option<usize> {
         self.0.first().map(|x| x.line_index)
     }
@@ -147,6 +150,7 @@ impl<'a> Hunk<'a> {
     /// Returns the last line number of the hunk
     ///
     /// This will return [None] if the internal vector is empty
+    #[must_use]
     pub fn last_line(&self) -> Option<usize> {
         self.0.last().map(|x| x.line_index)
     }
@@ -206,6 +210,12 @@ impl<'a> Hunk<'a> {
         }
         last_line.entries.push(entry);
         Ok(())
+    }
+}
+
+impl<'a> Default for Hunk<'a> {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -277,6 +287,7 @@ pub struct RichHunksBuilder<'a> {
 }
 
 impl<'a> RichHunksBuilder<'a> {
+    #[must_use]
     pub fn new() -> Self {
         Self {
             hunks: RichHunks(Vec::new()),
@@ -288,6 +299,7 @@ impl<'a> RichHunksBuilder<'a> {
     /// Finalize building the hunks.
     ///
     /// This consumes the builder, which means you won't be able to add to it any more.
+    #[must_use]
     pub fn build(self) -> RichHunks<'a> {
         self.hunks
     }
@@ -360,7 +372,14 @@ impl<'a> RichHunksBuilder<'a> {
     }
 }
 
+impl<'a> Default for RichHunksBuilder<'a> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<'a> Hunks<'a> {
+    #[must_use]
     pub fn new() -> Self {
         Hunks(Vec::new())
     }
@@ -375,8 +394,9 @@ impl<'a> Hunks<'a> {
                 last_line: _,
             }) = res
             {
-                self.0.push(Hunk::new());
-                self.0.last_mut().unwrap().push_back(entry)?;
+                let mut hunk = Hunk::new();
+                hunk.push_back(entry)?;
+                self.0.push(hunk);
             } else {
                 res.map_err(|x| anyhow::anyhow!(x))?;
             }
@@ -385,6 +405,12 @@ impl<'a> Hunks<'a> {
             self.0.last_mut().unwrap().push_back(entry)?;
         }
         Ok(())
+    }
+}
+
+impl<'a> Default for Hunks<'a> {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

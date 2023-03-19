@@ -14,7 +14,7 @@ use tree_sitter::Tree as TSTree;
 use unicode_segmentation as us;
 
 #[cfg(test)]
-use mockall::{automock, predicate::*};
+use mockall::{automock, predicate::str};
 
 /// A wrapper trait that exists so we can mock TS nodes.
 #[cfg_attr(test, automock)]
@@ -255,11 +255,13 @@ impl<'a> From<VectorLeaf<'a>> for Entry<'a> {
 
 impl<'a> Entry<'a> {
     /// Get the start position of an entry
+    #[must_use]
     pub fn start_position(&self) -> Point {
         self.start_position
     }
 
     /// Get the end position of an entry
+    #[must_use]
     pub fn end_position(&self) -> Point {
         self.end_position
     }
@@ -326,8 +328,15 @@ impl<'a> Vector<'a> {
     }
 
     /// Return the number of nodes in the diff vector
+    #[must_use]
     pub fn len(&self) -> usize {
         self.leaves.len()
+    }
+
+    /// Return whether there are any leaves in the diff vector.
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.leaves.is_empty()
     }
 }
 
@@ -441,7 +450,7 @@ mod tests {
         let processor = TreeSitterProcessor {
             split_graphemes: false,
             exclude_kinds: Some(exclude_kinds.clone()),
-            include_kinds: Some(exclude_kinds.clone()),
+            include_kinds: Some(exclude_kinds),
         };
         assert!(!processor.should_include_node(&mock_node));
 
@@ -453,7 +462,7 @@ mod tests {
         let processor = TreeSitterProcessor {
             split_graphemes: false,
             exclude_kinds: None,
-            include_kinds: Some(include_kinds.clone()),
+            include_kinds: Some(include_kinds),
         };
         assert!(!processor.should_include_node(&mock_node));
 
@@ -462,7 +471,7 @@ mod tests {
         let processor = TreeSitterProcessor {
             split_graphemes: false,
             exclude_kinds: None,
-            include_kinds: Some(include_kinds.clone()),
+            include_kinds: Some(include_kinds),
         };
         assert!(processor.should_include_node(&mock_node));
 
