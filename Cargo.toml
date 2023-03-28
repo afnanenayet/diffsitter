@@ -52,7 +52,7 @@ clap = { version = "4.1.11", features = [
   "unicode",
   "wrap_help",
 ] }
-clap_complete = "4.1.5"
+clap_complete = "4.1.6"
 anyhow = { version = "1.0.70", features = ["backtrace"] }
 phf = { version = "0.11.1", features = ["macros"] }
 console = "0.15.5"
