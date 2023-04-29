@@ -2,6 +2,7 @@ use ::console::Term;
 use anyhow::Result;
 use clap::CommandFactory;
 use clap::FromArgMatches;
+#[cfg(panic = "unwind")]
 use human_panic::setup_panic;
 use libdiffsitter::cli;
 use libdiffsitter::cli::Args;
@@ -197,6 +198,7 @@ fn print_shell_completion(shell: clap_complete::Shell) {
 
 fn main() -> Result<()> {
     // Set up a panic handler that will yield more human-readable errors.
+    #[cfg(panic = "unwind")]
     setup_panic!();
 
     #[cfg(feature = "better-build-info")]
