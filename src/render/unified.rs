@@ -4,7 +4,7 @@ use crate::render::{
 };
 use anyhow::Result;
 use console::{Color, Style, Term};
-use log::{debug, info};
+use log::{debug, error, info};
 use serde::{Deserialize, Serialize};
 use std::{cmp::max, io::Write};
 
@@ -248,10 +248,21 @@ impl Unified {
         self.print_hunk_title(term, hunk, fmt)?;
 
         for line in &hunk.0 {
-            let text = lines[line.line_index];
-            debug!("Printing line {}", line.line_index);
+            let line_index = line.line_index;
+            // It's find for this to be fatal in debug builds. We want to avoid crashing in
+            // release.
+            debug_assert!(line_index < lines.len());
+            if line_index >= lines.len() {
+                error!(
+                    "Received invalid line index {}. Skipping printing this line.",
+                    line_index
+                );
+                continue;
+            }
+            let text = lines[line_index];
+            debug!("Printing line {}", line_index);
             self.print_line(term, text, line, fmt)?;
-            debug!("End line {}", line.line_index);
+            debug!("End line {}", line_index);
         }
         debug!(
             "End hunk (lines {} - {})",
