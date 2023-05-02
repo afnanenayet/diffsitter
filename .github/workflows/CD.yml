@@ -157,7 +157,7 @@ jobs:
         with:
           command: build
           use-cross: ${{ matrix.job.use-cross }}
-          args: --profile production --locked --target ${{ matrix.job.target }} --features better-build-info,static-grammar-libs
+          args: --profile production --locked --target ${{ matrix.job.target }} --features better-build-info,static-grammar-libs --target-dir ./target/${{ matrix.job.target }}
       - uses: Swatinem/rust-cache@v2
         with:
           key: ${{ matrix.job.target }}-release
