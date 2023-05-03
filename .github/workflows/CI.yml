@@ -46,30 +46,18 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: true
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          target: ${{ matrix.job.target }}
-          profile: minimal
-          override: true
+      - uses: dtolnay/rust-toolchain@stable
+        targets: ${{ matrix.job.target }}
+      - uses: taiki-e/install-action@nextest
       - uses: Swatinem/rust-cache@v2
         with:
-          key: ${{ matrix.job.target }}
+          key: ci-${{steps.toolchain.outputs.name}}
       - name: Check formatting
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
+        run: cargo fmt --all -- --check
       - name: Build
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          use-cross: ${{ matrix.job.use-cross }}
-          args: --locked --target ${{ matrix.job.target }} --features better-build-info,static-grammar-libs,dynamic-grammar-libs
-      - name: Unit tests
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          use-cross: ${{ matrix.job.use-cross }}
-          args: --locked --target ${{ matrix.job.target }} --verbose --features better-build-info,static-grammar-libs,dynamic-grammar-libs
+        run: cargo build --locked --target ${{ matrix.job.target }} --features better-build-info,static-grammar-libs,dynamic-grammar-libs
+      - name: Doc tests
+        uses: dtolnay/rust-toolchain@stable
+        run: cargo test --doc --features better-build-info,static-grammar-libs,dynamic-grammar-libs
+      - name: Tests
+        run: cargo nextest run --locked --target ${{ matrix.job.target }} --features better-build-info,static-grammar-libs,dynamic-grammar-libs

@@ -142,25 +142,17 @@ jobs:
         with:
           submodules: true
 
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          target: ${{ matrix.job.target }}
-          profile: minimal
-          override: true
-
+      - uses: dtolnay/rust-toolchain@stable
+        targets: ${{ matrix.job.target }}
+      - uses: taiki-e/install-action@nextest
       - name: Build optimized binary
         env:
           MACOS_DEPLOYMENT_TARGET: 10.7
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          use-cross: ${{ matrix.job.use-cross }}
-          args: --profile production --locked --target ${{ matrix.job.target }} --features better-build-info,static-grammar-libs
+        run: cargo build --profile production --locked --target ${{ matrix.job.target }} --features better-build-info,static-grammar-libs
       - uses: Swatinem/rust-cache@v2
         with:
-          key: ${{ matrix.job.target }}-release
+          key: cd-${{steps.toolchain.outputs.name}}
+
       - name: Install packages (Windows)
         if: matrix.job.os == 'windows-latest'
         uses: crazy-max/ghaction-chocolatey@v1.4.0
