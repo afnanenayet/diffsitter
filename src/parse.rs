@@ -171,10 +171,9 @@ fn generate_language_dynamic(
         // We leak the library because the symbol table has to be loaded in memory for the
         // entire duration of the program up until the very end. There is probably a better way
         // to do this that doesn't involve leaking memory, but I wasn't able to figure it out.
-        let ptr = Box::new(libloading::Library::new(lib_fname)?);
-        let lib = Box::leak(ptr);
+        let ptr = libloading::Library::new(lib_fname)?;
         let constructor =
-            lib.get::<libloading::Symbol<unsafe extern "C" fn() -> Language>>(fn_name.as_bytes())?;
+            ptr.get::<libloading::Symbol<unsafe extern "C" fn() -> Language>>(fn_name.as_bytes())?;
         constructor()
     };
     Ok(grammar)
