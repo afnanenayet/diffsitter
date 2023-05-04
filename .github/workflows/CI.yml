@@ -46,17 +46,15 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: true
-      - uses: dtolnay/rust-toolchain@stable
+      - name: Install cross-compilation tools
+        uses: taiki-e/setup-cross-toolchain-action@v1
         with:
-          targets: ${{ matrix.job.target }}
-          components: clippy,rustfmt
+          target: ${{ matrix.job.target }}
       - uses: Swatinem/rust-cache@v2
         with:
           key: ci-${{steps.toolchain.outputs.name}}
       - name: Check formatting
         run: cargo fmt --all -- --check
-      - name: Build
-        run: cargo build --locked --target ${{ matrix.job.target }} --features better-build-info,static-grammar-libs,dynamic-grammar-libs
       - name: Doc tests
         run: cargo test --doc --features better-build-info,static-grammar-libs,dynamic-grammar-libs
       - name: Tests
