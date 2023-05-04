@@ -55,17 +55,9 @@ jobs:
           key: ci-${{steps.toolchain.outputs.name}}
       - name: Check formatting
         run: cargo fmt --all -- --check
-        env:
-          CARGO_TERM_COLOR: always
       - name: Build
         run: cargo build --locked --target ${{ matrix.job.target }} --features better-build-info,static-grammar-libs,dynamic-grammar-libs
-        env:
-          CARGO_TERM_COLOR: always
       - name: Doc tests
         run: cargo test --doc --features better-build-info,static-grammar-libs,dynamic-grammar-libs
-        env:
-          CARGO_TERM_COLOR: always
       - name: Tests
         run: cargo nextest run --locked --target ${{ matrix.job.target }} --features better-build-info,static-grammar-libs,dynamic-grammar-libs
-        env:
-          CARGO_TERM_COLOR: always
