@@ -47,6 +47,12 @@ jobs:
           submodules: true
       - name: Install cross-compilation tools
         uses: taiki-e/setup-cross-toolchain-action@v1
+        if: ${{ matrix.job.os }} == 'ubuntu-latest'
+        with:
+          target: ${{ matrix.job.target }}
+      - name: Install native Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        if: ${{ matrix.job.os }} != 'ubuntu-latest'
         with:
           target: ${{ matrix.job.target }}
       - uses: Swatinem/rust-cache@v2
