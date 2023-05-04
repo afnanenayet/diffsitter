@@ -65,8 +65,8 @@ jobs:
           tool: nextest
       - name: Check formatting
         run: cargo fmt --all -- --check
-      - name: Doc tests
-        if: ${{ matrix.job.target == 'x86_64-unknown-linux-gnu' }}
+      - if: ${{ matrix.job.target == 'x86_64-unknown-linux-gnu' }}
+        name: Doc tests
         run: cargo test --doc --features better-build-info,static-grammar-libs,dynamic-grammar-libs
       - name: Tests
         run: cargo nextest run --locked --target ${{ matrix.job.target }} --features better-build-info,static-grammar-libs,dynamic-grammar-libs
