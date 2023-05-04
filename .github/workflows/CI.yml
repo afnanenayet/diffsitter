@@ -57,7 +57,6 @@ jobs:
       - name: Build
         run: cargo build --locked --target ${{ matrix.job.target }} --features better-build-info,static-grammar-libs,dynamic-grammar-libs
       - name: Doc tests
-        uses: dtolnay/rust-toolchain@stable
         run: cargo test --doc --features better-build-info,static-grammar-libs,dynamic-grammar-libs
       - name: Tests
         run: cargo nextest run --locked --target ${{ matrix.job.target }} --features better-build-info,static-grammar-libs,dynamic-grammar-libs
