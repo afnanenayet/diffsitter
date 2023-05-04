@@ -1,5 +1,20 @@
 # Contributing
 
+## Development setup
+
+This repo uses [pre-commit](https://pre-commit.com)
+to automatically apply linters and formatters before every commit. Install
+`pre-commit`. If you have it installed, then initialize the git hooks for
+this repo with:
+
+```sh
+pre-commit install
+```
+
+Now your files will be automatically formatted before each commit. If they are not
+formatted then the commit check will fail and you will have to commit the updated
+formatted file again.
+
 ## Building
 
 This project uses a mostly standard Rust toolchain. At the time of writing, the
