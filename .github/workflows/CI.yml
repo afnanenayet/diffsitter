@@ -52,6 +52,9 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           key: ci-${{steps.toolchain.outputs.name}}
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: nextest
       - name: Check formatting
         run: cargo fmt --all -- --check
       - name: Doc tests
