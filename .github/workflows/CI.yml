@@ -45,12 +45,12 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: true
-      - if: ${{ matrix.job.os }} == 'ubuntu-latest'
+      - if: ${{ matrix.job.os == 'ubuntu-latest' }}
         name: Install cross-compilation tools
         uses: taiki-e/setup-cross-toolchain-action@v1
         with:
           target: ${{ matrix.job.target }}
-      - if: ${{ matrix.job.os }} != 'ubuntu-latest'
+      - if: ${{ matrix.job.os != 'ubuntu-latest' }}
         name: Install native Rust toolchain
         uses: dtolnay/rust-toolchain@master
         with:
