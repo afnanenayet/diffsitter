@@ -157,6 +157,7 @@ mod tests {
     }
 
     #[test]
+    #[should_panic]
     fn test_negative_overflow() {
         let vec = NegIdxVec::<u32>::from(test_vector());
         let idx = (vec.len() as i32) * -2;
