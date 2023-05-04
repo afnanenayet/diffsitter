@@ -88,7 +88,7 @@ directories-next = "2.0.0"
 
 [target.'cfg(not(target_os = "windows"))'.dependencies]
 # We use XDG for everything else
-xdg = "2.4.1"
+xdg = "2.5.0"
 
 [build-dependencies]
 cc = { version = "1.0.79", features = ["parallel"] }
