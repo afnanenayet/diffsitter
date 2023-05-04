@@ -47,7 +47,8 @@ jobs:
         with:
           submodules: true
       - uses: dtolnay/rust-toolchain@stable
-        targets: ${{ matrix.job.target }}
+        with:
+          targets: ${{ matrix.job.target }}
       - uses: taiki-e/install-action@nextest
       - uses: Swatinem/rust-cache@v2
         with:
