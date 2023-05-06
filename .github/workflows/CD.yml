@@ -115,35 +115,39 @@ jobs:
           - os: ubuntu-latest
             artifact_name: diffsitter
             target: x86_64-unknown-linux-gnu
-            use-cross: false
           - os: ubuntu-latest
             artifact_name: diffsitter
             target: i686-unknown-linux-gnu
-            use-cross: true
           - os: ubuntu-latest
             artifact_name: diffsitter
             target: arm-unknown-linux-gnueabihf
-            use-cross: true
           - os: ubuntu-latest
             artifact_name: diffsitter
             target: aarch64-unknown-linux-gnu
-            use-cross: true
           - os: macOS-latest
             artifact_name: diffsitter
             target: x86_64-apple-darwin
-            use-cross: false
           - os: windows-latest
             artifact_name: diffsitter.exe
             target: x86_64-pc-windows-msvc
-            use-cross: false
 
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: true
 
-      - uses: dtolnay/rust-toolchain@stable
-        targets: ${{ matrix.job.target }}
+      - if: ${{ matrix.job.os == 'ubuntu-latest' }}
+        name: Install cross-compilation tools
+        uses: taiki-e/setup-cross-toolchain-action@v1
+        with:
+          target: ${{ matrix.job.target }}
+      - if: ${{ matrix.job.os != 'ubuntu-latest' }}
+        name: Install native Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          targets: ${{ matrix.job.target }}
+          components: rustfmt,clippy
+          toolchain: stable
       - uses: taiki-e/install-action@nextest
       - name: Build optimized binary
         env:
@@ -152,7 +156,6 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           key: cd-${{steps.toolchain.outputs.name}}
-
       - name: Install packages (Windows)
         if: matrix.job.os == 'windows-latest'
         uses: crazy-max/ghaction-chocolatey@v1.4.0
