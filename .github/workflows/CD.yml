@@ -127,10 +127,15 @@ jobs:
           - os: macOS-latest
             artifact_name: diffsitter
             target: x86_64-apple-darwin
+          - os: macOS-latest
+            artifact_name: diffsitter
+            target: aarch64-apple-darwin
           - os: windows-latest
             artifact_name: diffsitter.exe
             target: x86_64-pc-windows-msvc
-
+          - os: ubuntu-latest
+            artifact_name: diffsitter
+            target: aarch64-pc-windows-msvc
     steps:
       - uses: actions/checkout@v3
         with:
