@@ -246,6 +246,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           tar: unix
           zip: windows
+          checksum: sha256
           target: ${{ matrix.job.target }}
 
       - name: Upload binary to release (Windows)
