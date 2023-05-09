@@ -240,7 +240,7 @@ jobs:
           asset_content_type: application/octet-stream
 
       - name: Install cargo deb
-        uses: taiki-e/install-action@cargo-deb
+        uses: taiki-e/install-action@v2
         if: matrix.job.target == 'x86_64-unknown-linux-gnu'
         with:
           tool: cargo-deb@1.42.2
