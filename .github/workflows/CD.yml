@@ -228,16 +228,25 @@ jobs:
           echo "CHECKSUM=$checksum"
           echo "CHECKSUM=$checksum" >> $GITHUB_ENV
 
-      - name: Upload binary to release
-        if: matrix.job.os != 'windows-latest'
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: taiki-e/upload-rust-binary-action@v1
         with:
-          asset_path: diffsitter-${{ matrix.job.target }}.tar.gz
-          asset_name: diffsitter-${{ matrix.job.target }}.tar.gz
-          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
-          asset_content_type: application/octet-stream
+          # (required) Comma-separated list of binary names (non-extension portion of filename) to build and upload.
+          # Note that glob pattern is not supported yet.
+          bin: diffsitter
+          # (optional) Archive name (non-extension portion of filename) to be uploaded.
+          # [default value: $bin-$target]
+          # [possible values: the following variables and any string]
+          #   variables:
+          #     - $bin    - Binary name (non-extension portion of filename).
+          #     - $target - Target triple.
+          #     - $tag    - Tag of this release.
+          # When multiple binary names are specified, default archive name or $bin variable cannot be used.
+          archive: $bin-$target
+          # (required) GitHub token for uploading assets to GitHub Releases.
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tar: unix
+          zip: windows
+          target: ${{ matrix.job.target }}
 
       - name: Upload binary to release (Windows)
         if: matrix.job.os == 'windows-latest'
