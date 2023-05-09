@@ -248,6 +248,7 @@ jobs:
           zip: windows
           checksum: sha256
           target: ${{ matrix.job.target }}
+          asset: bin/git-diffsitter
 
       - name: Upload binary to release (Windows)
         if: matrix.job.os == 'windows-latest'
