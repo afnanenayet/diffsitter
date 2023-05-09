@@ -1,3 +1,4 @@
+# Taken from: https://github.com/nextest-rs/nextest/blob/c54694dfe7be016993983b5dedbcf2b50d4b1a6e/.github/workflows/coverage.yml
 on:
   push:
     branches: [ main ]
