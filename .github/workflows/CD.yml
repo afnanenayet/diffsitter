@@ -220,7 +220,6 @@ jobs:
           zip: windows
           checksum: sha256
           target: ${{ matrix.job.target }}
-          asset: bin/git-diffsitter
 
       - name: Generate Homebrew file
         if: matrix.job.target == 'x86_64-apple-darwin'
