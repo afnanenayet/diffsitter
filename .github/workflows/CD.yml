@@ -200,34 +200,6 @@ jobs:
           release_version="$(cat ./artifacts/release-version)"
           echo "RELEASE_VERSION=$release_version" >> $GITHUB_ENV
 
-      - name: Archive release assets (Windows)
-        id: archive_release_assets_windows
-        if: matrix.job.os == 'windows-latest'
-        run: |
-          cp .\target\${{ matrix.job.target }}\production\${{ matrix.job.artifact_name }} ${{ matrix.job.artifact_name }}
-          cp .\bin\git-diffsitter .\git-diffsitter
-          zip -r diffsitter-${{ matrix.job.target }}.zip ${{ matrix.job.artifact_name }} git-diffsitter
-
-      - name: Archive release assets
-        if: matrix.job.os != 'windows-latest'
-        id: archive_release_assets_unix_like
-        shell: bash
-        run: |
-          mkdir -p diffsitter-${{ matrix.job.target }}
-          cp target/${{ matrix.job.target }}/production/${{ matrix.job.artifact_name }} diffsitter-${{ matrix.job.target }}
-          cp bin/git-diffsitter diffsitter-${{ matrix.job.target }}
-          tar -czvf diffsitter-${{ matrix.job.target }}.tar.gz diffsitter-${{ matrix.job.target }}
-
-      - name: Generate SHA256 checksum for binary
-        if: matrix.job.os != 'windows-latest'
-        id: checksum_archive_unix_like
-        shell: bash
-        run: |
-          sha256sum diffsitter-${{ matrix.job.target }}.tar.gz > diffsitter-${{ matrix.job.target }}.tar.gz.sha256
-          checksum=$(cat diffsitter-${{ matrix.job.target }}.tar.gz.sha256)
-          echo "CHECKSUM=$checksum"
-          echo "CHECKSUM=$checksum" >> $GITHUB_ENV
-
       - uses: taiki-e/upload-rust-binary-action@v1
         with:
           # (required) Comma-separated list of binary names (non-extension portion of filename) to build and upload.
@@ -249,29 +221,6 @@ jobs:
           checksum: sha256
           target: ${{ matrix.job.target }}
           asset: bin/git-diffsitter
-
-      - name: Upload binary to release (Windows)
-        if: matrix.job.os == 'windows-latest'
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          asset_path: diffsitter-${{ matrix.job.target }}.zip
-          asset_name: diffsitter-${{ matrix.job.target }}.zip
-          asset_content_type: application/octet-stream
-
-      - name: Upload SHA256 checksum to release
-        if: matrix.job.os != 'windows-latest'
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
-          asset_path: diffsitter-${{ matrix.job.target }}.tar.gz.sha256
-          asset_name: diffsitter-${{ matrix.job.target }}.tar.gz.sha256
-          asset_content_type: application/octet-stream
 
       - name: Generate Homebrew file
         if: matrix.job.target == 'x86_64-apple-darwin'
