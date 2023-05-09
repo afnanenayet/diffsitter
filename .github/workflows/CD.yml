@@ -150,6 +150,9 @@ jobs:
         with:
           submodules: true
 
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: cd-${{steps.toolchain.outputs.name}}
       - if: ${{ matrix.job.os == 'ubuntu-latest' }}
         name: Install cross-compilation tools
         uses: taiki-e/setup-cross-toolchain-action@v1
@@ -167,9 +170,6 @@ jobs:
         env:
           MACOS_DEPLOYMENT_TARGET: 10.7
         run: cargo build --profile production --locked --target ${{ matrix.job.target }} --features better-build-info,static-grammar-libs
-      - uses: Swatinem/rust-cache@v2
-        with:
-          key: cd-${{steps.toolchain.outputs.name}}
       - name: Install packages (Windows)
         if: matrix.job.os == 'windows-latest'
         uses: crazy-max/ghaction-chocolatey@v1.4.0
