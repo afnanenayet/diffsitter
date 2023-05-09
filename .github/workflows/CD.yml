@@ -169,10 +169,6 @@ jobs:
           components: rustfmt,clippy
           toolchain: stable
       - uses: taiki-e/install-action@nextest
-      - name: Build optimized binary
-        env:
-          MACOS_DEPLOYMENT_TARGET: 10.7
-        run: cargo build --profile production --locked --target ${{ matrix.job.target }} --features better-build-info,static-grammar-libs
       - name: Install packages (Windows)
         if: matrix.job.os == 'windows-latest'
         uses: crazy-max/ghaction-chocolatey@v1.4.0
