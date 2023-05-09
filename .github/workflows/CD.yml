@@ -136,6 +136,15 @@ jobs:
           - os: windows-latest
             artifact_name: diffsitter
             target: aarch64-pc-windows-msvc
+          - os: ubuntu-latest
+            artifact_name: diffsitter
+            target: x86_64-unknown-freebsd
+          - os: ubuntu-latest
+            artifact_name: diffsitter
+            target: powerpc64le-unknown-linux-gnu
+          - os: ubuntu-latest
+            artifact_name: diffsitter
+            target: riscv64gc-unknown-linux-gnu
     steps:
       - uses: actions/checkout@v3
         with:
