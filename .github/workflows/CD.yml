@@ -263,13 +263,13 @@ jobs:
           asset_content_type: application/octet-stream
 
       - name: Generate Homebrew file
-        if: matrix.job.os == 'macos-latest'
+        if: matrix.job.target == 'x86_64-apple-darwin'
         shell: bash
         run: |
           python deployment/brew_packager.py deployment/macos/homebrew/homebrew_formula.rb.template diffsitter.rb ${{ env.RELEASE_VERSION }} ${{ env.CHECKSUM }}
 
       - name: Upload Homebrew file to release
-        if: matrix.job.os == 'macos-latest'
+        if: matrix.job.target == 'x86_64-apple-darwin'
         uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
