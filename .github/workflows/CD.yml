@@ -120,7 +120,7 @@ jobs:
             target: i686-unknown-linux-gnu
           - os: ubuntu-latest
             artifact_name: diffsitter
-            target: arm-unknown-linux-gnueabihf
+            target: arm-unknown-linux-gnueabi
           - os: ubuntu-latest
             artifact_name: diffsitter
             target: aarch64-unknown-linux-gnu
@@ -133,7 +133,7 @@ jobs:
           - os: windows-latest
             artifact_name: diffsitter.exe
             target: x86_64-pc-windows-msvc
-          - os: ubuntu-latest
+          - os: windows-latest
             artifact_name: diffsitter
             target: aarch64-pc-windows-msvc
     steps:
