@@ -247,6 +247,7 @@ jobs:
       - name: Build Debian release (x86_64-unknown-linux-gnu)
         if: matrix.job.target == 'x86_64-unknown-linux-gnu'
         run: |
+          cargo build --profile production
           cargo deb --profile production
           cp ./target/debian/diffsitter_*.deb ./diffsitter_${{ env.RELEASE_VERSION }}_amd64.deb
 
