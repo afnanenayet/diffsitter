@@ -88,6 +88,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Install GH CLI
+        uses: dev-hanz-ops/install-gh-cli-action
+
       - name: Create artifacts directory
         run: mkdir artifacts
 
