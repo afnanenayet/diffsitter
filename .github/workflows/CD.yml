@@ -249,7 +249,10 @@ jobs:
         run: |
           cargo build --profile production
           cargo deb --profile production
+          target/${{ matrix.job.target }}/production/${{ matrix.job.artifact_name }}
           cp ./target/debian/diffsitter_*.deb ./diffsitter_${{ env.RELEASE_VERSION }}_amd64.deb
+        env:
+          CARGO_TARGET_DIR=./target
 
       - name: Upload Debian file (x86_64-unknown-linux-gnu)
         if: matrix.job.target == 'x86_64-unknown-linux-gnu'
