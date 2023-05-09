@@ -1,0 +1,28 @@
+on:
+  workflow_run:
+    workflows: ["main"]
+    branches: [main]
+    types: [completed]
+
+name: sarif
+
+jobs:
+  upload-sarif:
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo install clippy-sarif sarif-fmt
+      - run:
+      - run: cargo clippy --all-features --message-format=json |
+          clippy-sarif | tee results.sarif | sarif-fmt
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: results.sarif
