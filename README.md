@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/afnanenayet/diffsitter/actions/workflows/CI.yml/badge.svg)](https://github.com/afnanenayet/diffsitter/actions/workflows/CI.yml)
 [![CD](https://github.com/afnanenayet/diffsitter/actions/workflows/CD.yml/badge.svg)](https://github.com/afnanenayet/diffsitter/actions/workflows/CD.yml)
+[![codecov](https://codecov.io/gh/afnanenayet/diffsitter/branch/master/graph/badge.svg?token=GBTJGXEXOS)](https://codecov.io/gh/afnanenayet/diffsitter)
 [![crates version](https://img.shields.io/crates/v/diffsitter)](https://crates.io/crates/diffsitter)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/afnanenayet/diffsitter)](https://github.com/afnanenayet/diffsitter/releases/latest)
 ![downloads](https://img.shields.io/crates/d/diffsitter)
@@ -135,7 +136,7 @@ test_data/short/rust/a.rs -> test_data/short/rust/b.rs
 
 *Note: the numbers correspond to line numbers from the original files.*
 
-You can also filter which tree sitter nodes are considered in the diff through 
+You can also filter which tree sitter nodes are considered in the diff through
 the config file.
 
 Since it uses the AST to calculate the difference, it knows that the formatting
@@ -152,8 +153,8 @@ It also has extensive logging if you want to debug or see timing information:
 
 ### Node filtering
 
-You can filter the nodes that are considered in the diff by setting 
-`include_nodes` or `exclude_nodes` in the config file. `exclude_nodes` always 
+You can filter the nodes that are considered in the diff by setting
+`include_nodes` or `exclude_nodes` in the config file. `exclude_nodes` always
 takes precedence over `include_nodes`, and the type of a node is the `kind`
 of a tree-sitter node.
 
@@ -190,7 +191,7 @@ You can build from source with `cargo` using the following command:
 cargo install diffsitter --bin diffsitter
 ```
 
-If you want to generate completion files and other assets you can install the 
+If you want to generate completion files and other assets you can install the
 `diffsitter_completions` binary with the following command:
 
 ```sh
