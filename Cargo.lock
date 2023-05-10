@@ -412,7 +412,7 @@ checksum = "6184e33543162437515c2e2b48714794e37845ec9851711914eec9d308f6ebe8"
 
 [[package]]
 name = "diffsitter"
-version = "0.7.3"
+version = "0.8.0"
 dependencies = [
  "anyhow",
  "cargo-emit",
