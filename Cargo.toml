@@ -52,13 +52,13 @@ clap = { version = "4.2.7", features = [
   "unicode",
   "wrap_help",
 ] }
-clap_complete = "4.2.1"
-anyhow = { version = "1.0.70", features = ["backtrace"] }
+clap_complete = "4.2.2"
+anyhow = { version = "1.0.71", features = ["backtrace"] }
 phf = { version = "0.11.1", features = ["macros"] }
 console = "0.15.5"
 strum = { version = "0.24.1", features = ["derive"] }
 strum_macros = "0.24.3"
-serde = { version = "1.0.160", features = ["derive"] }
+serde = { version = "1.0.162", features = ["derive"] }
 serde_json = "1.0.96"
 json5 = "0.4.1"
 pretty_env_logger = "0.4.0"
@@ -88,12 +88,12 @@ directories-next = "2.0.0"
 
 [target.'cfg(not(target_os = "windows"))'.dependencies]
 # We use XDG for everything else
-xdg = "2.4.1"
+xdg = "2.5.0"
 
 [build-dependencies]
 cc = { version = "1.0.79", features = ["parallel"] }
 phf = { version = "0.11.1", features = ["macros"] }
-anyhow = "1.0.70"
+anyhow = "1.0.71"
 cargo-emit = "0.2.1"
 rayon = "1.7.0"
 thiserror = "1.0.40"
