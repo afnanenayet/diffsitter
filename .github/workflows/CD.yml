@@ -220,23 +220,6 @@ jobs:
           checksum: sha256
           target: ${{ matrix.job.target }}
 
-      - name: Generate Homebrew file
-        if: matrix.job.target == 'x86_64-apple-darwin'
-        shell: bash
-        run: |
-          python deployment/brew_packager.py deployment/macos/homebrew/homebrew_formula.rb.template diffsitter.rb ${{ env.RELEASE_VERSION }} ${{ env.CHECKSUM }}
-
-      - name: Upload Homebrew file to release
-        if: matrix.job.target == 'x86_64-apple-darwin'
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
-          asset_path: diffsitter.rb
-          asset_name: diffsitter.rb
-          asset_content_type: application/octet-stream
-
       - name: Install cargo deb
         uses: taiki-e/install-action@v2
         if: matrix.job.target == 'x86_64-unknown-linux-gnu'
