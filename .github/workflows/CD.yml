@@ -231,7 +231,7 @@ jobs:
         run: |
           cargo build --profile production --locked
           cargo deb --profile production --target ${{ matrix.job.target }} --no-build
-          cp ./target/debian/diffsitter_*.deb ./diffsitter_${{ env.RELEASE_VERSION }}_amd64.deb
+          cp ./target/${{ matrix.job.target }}/debian/diffsitter_*.deb ./diffsitter_${{ env.RELEASE_VERSION }}_amd64.deb
         env:
           CARGO_TARGET_DIR: "./target"
 
