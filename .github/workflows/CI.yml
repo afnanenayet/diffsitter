@@ -16,60 +16,55 @@ jobs:
     strategy:
       matrix:
         job:
-          - { os: macos-latest, target: x86_64-apple-darwin, use-cross: false }
+          - { os: macos-latest, target: x86_64-apple-darwin }
           - {
               os: ubuntu-latest,
               target: x86_64-unknown-linux-gnu,
-              use-cross: false,
             }
           - {
               os: ubuntu-latest,
               target: i686-unknown-linux-gnu,
-              use-cross: true,
-            }
-          - {
-              os: ubuntu-latest,
-              target: arm-unknown-linux-gnueabihf,
-              use-cross: true,
             }
           - {
               os: ubuntu-latest,
               target: aarch64-unknown-linux-gnu,
-              use-cross: true,
             }
           - {
               os: windows-latest,
               target: x86_64-pc-windows-msvc,
-              use-cross: false,
             }
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: true
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
+      - if: ${{ matrix.job.os == 'ubuntu-latest' }}
+        name: Install cross-compilation tools
+        uses: taiki-e/setup-cross-toolchain-action@v1
         with:
-          toolchain: stable
           target: ${{ matrix.job.target }}
-          profile: minimal
-          override: true
+      - if: ${{ matrix.job.os != 'ubuntu-latest' }}
+        name: Install native Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          targets: ${{ matrix.job.target }}
+          components: rustfmt,clippy
+          toolchain: stable
       - uses: Swatinem/rust-cache@v2
         with:
-          key: ${{ matrix.job.target }}
+          key: ci-${{steps.toolchain.outputs.name}}
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: nextest
       - name: Check formatting
-        uses: actions-rs/cargo@v1
+        run: cargo fmt --all -- --check
+      - if: ${{ matrix.job.target == 'x86_64-unknown-linux-gnu' }}
+        name: Doc tests
+        run: cargo test --doc --features better-build-info,static-grammar-libs,dynamic-grammar-libs
+      - name: Tests
+        run: cargo nextest run --locked --target ${{ matrix.job.target }} --features better-build-info,static-grammar-libs,dynamic-grammar-libs --profile ci
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v3
+        if: success() || failure() # always run even if the previous step fails
         with:
-          command: fmt
-          args: --all -- --check
-      - name: Build
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          use-cross: ${{ matrix.job.use-cross }}
-          args: --locked --target ${{ matrix.job.target }} --features better-build-info,static-grammar-libs,dynamic-grammar-libs
-      - name: Unit tests
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          use-cross: ${{ matrix.job.use-cross }}
-          args: --locked --target ${{ matrix.job.target }} --verbose --features better-build-info,static-grammar-libs,dynamic-grammar-libs
+          report_paths: '**/target/nextest/ci/junit.xml'
+          check_name: diffsitter tests ${{ matrix.job.target }}

@@ -13,6 +13,9 @@ on:
     tags:
       - '*'
 
+env:
+  CARGO_TERM_COLOR: always
+
 jobs:
   create-github-release:
     name: Create github release
@@ -115,52 +118,57 @@ jobs:
           - os: ubuntu-latest
             artifact_name: diffsitter
             target: x86_64-unknown-linux-gnu
-            use-cross: false
           - os: ubuntu-latest
             artifact_name: diffsitter
             target: i686-unknown-linux-gnu
-            use-cross: true
           - os: ubuntu-latest
             artifact_name: diffsitter
-            target: arm-unknown-linux-gnueabihf
-            use-cross: true
+            target: arm-unknown-linux-gnueabi
           - os: ubuntu-latest
             artifact_name: diffsitter
             target: aarch64-unknown-linux-gnu
-            use-cross: true
           - os: macOS-latest
             artifact_name: diffsitter
             target: x86_64-apple-darwin
-            use-cross: false
+          - os: macOS-latest
+            artifact_name: diffsitter
+            target: aarch64-apple-darwin
           - os: windows-latest
             artifact_name: diffsitter.exe
             target: x86_64-pc-windows-msvc
-            use-cross: false
-
+          - os: windows-latest
+            artifact_name: diffsitter
+            target: aarch64-pc-windows-msvc
+          - os: ubuntu-latest
+            artifact_name: diffsitter
+            target: x86_64-unknown-freebsd
+          - os: ubuntu-latest
+            artifact_name: diffsitter
+            target: powerpc64le-unknown-linux-gnu
+          - os: ubuntu-latest
+            artifact_name: diffsitter
+            target: riscv64gc-unknown-linux-gnu
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: true
 
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          target: ${{ matrix.job.target }}
-          profile: minimal
-          override: true
-
-      - name: Build optimized binary
-        env:
-          MACOS_DEPLOYMENT_TARGET: 10.7
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          use-cross: ${{ matrix.job.use-cross }}
-          args: --profile production --locked --target ${{ matrix.job.target }} --features better-build-info,static-grammar-libs
       - uses: Swatinem/rust-cache@v2
         with:
-          key: ${{ matrix.job.target }}-release
+          key: cd-${{steps.toolchain.outputs.name}}
+      - if: ${{ matrix.job.os == 'ubuntu-latest' }}
+        name: Install cross-compilation tools
+        uses: taiki-e/setup-cross-toolchain-action@v1
+        with:
+          target: ${{ matrix.job.target }}
+      - if: ${{ matrix.job.os != 'ubuntu-latest' }}
+        name: Install native Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          targets: ${{ matrix.job.target }}
+          components: rustfmt,clippy
+          toolchain: stable
+      - uses: taiki-e/install-action@nextest
       - name: Install packages (Windows)
         if: matrix.job.os == 'windows-latest'
         uses: crazy-max/ghaction-chocolatey@v1.4.0
@@ -191,91 +199,41 @@ jobs:
           release_version="$(cat ./artifacts/release-version)"
           echo "RELEASE_VERSION=$release_version" >> $GITHUB_ENV
 
-      - name: Archive release assets (Windows)
-        id: archive_release_assets_windows
-        if: matrix.job.os == 'windows-latest'
-        run: |
-          cp .\target\${{ matrix.job.target }}\production\${{ matrix.job.artifact_name }} ${{ matrix.job.artifact_name }}
-          cp .\bin\git-diffsitter .\git-diffsitter
-          zip -r diffsitter-${{ matrix.job.target }}.zip ${{ matrix.job.artifact_name }} git-diffsitter
-
-      - name: Archive release assets
-        if: matrix.job.os != 'windows-latest'
-        id: archive_release_assets_unix_like
-        shell: bash
-        run: |
-          mkdir -p diffsitter-${{ matrix.job.target }}
-          cp target/${{ matrix.job.target }}/production/${{ matrix.job.artifact_name }} diffsitter-${{ matrix.job.target }}
-          cp bin/git-diffsitter diffsitter-${{ matrix.job.target }}
-          tar -czvf diffsitter-${{ matrix.job.target }}.tar.gz diffsitter-${{ matrix.job.target }}
-
-      - name: Generate SHA256 checksum for binary
-        if: matrix.job.os != 'windows-latest'
-        id: checksum_archive_unix_like
-        shell: bash
-        run: |
-          sha256sum diffsitter-${{ matrix.job.target }}.tar.gz > diffsitter-${{ matrix.job.target }}.tar.gz.sha256
-          checksum=$(cat diffsitter-${{ matrix.job.target }}.tar.gz.sha256)
-          echo "CHECKSUM=$checksum"
-          echo "CHECKSUM=$checksum" >> $GITHUB_ENV
-
-      - name: Upload binary to release
-        if: matrix.job.os != 'windows-latest'
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: taiki-e/upload-rust-binary-action@v1
         with:
-          asset_path: diffsitter-${{ matrix.job.target }}.tar.gz
-          asset_name: diffsitter-${{ matrix.job.target }}.tar.gz
-          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
-          asset_content_type: application/octet-stream
+          # (required) Comma-separated list of binary names (non-extension portion of filename) to build and upload.
+          # Note that glob pattern is not supported yet.
+          bin: diffsitter
+          # (optional) Archive name (non-extension portion of filename) to be uploaded.
+          # [default value: $bin-$target]
+          # [possible values: the following variables and any string]
+          #   variables:
+          #     - $bin    - Binary name (non-extension portion of filename).
+          #     - $target - Target triple.
+          #     - $tag    - Tag of this release.
+          # When multiple binary names are specified, default archive name or $bin variable cannot be used.
+          archive: $bin-$target
+          # (required) GitHub token for uploading assets to GitHub Releases.
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tar: unix
+          zip: windows
+          checksum: sha256
+          target: ${{ matrix.job.target }}
 
-      - name: Upload binary to release (Windows)
-        if: matrix.job.os == 'windows-latest'
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install cargo deb
+        uses: taiki-e/install-action@v2
+        if: matrix.job.target == 'x86_64-unknown-linux-gnu'
         with:
-          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          asset_path: diffsitter-${{ matrix.job.target }}.zip
-          asset_name: diffsitter-${{ matrix.job.target }}.zip
-          asset_content_type: application/octet-stream
-
-      - name: Upload SHA256 checksum to release
-        if: matrix.job.os != 'windows-latest'
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
-          asset_path: diffsitter-${{ matrix.job.target }}.tar.gz.sha256
-          asset_name: diffsitter-${{ matrix.job.target }}.tar.gz.sha256
-          asset_content_type: application/octet-stream
-
-      - name: Generate Homebrew file
-        if: matrix.job.os == 'macos-latest'
-        shell: bash
-        run: |
-          python deployment/brew_packager.py deployment/macos/homebrew/homebrew_formula.rb.template diffsitter.rb ${{ env.RELEASE_VERSION }} ${{ env.CHECKSUM }}
-
-      - name: Upload Homebrew file to release
-        if: matrix.job.os == 'macos-latest'
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
-          asset_path: diffsitter.rb
-          asset_name: diffsitter.rb
-          asset_content_type: application/octet-stream
+          tool: cargo-deb@1.43.0
 
       - name: Build Debian release (x86_64-unknown-linux-gnu)
         if: matrix.job.target == 'x86_64-unknown-linux-gnu'
         run: |
-          cargo install cargo-deb --version 1.42.2
-          cargo deb
-          cp ./target/debian/diffsitter_*.deb ./diffsitter_${{ env.RELEASE_VERSION }}_amd64.deb
+          cargo build --profile production --locked
+          cargo deb --profile production --target ${{ matrix.job.target }} --no-build
+          cp ./target/${{ matrix.job.target }}/debian/diffsitter_*.deb ./diffsitter_${{ env.RELEASE_VERSION }}_amd64.deb
+        env:
+          CARGO_TARGET_DIR: "./target"
 
       - name: Upload Debian file (x86_64-unknown-linux-gnu)
         if: matrix.job.target == 'x86_64-unknown-linux-gnu'
