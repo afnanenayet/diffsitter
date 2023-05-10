@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/afnanenayet/diffsitter/actions/workflows/CI.yml/badge.svg)](https://github.com/afnanenayet/diffsitter/actions/workflows/CI.yml)
 [![CD](https://github.com/afnanenayet/diffsitter/actions/workflows/CD.yml/badge.svg)](https://github.com/afnanenayet/diffsitter/actions/workflows/CD.yml)
-[![codecov](https://codecov.io/gh/afnanenayet/diffsitter/branch/master/graph/badge.svg?token=GBTJGXEXOS)](https://codecov.io/gh/afnanenayet/diffsitter)
+[![codecov](https://codecov.io/gh/afnanenayet/diffsitter/branch/main/graph/badge.svg?token=GBTJGXEXOS)](https://codecov.io/gh/afnanenayet/diffsitter)
 [![crates version](https://img.shields.io/crates/v/diffsitter)](https://crates.io/crates/diffsitter)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/afnanenayet/diffsitter)](https://github.com/afnanenayet/diffsitter/releases/latest)
 ![downloads](https://img.shields.io/crates/d/diffsitter)
