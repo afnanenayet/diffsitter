@@ -224,6 +224,18 @@ apk add diffsitter
 Tree-sitter grammars are packaged separately (search for [tree-sitter-\*](https://pkgs.alpinelinux.org/packages?name=tree-sitter-*&arch=x86_64)).
 You can install individual packages you need or the virtual package `tree-sitter-grammars` to install all of them.
 
+### Building with Docker
+
+We also provide a Docker image that builds diffsitter using the standard Rust
+base image. It separates the compilation stage from the run stage, so you can
+build it and run with the following command (assuming you have Docker installed
+on your system):
+
+```sh
+docker build -t diffsitter .
+docker run -it --rm --name diffsitter-interactive diffsitter
+```
+
 ## Usage
 
 For detailed help you can run `diffsitter --help` (`diffsitter -h` provides
