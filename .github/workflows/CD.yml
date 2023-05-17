@@ -52,7 +52,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git fetch origin --all
           gh release delete nightly --yes || true
           # Taken from: https://stackoverflow.com/questions/46366042/how-to-check-if-tag-exists-in-if-else
           # We don't want to try deleting the remote tag if it doesn't exist
