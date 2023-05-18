@@ -52,15 +52,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release delete nightly --yes || true
-          # Taken from: https://stackoverflow.com/questions/46366042/how-to-check-if-tag-exists-in-if-else
-          # We don't want to try deleting the remote tag if it doesn't exist
-          # because that will trigger a failure and abort the nightly release
-          # job.
-          if [[ git rev-parse nightly >/dev/null 2>&1 ]]; then
-            git push origin :nightly
-          fi
-          git tag -d nightly || true
+          gh release delete nightly --yes --cleanup-tag || true
           git tag nightly
           git push origin nightly
           echo "PRELEASE=true" >> $GITHUB_ENV
