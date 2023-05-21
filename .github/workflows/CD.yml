@@ -197,19 +197,33 @@ jobs:
           release_version="$(cat ./artifacts/release-version)"
           echo "RELEASE_VERSION=$release_version" >> $GITHUB_ENV
 
-      - uses: taiki-e/upload-rust-binary-action@v1
+      # For nightly releases we need to manually specify the tag because the
+      # action was triggered by a schedule not a tag.
+
+      # TODO: separate out the logic so we have another action that creates and
+      # pushes the tag so this file doesn't have to handle that logic. What we
+      # really should do is simply have this job get triggered by tags and
+      # have some way to specify whether it's a prerelease tag and handle it
+      # from there.
+      - name: Upload Rust binaries for nightly
+        uses: taiki-e/upload-rust-binary-action@v1
+        if: github.event.inputs.tag_name == 'nightly'
         with:
-          # (required) Comma-separated list of binary names (non-extension portion of filename) to build and upload.
-          # Note that glob pattern is not supported yet.
           bin: diffsitter
-          # (optional) Archive name (non-extension portion of filename) to be uploaded.
-          # [default value: $bin-$target]
-          # [possible values: the following variables and any string]
-          #   variables:
-          #     - $bin    - Binary name (non-extension portion of filename).
-          #     - $target - Target triple.
-          #     - $tag    - Tag of this release.
-          # When multiple binary names are specified, default archive name or $bin variable cannot be used.
+          archive: $bin-$target
+          # (required) GitHub token for uploading assets to GitHub Releases.
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tar: unix
+          zip: windows
+          checksum: sha256
+          target: ${{ matrix.job.target }}
+          ref: refs/tags/nightly
+
+      - name: Upload Rust binaries for release
+        uses: taiki-e/upload-rust-binary-action@v1
+        if: github.event.inputs.tag_name != 'nightly'
+        with:
+          bin: diffsitter
           archive: $bin-$target
           # (required) GitHub token for uploading assets to GitHub Releases.
           token: ${{ secrets.GITHUB_TOKEN }}
