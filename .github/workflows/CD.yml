@@ -179,12 +179,12 @@ jobs:
         run: |
           brew install coreutils
 
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         with:
           python-version: '3.9'
 
       - name: Get release download URL
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: artifacts
           path: artifacts
