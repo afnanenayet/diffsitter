@@ -219,6 +219,7 @@ jobs:
           target: ${{ matrix.job.target }}
           ref: refs/tags/nightly
           include: bin/git-diffsitter
+          profile: production
 
       - name: Upload Rust binaries for release
         uses: taiki-e/upload-rust-binary-action@v1
@@ -233,6 +234,7 @@ jobs:
           checksum: sha256
           target: ${{ matrix.job.target }}
           include: bin/git-diffsitter
+          profile: production
 
       - name: Install cargo deb
         uses: taiki-e/install-action@v2
