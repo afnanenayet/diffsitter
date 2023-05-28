@@ -69,6 +69,11 @@ impl Config {
     /// it to a string. If a path isn't supplied, the function will attempt to figure out what the
     /// default config file path is supposed to be (based on OS conventions, see
     /// [`default_config_file_path`]).
+    ///
+    /// # Errors
+    ///
+    /// This method will return an error if the config cannot be parsed or if no default config
+    /// exists.
     pub fn try_from_file<P: AsRef<Path>>(path: Option<&P>) -> Result<Self, ReadError> {
         // rustc will emit an incorrect warning that this variable isn't used, which is untrue.
         // While the variable isn't read *directly*, it is used to store the owned PathBuf from
