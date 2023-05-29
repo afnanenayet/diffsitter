@@ -6,7 +6,7 @@ use anyhow::Result;
 use console::{Color, Style, Term};
 use log::{debug, error, info};
 use serde::{Deserialize, Serialize};
-use std::{cmp::max, io::Write};
+use std::{cmp::max, fmt::Write};
 
 /// The ascii separator used after the diff title
 const TITLE_SEPARATOR: &str = "=";
@@ -167,7 +167,7 @@ impl Unified {
         old_fmt: &FormattingDirectives,
         new_fmt: &FormattingDirectives,
         term_info: Option<&Term>,
-    ) -> std::io::Result<()> {
+    ) -> std::fmt::Result {
         // The different ways we can stack the title
         #[derive(Debug, Eq, PartialEq, PartialOrd, Ord, strum_macros::Display)]
         #[strum(serialize_all = "snake_case")]
