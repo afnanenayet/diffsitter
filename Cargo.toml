@@ -46,13 +46,13 @@ path = "src/lib.rs"
 
 [dependencies]
 tree-sitter = "0.20.10"
-clap = { version = "4.3.0", features = [
+clap = { version = "4.3.2", features = [
   "derive",
   "env",
   "unicode",
   "wrap_help",
 ] }
-clap_complete = "4.3.0"
+clap_complete = "4.3.1"
 anyhow = { version = "1.0.71", features = ["backtrace"] }
 phf = { version = "0.11.1", features = ["macros"] }
 console = "0.15.7"
@@ -69,7 +69,7 @@ jemallocator = { version = "0.5.0", optional = true }
 libloading = "0.8.0"
 unicode-segmentation = "1.10.1"
 human-panic = "1.1.4"
-shadow-rs = { version = "0.22.0", optional = true }
+shadow-rs = { version = "0.23.0", optional = true }
 enum_dispatch = "0.3.11"
 
 [dev-dependencies]
@@ -97,7 +97,7 @@ anyhow = "1.0.71"
 cargo-emit = "0.2.1"
 rayon = "1.7.0"
 thiserror = "1.0.40"
-shadow-rs = { version = "0.22.0", optional = true }
+shadow-rs = { version = "0.23.0", optional = true }
 
 [features]
 default = ["static-grammar-libs"]
