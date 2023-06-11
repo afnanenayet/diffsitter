@@ -207,7 +207,7 @@ jobs:
       # from there.
       - name: Upload Rust binaries for nightly
         uses: taiki-e/upload-rust-binary-action@v1
-        if: github.event.inputs.tag_name == 'nightly'
+        if: env.VERSION == 'nightly'
         with:
           bin: diffsitter
           archive: $bin-$target
@@ -223,7 +223,7 @@ jobs:
 
       - name: Upload Rust binaries for release
         uses: taiki-e/upload-rust-binary-action@v1
-        if: github.event.inputs.tag_name != 'nightly'
+        if: env.VERSION != 'nightly'
         with:
           bin: diffsitter
           archive: $bin-$target
