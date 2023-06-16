@@ -17,7 +17,7 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  create-github-release:
+  create_github_release:
     name: Create github release
     runs-on: ubuntu-latest
     outputs:
@@ -115,7 +115,7 @@ jobs:
   publish:
     name: Publish for ${{ matrix.job.target }}
     runs-on: ${{ matrix.job.os }}
-    needs: [create-github-release]
+    needs: [create_github_release]
     strategy:
       matrix:
         job:
