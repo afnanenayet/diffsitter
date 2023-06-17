@@ -17,9 +17,11 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  create-github-release:
+  create_github_release:
     name: Create github release
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
     steps:
       - name: Get release version from tag
         if: env.VERSION == '' && github.event_name != 'workflow_dispatch' && github.event_name != 'schedule'
@@ -28,17 +30,21 @@ jobs:
             echo "Manual run against a tag; overriding actual tag in the environment..."
             echo "VERSION=${{ github.event.inputs.tag_name }}" >> $GITHUB_ENV
           else
-            echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+            echo "VERSION=${GITHUB_REF#refs/tags/}" >> "$GITHUB_ENV"
           fi
       - name: Get release version from inputs
         if: env.VERSION == '' && (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
         env:
           default_tag_name: nightly
         run: |
-          echo "VERSION=${{ github.event.inputs.tag_name || env.default_tag_name }}" >> $GITHUB_ENV
+          echo "VERSION=${{ github.event.inputs.tag_name || env.default_tag_name }}" >> "$GITHUB_ENV"
       - name: Validate version environment variable
         run: |
           echo "Version being built against is version ${{ env.VERSION }}"!
+      - name: Save version to output
+        id: get_version
+        run: |
+          echo "version=${{ env.VERSION }}" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v3
         with:
@@ -109,7 +115,7 @@ jobs:
   publish:
     name: Publish for ${{ matrix.job.target }}
     runs-on: ${{ matrix.job.os }}
-    needs: [create-github-release]
+    needs: [create_github_release]
     strategy:
       matrix:
         job:
@@ -207,7 +213,7 @@ jobs:
       # from there.
       - name: Upload Rust binaries for nightly
         uses: taiki-e/upload-rust-binary-action@v1
-        if: env.VERSION == 'nightly'
+        if: needs.create_github_release.outputs.version == 'nightly'
         with:
           bin: diffsitter
           archive: $bin-$target
@@ -223,7 +229,7 @@ jobs:
 
       - name: Upload Rust binaries for release
         uses: taiki-e/upload-rust-binary-action@v1
-        if: env.VERSION != 'nightly'
+        if: needs.create_github_release.outputs.version != 'nightly'
         with:
           bin: diffsitter
           archive: $bin-$target
