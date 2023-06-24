@@ -237,14 +237,14 @@ fn grammars() -> Vec<GrammarCompileInfo<'static>> {
         GrammarCompileInfo {
             display_name: "cpp",
             path: PathBuf::from("grammars/tree-sitter-cpp"),
-            c_sources: vec!["parser.c"],
-            cpp_sources: vec!["scanner.cc"],
+            c_sources: vec!["parser.c", "scanner.c"],
+            ..GrammarCompileInfo::default()
         },
         GrammarCompileInfo {
             display_name: "python",
             path: PathBuf::from("grammars/tree-sitter-python"),
-            c_sources: vec!["parser.c"],
-            cpp_sources: vec!["scanner.cc"],
+            c_sources: vec!["parser.c", "scanner.c"],
+            ..GrammarCompileInfo::default()
         },
         GrammarCompileInfo {
             display_name: "bash",
@@ -291,8 +291,8 @@ fn grammars() -> Vec<GrammarCompileInfo<'static>> {
         GrammarCompileInfo {
             display_name: "php",
             path: PathBuf::from("grammars/tree-sitter-php"),
-            c_sources: vec!["parser.c"],
-            cpp_sources: vec!["scanner.cc"],
+            c_sources: vec!["parser.c", "scanner.c"],
+            ..GrammarCompileInfo::default()
         },
         GrammarCompileInfo {
             display_name: "json",
