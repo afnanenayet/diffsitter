@@ -54,7 +54,7 @@ clap = { version = "4.3.4", features = [
 ] }
 clap_complete = "4.3.1"
 anyhow = { version = "1.0.71", features = ["backtrace"] }
-phf = { version = "0.11.1", features = ["macros"] }
+phf = { version = "0.11.2", features = ["macros"] }
 console = "0.15.7"
 strum = { version = "0.24.1", features = ["derive"] }
 strum_macros = "0.25.0"
@@ -92,7 +92,7 @@ xdg = "2.5.0"
 
 [build-dependencies]
 cc = { version = "1.0.79", features = ["parallel"] }
-phf = { version = "0.11.1", features = ["macros"] }
+phf = { version = "0.11.2", features = ["macros"] }
 anyhow = "1.0.71"
 cargo-emit = "0.2.1"
 rayon = "1.7.0"
