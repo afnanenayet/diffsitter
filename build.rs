@@ -249,14 +249,14 @@ fn grammars() -> Vec<GrammarCompileInfo<'static>> {
         GrammarCompileInfo {
             display_name: "bash",
             path: PathBuf::from("grammars/tree-sitter-bash"),
-            c_sources: vec!["parser.c"],
-            cpp_sources: vec!["scanner.cc"],
+            c_sources: vec!["parser.c", "scanner.c"],
+            ..GrammarCompileInfo::default()
         },
         GrammarCompileInfo {
             display_name: "ocaml",
             path: PathBuf::from("grammars/tree-sitter-ocaml/ocaml"),
-            c_sources: vec!["parser.c"],
-            cpp_sources: vec!["scanner.cc"],
+            c_sources: vec!["parser.c", "scanner.c"],
+            ..GrammarCompileInfo::default()
         },
         GrammarCompileInfo {
             display_name: "go",
