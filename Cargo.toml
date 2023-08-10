@@ -57,8 +57,8 @@ anyhow = { version = "1.0.72", features = ["backtrace"] }
 phf = { version = "0.11.2", features = ["macros"] }
 console = "0.15.7"
 strum = { version = "0.25.0", features = ["derive"] }
-strum_macros = "0.25.1"
-serde = { version = "1.0.181", features = ["derive"] }
+strum_macros = "0.25.2"
+serde = { version = "1.0.183", features = ["derive"] }
 serde_json = "1.0.104"
 json5 = "0.4.1"
 pretty_env_logger = "0.5.0"
@@ -91,7 +91,7 @@ directories-next = "2.0.0"
 xdg = "2.5.2"
 
 [build-dependencies]
-cc = { version = "1.0.81", features = ["parallel"] }
+cc = { version = "1.0.82", features = ["parallel"] }
 phf = { version = "0.11.2", features = ["macros"] }
 anyhow = "1.0.72"
 cargo-emit = "0.2.1"
