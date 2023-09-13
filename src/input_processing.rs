@@ -54,6 +54,11 @@ pub struct TreeSitterProcessor {
     pub strip_whitespace: bool,
 }
 
+// TODO: if we want to do any string transformations we need to store Cow strings.
+// Most strings won't be modified so it's fine to use a pointer. For the few we do
+// modify we'll need to store the direct string.
+// We should add some abstractions to do input processing.
+
 impl Default for TreeSitterProcessor {
     fn default() -> Self {
         Self {
@@ -444,6 +449,7 @@ fn build<'a>(vector: &RefCell<Vec<VectorLeaf<'a>>>, node: tree_sitter::Node<'a>,
             {
                 return;
             }
+
             vector.borrow_mut().push(VectorLeaf {
                 reference: node,
                 text: node_text,

@@ -332,6 +332,12 @@ fn grammars() -> Vec<GrammarCompileInfo<'static>> {
             path: PathBuf::from("grammars/tree-sitter-c"),
             c_sources: vec!["parser.c"],
             ..Default::default()
+        },
+        GrammarCompileInfo {
+            display_name: "markdown",
+            path: PathBuf::from("grammars/tree-sitter-markdown/tree-sitter-markdown"),
+            c_sources: vec!["parser.c", "scanner.c"],
+            ..Default::default()
         }, // Add new grammars here...
     ];
     grammars

@@ -67,3 +67,6 @@
 [submodule "grammars/tree-sitter-json"]
 	path = grammars/tree-sitter-json
 	url = https://github.com/afnanenayet/tree-sitter-json
+[submodule "grammars/tree-sitter-markdown"]
+	path = grammars/tree-sitter-markdown
+	url = https://github.com/afnanenayet/tree-sitter-markdown.git

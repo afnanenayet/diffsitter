@@ -1,0 +1,104 @@
+---
+source: tests/regression_test.rs
+expression: diff_hunks
+---
+RichHunks(
+    [
+        New(
+            Hunk(
+                [
+                    Line {
+                        line_index: 2,
+                        entries: [
+                            Entry {
+                                reference: {Node inline (2, 0) - (2, 19)},
+                                text: "This is a paragraph",
+                                start_position: Point {
+                                    row: 2,
+                                    column: 0,
+                                },
+                                end_position: Point {
+                                    row: 2,
+                                    column: 0,
+                                },
+                                kind_id: 203,
+                            },
+                        ],
+                    },
+                ],
+            ),
+        ),
+        New(
+            Hunk(
+                [
+                    Line {
+                        line_index: 4,
+                        entries: [
+                            Entry {
+                                reference: {Node inline (4, 0) - (5, 14)},
+                                text: "This \nis paragraph 3",
+                                start_position: Point {
+                                    row: 4,
+                                    column: 0,
+                                },
+                                end_position: Point {
+                                    row: 4,
+                                    column: 0,
+                                },
+                                kind_id: 203,
+                            },
+                        ],
+                    },
+                ],
+            ),
+        ),
+        Old(
+            Hunk(
+                [
+                    Line {
+                        line_index: 2,
+                        entries: [
+                            Entry {
+                                reference: {Node inline (2, 0) - (3, 11)},
+                                text: "This is\na paragraph",
+                                start_position: Point {
+                                    row: 2,
+                                    column: 0,
+                                },
+                                end_position: Point {
+                                    row: 2,
+                                    column: 0,
+                                },
+                                kind_id: 203,
+                            },
+                        ],
+                    },
+                ],
+            ),
+        ),
+        Old(
+            Hunk(
+                [
+                    Line {
+                        line_index: 5,
+                        entries: [
+                            Entry {
+                                reference: {Node inline (5, 0) - (6, 14)},
+                                text: "This \nis paragraph 2",
+                                start_position: Point {
+                                    row: 5,
+                                    column: 0,
+                                },
+                                end_position: Point {
+                                    row: 5,
+                                    column: 0,
+                                },
+                                kind_id: 203,
+                            },
+                        ],
+                    },
+                ],
+            ),
+        ),
+    ],
+)
