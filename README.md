@@ -339,7 +339,7 @@ See [CONTRIBUTING.md](docs/CONTRIBUTING.md).
 ## Similar Projects
 
 * [difftastic](https://github.com/Wilfred/difftastic)
-* [locust](https://www.libhunt.com/r/bugout-dev/locust)
+* [locust](https://github.com/bugout-dev/locust)
 * [gumtree](https://github.com/GumTreeDiff/gumtree)
 * [diffr](https://github.com/mookid/diffr)
 * [delta](https://github.com/dandavison/delta)
