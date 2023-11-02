@@ -113,6 +113,13 @@ dynamic-grammar-libs = []
 # Compile the static tree-sitter grammars from the submodules in this repo.
 static-grammar-libs = []
 
+[profile.profiling]
+inherits = "release"
+# Debug symbols are required for profiling
+strip = false
+# Want to keep debug info
+debug = true
+
 [profile.production]
 inherits = "release"
 lto = true
