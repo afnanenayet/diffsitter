@@ -6,6 +6,21 @@
 #[cfg(feature = "static-grammar-libs")]
 include!(concat!(env!("OUT_DIR"), "/generated_grammar.rs"));
 
+#[cfg(feature = "static-grammar-libs")]
+use lazy_static::lazy_static;
+
+#[cfg(feature = "static-grammar-libs")]
+lazy_static! {
+    /// All of the languages diffsitter was compiled with support for.
+    ///
+    /// This *only* applies for statically compiled tree-sitter grammars.
+    pub static ref SUPPORTED_LANGUAGES: Vec<&'static str> = {
+        let mut keys: Vec<&'static str> = LANGUAGES.keys().copied().collect();
+        keys.sort_unstable();
+        keys
+    };
+}
+
 #[cfg(not(feature = "static-grammar-libs"))]
 use phf::phf_map;
 
@@ -179,7 +194,7 @@ fn generate_language_dynamic(
     Ok(grammar)
 }
 
-/// Generate a langauge from a language string.
+/// Generate a tree-sitter language from a language string.
 ///
 /// This is a dispatch method that will attempt to load a statically linked grammar, and then fall
 /// back to loading the dynamic library for the grammar. If the user specifies an override for the
@@ -282,6 +297,10 @@ pub fn resolve_language_str<'a>(
 /// Create an instance of a language from a file extension
 ///
 /// The user may optionally provide a map of overrides or additional file extensions.
+#[deprecated(
+    since = "0.8.1",
+    note = "You should use lang_name_from_file_ext instead."
+)]
 pub fn language_from_ext(
     ext: &str,
     grammar_config: &GrammarConfig,
@@ -295,6 +314,60 @@ pub fn language_from_ext(
     }
 }
 
+/// Load a language name from a file extension.
+///
+/// This will return the name of a language, like "python" based on the file extension and
+/// configured file associations.
+///
+/// # Arguments
+///
+/// * `ext` - The file extension string, without the leading period character. For example: "md",
+///   "py".
+/// * `config` - The grammar config. This holds file associations between extensions and language
+///    names.
+///
+/// # Errors
+///
+/// This will return an error if an associated language is not found for the given file extension.
+/// If this is the case, this function returns an [UnsupportedExt](LoadingError::UnsupportedExt)
+/// error.
+///
+/// # Examples
+///
+/// ```
+/// use libdiffsitter::parse::{GrammarConfig, lang_name_from_file_ext};
+///
+/// let config = GrammarConfig::default();
+/// let lang_name = lang_name_from_file_ext("py", &config);
+///
+/// assert_eq!(lang_name.unwrap(), "python");
+/// ```
+pub fn lang_name_from_file_ext<'cfg>(
+    ext: &str,
+    grammar_config: &'cfg GrammarConfig,
+) -> Result<&'cfg str, LoadingError> {
+    let language_str_cand = resolve_language_str(ext, grammar_config.file_associations.as_ref());
+    match language_str_cand {
+        Some(s) => Ok(s),
+        None => Err(LoadingError::UnsupportedExt(ext.to_string())),
+    }
+}
+
+/// Creates a tree-sitter [Parser] for a given language.
+///
+/// This handles the boilerplate for loading the tree-sitter library for the [language](Language) and setting
+/// the parser object to use that language. The resulting object can then be used to parse text to
+/// a tree sitter [tree](Tree).
+pub fn ts_parser_for_language(
+    language: &str,
+    config: &GrammarConfig,
+) -> Result<Parser, LoadingError> {
+    let ts_language = generate_language(language, config)?;
+    let mut parser = Parser::new();
+    parser.set_language(ts_language)?;
+    Ok(parser)
+}
+
 /// Parse a file to an AST
 ///
 /// The user may optionally supply the language to use. If the language is not supplied, it will be
@@ -305,44 +378,26 @@ pub fn parse_file(
     language: Option<&str>,
     config: &GrammarConfig,
 ) -> Result<Tree, LoadingError> {
-    let text = fs::read_to_string(p)?;
-    let mut parser = Parser::new();
-    let language = match language {
-        Some(x) => {
-            info!("Using language {} with parser", x);
-            generate_language(x, config)
-        }
+    // Either use the provided language or infer the language to use with the parser from the file
+    // extension
+    let resolved_language = match language {
+        Some(lang) => Ok(lang),
         None => {
             if let Some(ext) = p.extension() {
-                let ext_str = ext.to_string_lossy();
-                language_from_ext(&ext_str, config)
+                lang_name_from_file_ext(&ext.to_string_lossy(), config)
             } else {
                 Err(LoadingError::NoFileExt(p.to_string_lossy().to_string()))
             }
         }
     }?;
-    parser.set_language(language)?;
-    debug!("Constructed parser");
-
+    let mut parser = ts_parser_for_language(resolved_language, config)?;
+    let text = fs::read_to_string(p)?;
     match parser.parse(&text, None) {
         Some(ast) => {
             debug!("Parsed AST");
             Ok(ast)
         }
         None => Err(LoadingError::TSParseFailure(p.to_owned())),
-    }
-}
-
-/// Return the languages supported by this instance of the tool in alphabetically sorted order
-#[cfg(feature = "static-grammar-libs")]
-#[must_use]
-pub fn supported_languages() -> Vec<&'static str> {
-    if cfg!(feature = "static-grammar-libs") {
-        let mut keys: Vec<&'static str> = LANGUAGES.keys().copied().collect();
-        keys.sort_unstable();
-        keys
-    } else {
-        Vec::new()
     }
 }
 

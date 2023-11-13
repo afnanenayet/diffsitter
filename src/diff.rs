@@ -87,7 +87,7 @@ pub struct Line<'a> {
     /// The index of the line in the original document
     pub line_index: usize,
     /// The entries corresponding to the line
-    pub entries: Vec<Entry<'a>>,
+    pub entries: Vec<&'a Entry<'a>>,
 }
 
 impl<'a> Line<'a> {
@@ -155,12 +155,15 @@ impl<'a> Hunk<'a> {
         self.0.last().map(|x| x.line_index)
     }
 
-    /// Append an [entry](Entry) to a hunk.
+    /// Returns whether an entry can be pushed onto the current hunk.
     ///
-    /// Entries can only be appended in ascending order (first to last). It is an error to append
-    /// entries out of order. For example, you can't insert an entry on line 1 after inserting an
-    /// entry on line 5.
-    pub fn push_back(&mut self, entry: Entry<'a>) -> Result<(), HunkInsertionError> {
+    /// This method is exposed so users can check if the push back operation would fail. This is
+    /// useful if you want to avoid needing to do extra copies in case an incoming entry is can't
+    /// be added to the entry and you don't want to have to deal with copying the entry for the
+    /// next hunk.
+    ///
+    /// This returns a result with the specific reason the entry couldn't be inserted.
+    pub fn can_push_back(&self, entry: &Entry<'a>) -> Result<(), HunkInsertionError> {
         let incoming_line_idx = entry.start_position().row;
 
         // Create a new line if the incoming entry is on the next line. This will throw an error
@@ -173,41 +176,49 @@ impl<'a> Hunk<'a> {
                     incoming_line: incoming_line_idx,
                     last_line: last_line_idx,
                 });
-            }
-
-            if incoming_line_idx - last_line_idx > 1 {
+            } else if incoming_line_idx - last_line_idx > 1 {
                 return Err(HunkInsertionError::NonAdjacentHunk {
                     incoming_line: incoming_line_idx,
                     last_line: last_line_idx,
                 });
             }
-
-            if incoming_line_idx - last_line_idx == 1 {
-                self.0.push(Line::new(incoming_line_idx));
+            // Only check the incoming column if the new entry would be appended to the same line
+            if incoming_line_idx == last_line_idx && !last_line.entries.is_empty() {
+                let last_entry = last_line.entries.last().unwrap();
+                let last_col = last_entry.end_position().column;
+                let last_line = last_entry.end_position().row;
+                let incoming_col = entry.start_position().column;
+                let incoming_line = entry.end_position().row;
+                if incoming_col < last_col {
+                    return Err(HunkInsertionError::PriorColumn {
+                        incoming_col,
+                        last_col,
+                        incoming_line,
+                        last_line,
+                    });
+                }
             }
         }
-        // The lines are empty, we need to add the first one
-        else {
+        Ok(())
+    }
+
+    /// Append an [entry](Entry) to a hunk.
+    ///
+    /// Entries can only be appended in ascending order (first to last). It is an error to append
+    /// entries out of order. For example, you can't insert an entry on line 1 after inserting an
+    /// entry on line 5.
+    pub fn push_back(&mut self, entry: &'a Entry<'a>) -> Result<(), HunkInsertionError> {
+        self.can_push_back(entry)?;
+        let incoming_line_idx = entry.start_position().row;
+
+        // Don't need to check the other conditions because other scenarios like adding a prior
+        // line or a non-adjacent line.
+        if self.0.is_empty() || incoming_line_idx - self.0.last().unwrap().line_index == 1 {
             self.0.push(Line::new(incoming_line_idx));
         }
-
+        // This doesn't need to be checked because we add a line if there isn't one already in the
+        // vector so the unwrap won't fail
         let last_line = self.0.last_mut().unwrap();
-
-        if let Some(&last_entry) = last_line.entries.last() {
-            let last_col = last_entry.end_position().column;
-            let last_line = last_entry.end_position().row;
-            let incoming_col = entry.start_position().column;
-            let incoming_line = entry.end_position().row;
-
-            if incoming_col < last_col {
-                return Err(HunkInsertionError::PriorColumn {
-                    incoming_col,
-                    last_col,
-                    incoming_line,
-                    last_line,
-                });
-            }
-        }
         last_line.entries.push(entry);
         Ok(())
     }
@@ -224,7 +235,7 @@ impl<'a> Default for Hunk<'a> {
 /// A lot of items in the diff are delineated by whether they come from the old document or the new
 /// one. This enum generically defines an enum wrapper over those document types.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-pub enum DocumentType<T: Debug + Clone + PartialEq + Serialize> {
+pub enum DocumentType<T: Debug + PartialEq + Serialize + Clone> {
     Old(T),
     New(T),
 }
@@ -309,7 +320,7 @@ impl<'a> RichHunksBuilder<'a> {
     /// This returns the hunk that the entry should be added to.
     fn get_hunk_for_insertion(
         &mut self,
-        incoming_entry: &DocumentType<Entry<'a>>,
+        incoming_entry: &DocumentType<&'a Entry<'a>>,
     ) -> Result<usize, HunkInsertionError> {
         let (mut last_idx, new_hunk) = match incoming_entry {
             DocumentType::Old(_) => (self.last_old, DocumentType::Old(Hunk::new())),
@@ -363,7 +374,7 @@ impl<'a> RichHunksBuilder<'a> {
     }
 
     /// Add an entry to the hunks.
-    pub fn push_back(&mut self, entry_wrapper: DocumentType<Entry<'a>>) -> Result<()> {
+    pub fn push_back(&mut self, entry_wrapper: DocumentType<&'a Entry<'a>>) -> Result<()> {
         let insertion_idx = self.get_hunk_for_insertion(&entry_wrapper)?;
         self.hunks.0[insertion_idx]
             .as_mut()
@@ -384,22 +395,23 @@ impl<'a> Hunks<'a> {
         Hunks(Vec::new())
     }
 
-    pub fn push_back(&mut self, entry: Entry<'a>) -> Result<()> {
+    pub fn push_back(&mut self, entry: &'a Entry<'a>) -> Result<()> {
         if let Some(hunk) = self.0.last_mut() {
-            let res = hunk.push_back(entry);
-
-            // If the incoming edit is not adjacent that means we need to create a new edit hunk
-            if let Err(HunkInsertionError::NonAdjacentHunk {
-                incoming_line: _,
-                last_line: _,
-            }) = res
-            {
-                let mut hunk = Hunk::new();
-                hunk.push_back(entry)?;
-                self.0.push(hunk);
-            } else {
-                res.map_err(|x| anyhow::anyhow!(x))?;
-            }
+            match hunk.can_push_back(entry) {
+                Ok(()) => hunk.push_back(entry),
+                // If the entry is not contiguous with the current hunk then we need to start a new
+                // one
+                Err(HunkInsertionError::NonAdjacentHunk {
+                    incoming_line: _,
+                    last_line: _,
+                }) => {
+                    let mut hunk = Hunk::new();
+                    hunk.push_back(entry)?;
+                    self.0.push(hunk);
+                    Ok(())
+                }
+                Err(e) => Err(e),
+            }?;
         } else {
             self.0.push(Hunk::new());
             self.0.last_mut().unwrap().push_back(entry)?;
@@ -416,14 +428,14 @@ impl<'a> Default for Hunks<'a> {
 
 pub struct HunkAppender<'a>(pub Hunks<'a>);
 
-impl<'a> FromIterator<Entry<'a>> for HunkAppender<'a> {
+impl<'a> FromIterator<&'a Entry<'a>> for HunkAppender<'a> {
     /// Create an instance of `Hunks` from an iterator over [entries](Entry).
     ///
     /// The user is responsible for making sure that the hunks are in proper order, otherwise this
     /// constructor may panic.
     fn from_iter<T>(iter: T) -> Self
     where
-        T: IntoIterator<Item = Entry<'a>>,
+        T: IntoIterator<Item = &'a Entry<'a>>,
     {
         let mut hunks = Hunks::new();
 
@@ -741,20 +753,19 @@ impl Myers {
     }
 }
 
-impl<'a> TryFrom<Vec<EditType<&Entry<'a>>>> for RichHunks<'a> {
+impl<'a> TryFrom<Vec<EditType<&'a Entry<'a>>>> for RichHunks<'a> {
     type Error = anyhow::Error;
 
-    fn try_from(edits: Vec<EditType<&Entry<'a>>>) -> Result<Self, Self::Error> {
+    fn try_from(edits: Vec<EditType<&'a Entry<'a>>>) -> Result<Self, Self::Error> {
         let mut builder = RichHunksBuilder::new();
-
         for edit_wrapper in edits {
+            // TODO: deal with the clone here
             let edit = match edit_wrapper {
-                EditType::Addition(&edit) => DocumentType::New(edit),
-                EditType::Deletion(&edit) => DocumentType::Old(edit),
+                EditType::Addition(edit) => DocumentType::New(edit),
+                EditType::Deletion(edit) => DocumentType::Old(edit),
             };
             builder.push_back(edit)?;
         }
-
         Ok(builder.build())
     }
 }
@@ -766,7 +777,10 @@ impl<'a> TryFrom<Vec<EditType<&Entry<'a>>>> for RichHunks<'a> {
 /// This will return two groups of [hunks](diff::Hunks) in a tuple of the form
 /// `(old_hunks, new_hunks)`.
 #[time("info", "diff::{}")]
-pub fn compute_edit_script<'a>(old: &[Entry<'a>], new: &[Entry<'a>]) -> Result<RichHunks<'a>> {
+pub fn compute_edit_script<'a>(
+    old: &'a [Entry<'a>],
+    new: &'a [Entry<'a>],
+) -> Result<RichHunks<'a>> {
     let myers = Myers::default();
     let edit_script = myers.diff(old, new);
     RichHunks::try_from(edit_script)

@@ -1,0 +1,238 @@
+---
+source: tests/regression_test.rs
+expression: diff_hunks
+---
+RichHunks(
+    [
+        New(
+            Hunk(
+                [
+                    Line {
+                        line_index: 12,
+                        entries: [
+                            Entry {
+                                reference: {Node identifier (12, 12) - (12, 13)},
+                                text: "i",
+                                start_position: Point {
+                                    row: 12,
+                                    column: 12,
+                                },
+                                end_position: Point {
+                                    row: 12,
+                                    column: 12,
+                                },
+                                kind_id: 1,
+                            },
+                            Entry {
+                                reference: {Node identifier (12, 24) - (12, 25)},
+                                text: "i",
+                                start_position: Point {
+                                    row: 12,
+                                    column: 24,
+                                },
+                                end_position: Point {
+                                    row: 12,
+                                    column: 24,
+                                },
+                                kind_id: 1,
+                            },
+                            Entry {
+                                reference: {Node identifier (12, 36) - (12, 37)},
+                                text: "i",
+                                start_position: Point {
+                                    row: 12,
+                                    column: 36,
+                                },
+                                end_position: Point {
+                                    row: 12,
+                                    column: 36,
+                                },
+                                kind_id: 1,
+                            },
+                        ],
+                    },
+                ],
+            ),
+        ),
+        Old(
+            Hunk(
+                [
+                    Line {
+                        line_index: 17,
+                        entries: [
+                            Entry {
+                                reference: {Node identifier (17, 12) - (17, 13)},
+                                text: "j",
+                                start_position: Point {
+                                    row: 17,
+                                    column: 12,
+                                },
+                                end_position: Point {
+                                    row: 17,
+                                    column: 12,
+                                },
+                                kind_id: 1,
+                            },
+                            Entry {
+                                reference: {Node identifier (17, 24) - (17, 25)},
+                                text: "j",
+                                start_position: Point {
+                                    row: 17,
+                                    column: 24,
+                                },
+                                end_position: Point {
+                                    row: 17,
+                                    column: 24,
+                                },
+                                kind_id: 1,
+                            },
+                            Entry {
+                                reference: {Node identifier (17, 36) - (17, 37)},
+                                text: "j",
+                                start_position: Point {
+                                    row: 17,
+                                    column: 36,
+                                },
+                                end_position: Point {
+                                    row: 17,
+                                    column: 36,
+                                },
+                                kind_id: 1,
+                            },
+                        ],
+                    },
+                ],
+            ),
+        ),
+        Old(
+            Hunk(
+                [
+                    Line {
+                        line_index: 43,
+                        entries: [
+                            Entry {
+                                reference: {Node namespace_identifier (43, 4) - (43, 7)},
+                                text: "std",
+                                start_position: Point {
+                                    row: 43,
+                                    column: 4,
+                                },
+                                end_position: Point {
+                                    row: 43,
+                                    column: 4,
+                                },
+                                kind_id: 478,
+                            },
+                            Entry {
+                                reference: {Node :: (43, 7) - (43, 9)},
+                                text: "::",
+                                start_position: Point {
+                                    row: 43,
+                                    column: 7,
+                                },
+                                end_position: Point {
+                                    row: 43,
+                                    column: 7,
+                                },
+                                kind_id: 46,
+                            },
+                        ],
+                    },
+                    Line {
+                        line_index: 44,
+                        entries: [
+                            Entry {
+                                reference: {Node namespace_identifier (44, 4) - (44, 7)},
+                                text: "std",
+                                start_position: Point {
+                                    row: 44,
+                                    column: 4,
+                                },
+                                end_position: Point {
+                                    row: 44,
+                                    column: 4,
+                                },
+                                kind_id: 478,
+                            },
+                            Entry {
+                                reference: {Node :: (44, 7) - (44, 9)},
+                                text: "::",
+                                start_position: Point {
+                                    row: 44,
+                                    column: 7,
+                                },
+                                end_position: Point {
+                                    row: 44,
+                                    column: 7,
+                                },
+                                kind_id: 46,
+                            },
+                        ],
+                    },
+                    Line {
+                        line_index: 45,
+                        entries: [
+                            Entry {
+                                reference: {Node namespace_identifier (45, 4) - (45, 7)},
+                                text: "std",
+                                start_position: Point {
+                                    row: 45,
+                                    column: 4,
+                                },
+                                end_position: Point {
+                                    row: 45,
+                                    column: 4,
+                                },
+                                kind_id: 478,
+                            },
+                            Entry {
+                                reference: {Node :: (45, 7) - (45, 9)},
+                                text: "::",
+                                start_position: Point {
+                                    row: 45,
+                                    column: 7,
+                                },
+                                end_position: Point {
+                                    row: 45,
+                                    column: 7,
+                                },
+                                kind_id: 46,
+                            },
+                        ],
+                    },
+                    Line {
+                        line_index: 46,
+                        entries: [
+                            Entry {
+                                reference: {Node namespace_identifier (46, 4) - (46, 7)},
+                                text: "std",
+                                start_position: Point {
+                                    row: 46,
+                                    column: 4,
+                                },
+                                end_position: Point {
+                                    row: 46,
+                                    column: 4,
+                                },
+                                kind_id: 478,
+                            },
+                            Entry {
+                                reference: {Node :: (46, 7) - (46, 9)},
+                                text: "::",
+                                start_position: Point {
+                                    row: 46,
+                                    column: 7,
+                                },
+                                end_position: Point {
+                                    row: 46,
+                                    column: 7,
+                                },
+                                kind_id: 46,
+                            },
+                        ],
+                    },
+                ],
+            ),
+        ),
+    ],
+)

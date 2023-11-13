@@ -10,9 +10,10 @@ use libdiffsitter::config::{Config, ReadError};
 use libdiffsitter::console_utils;
 use libdiffsitter::diff;
 use libdiffsitter::generate_ast_vector_data;
+use libdiffsitter::parse::generate_language;
+use libdiffsitter::parse::lang_name_from_file_ext;
 #[cfg(feature = "static-grammar-libs")]
-use libdiffsitter::parse::supported_languages;
-use libdiffsitter::parse::{generate_language, language_from_ext};
+use libdiffsitter::parse::SUPPORTED_LANGUAGES;
 use libdiffsitter::render::{DisplayData, DocumentDiffData, Renderer};
 use log::{debug, error, info, warn, LevelFilter};
 use serde_json as json;
@@ -75,37 +76,43 @@ fn derive_config(args: &Args) -> Result<Config> {
 fn are_input_files_supported(args: &Args, config: &Config) -> bool {
     let paths = [&args.old, &args.new];
 
-    // If there's a user override at the command line, that takes priority over everything else.
+    // If there's a user override at the command line, that takes priority over everything else if
+    // it corresponds to a valid grammar/language string.
     if let Some(file_type) = &args.file_type {
         return generate_language(file_type, &config.grammar).is_ok();
     }
 
     // For each path, attempt to create a parser for that given extension, checking for any
     // possible overrides.
-    for path in paths.into_iter().flatten() {
-        debug!("Checking if {} can be parsed", path.display());
-        let ext = path.extension();
-
-        if ext.is_none() {
-            return false;
+    paths.into_iter().all(|path| match path {
+        None => {
+            warn!("Missing a file. You need two files to make a diff.");
+            false
         }
-
-        let ext = ext.unwrap();
-
-        if ext.to_str().is_none() {
-            warn!("No filetype deduced for {}", path.display());
-            return false;
+        Some(path) => {
+            debug!("Checking if {} can be parsed", path.display());
+            match path.extension() {
+                None => {
+                    warn!("No filetype deduced for {}", path.display());
+                    false
+                }
+                Some(ext) => {
+                    let ext = ext.to_string_lossy();
+                    let lang_name = lang_name_from_file_ext(&ext, &config.grammar);
+                    match lang_name {
+                        Ok(lang_name) => {
+                            debug!("Deduced language {} for path {}", lang_name, path.display());
+                            true
+                        }
+                        Err(e) => {
+                            warn!("Extension {} not supported: {}", ext, e);
+                            false
+                        }
+                    }
+                }
+            }
         }
-
-        let ext = ext.to_str().unwrap();
-
-        if language_from_ext(ext, &config.grammar).is_err() {
-            error!("Extension {} not supported", ext);
-            return false;
-        }
-    }
-    debug!("Extensions for both input files are supported");
-    true
+    })
 }
 
 /// Take the diff of two files
@@ -174,11 +181,9 @@ fn diff_fallback(cmd: &str, old: &Path, new: &Path) -> io::Result<Child> {
 pub fn list_supported_languages() {
     #[cfg(feature = "static-grammar-libs")]
     {
-        let languages = supported_languages();
         println!("This program was compiled with support for:");
-
-        for language in languages {
-            println!("- {language}");
+        for language in SUPPORTED_LANGUAGES.as_slice() {
+            println!("* {language}");
         }
     }
 

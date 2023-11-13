@@ -1,0 +1,126 @@
+---
+source: tests/regression_test.rs
+expression: diff_hunks
+---
+RichHunks(
+    [
+        New(
+            Hunk(
+                [
+                    Line {
+                        line_index: 1,
+                        entries: [
+                            Entry {
+                                reference: {Node string_content (1, 7) - (3, 4)},
+                                text: " ",
+                                start_position: Point {
+                                    row: 1,
+                                    column: 7,
+                                },
+                                end_position: Point {
+                                    row: 1,
+                                    column: 8,
+                                },
+                                kind_id: 210,
+                            },
+                        ],
+                    },
+                    Line {
+                        line_index: 2,
+                        entries: [
+                            Entry {
+                                reference: {Node string_content (1, 7) - (3, 4)},
+                                text: " ",
+                                start_position: Point {
+                                    row: 2,
+                                    column: 0,
+                                },
+                                end_position: Point {
+                                    row: 2,
+                                    column: 1,
+                                },
+                                kind_id: 210,
+                            },
+                            Entry {
+                                reference: {Node string_content (1, 7) - (3, 4)},
+                                text: " ",
+                                start_position: Point {
+                                    row: 2,
+                                    column: 1,
+                                },
+                                end_position: Point {
+                                    row: 2,
+                                    column: 2,
+                                },
+                                kind_id: 210,
+                            },
+                            Entry {
+                                reference: {Node string_content (1, 7) - (3, 4)},
+                                text: " ",
+                                start_position: Point {
+                                    row: 2,
+                                    column: 3,
+                                },
+                                end_position: Point {
+                                    row: 2,
+                                    column: 4,
+                                },
+                                kind_id: 210,
+                            },
+                        ],
+                    },
+                ],
+            ),
+        ),
+        New(
+            Hunk(
+                [
+                    Line {
+                        line_index: 6,
+                        entries: [
+                            Entry {
+                                reference: {Node identifier (6, 4) - (6, 5)},
+                                text: "x",
+                                start_position: Point {
+                                    row: 6,
+                                    column: 4,
+                                },
+                                end_position: Point {
+                                    row: 6,
+                                    column: 5,
+                                },
+                                kind_id: 1,
+                            },
+                            Entry {
+                                reference: {Node = (6, 10) - (6, 11)},
+                                text: "=",
+                                start_position: Point {
+                                    row: 6,
+                                    column: 10,
+                                },
+                                end_position: Point {
+                                    row: 6,
+                                    column: 11,
+                                },
+                                kind_id: 47,
+                            },
+                            Entry {
+                                reference: {Node integer (6, 12) - (6, 13)},
+                                text: "1",
+                                start_position: Point {
+                                    row: 6,
+                                    column: 12,
+                                },
+                                end_position: Point {
+                                    row: 6,
+                                    column: 13,
+                                },
+                                kind_id: 92,
+                            },
+                        ],
+                    },
+                ],
+            ),
+        ),
+    ],
+)
