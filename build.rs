@@ -80,10 +80,10 @@ const BUILD_ENV_VARS: &[&str] = &["CC", "CXX", "LD_LIBRARY_PATH", "PATH"];
 /// the language parser
 #[cfg(feature = "static-grammar-libs")]
 fn codegen_language_map<T: ToString + Display>(languages: &[T]) -> String {
-    let body: String = languages
-        .iter()
-        .map(|lang| format!("\"{lang}\" => tree_sitter_{lang},\n"))
-        .collect();
+    let body: String = languages.iter().fold(String::new(), |mut buffer, lang| {
+        writeln!(buffer, "\"{lang}\" => tree_sitter_{lang},").unwrap();
+        buffer
+    });
     let map_decl = format!(
         "\nstatic LANGUAGES: phf::Map<&'static str, unsafe extern \"C\" fn() -> Language> = phf_map! {{\n {body}\n }};\n");
     map_decl
