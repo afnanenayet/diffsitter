@@ -269,9 +269,7 @@ impl<'a> Entry<'a> {
 
 impl<'a> From<&'a Vector<'a>> for Vec<Entry<'a>> {
     fn from(ast_vector: &'a Vector<'a>) -> Self {
-        let mut entries = Vec::new();
-        entries.reserve(ast_vector.leaves.len());
-
+        let mut entries = Vec::with_capacity(ast_vector.leaves.len());
         for entry in &ast_vector.leaves {
             entries.extend(entry.split_on_graphemes().iter());
         }
