@@ -45,7 +45,7 @@ RichHunks(
                                     row: 11,
                                     column: 1,
                                 },
-                                kind_id: 57,
+                                kind_id: 75,
                             },
                             Entry {
                                 reference: {Node fn (11, 0) - (11, 2)},
@@ -58,7 +58,7 @@ RichHunks(
                                     row: 11,
                                     column: 2,
                                 },
-                                kind_id: 57,
+                                kind_id: 75,
                             },
                             Entry {
                                 reference: {Node identifier (11, 3) - (11, 11)},
@@ -225,7 +225,7 @@ RichHunks(
                                     row: 1,
                                     column: 5,
                                 },
-                                kind_id: 61,
+                                kind_id: 79,
                             },
                             Entry {
                                 reference: {Node let (1, 4) - (1, 7)},
@@ -238,7 +238,7 @@ RichHunks(
                                     row: 1,
                                     column: 6,
                                 },
-                                kind_id: 61,
+                                kind_id: 79,
                             },
                             Entry {
                                 reference: {Node let (1, 4) - (1, 7)},
@@ -251,7 +251,7 @@ RichHunks(
                                     row: 1,
                                     column: 7,
                                 },
-                                kind_id: 61,
+                                kind_id: 79,
                             },
                             Entry {
                                 reference: {Node identifier (1, 8) - (1, 9)},
@@ -277,7 +277,7 @@ RichHunks(
                                     row: 1,
                                     column: 11,
                                 },
-                                kind_id: 78,
+                                kind_id: 51,
                             },
                             Entry {
                                 reference: {Node integer_literal (1, 12) - (1, 13)},
@@ -290,7 +290,7 @@ RichHunks(
                                     row: 1,
                                     column: 13,
                                 },
-                                kind_id: 123,
+                                kind_id: 125,
                             },
                             Entry {
                                 reference: {Node ; (1, 13) - (1, 14)},
