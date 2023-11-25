@@ -21,7 +21,7 @@ const CFG_FILE_NAME: &str = "config.json5";
 
 /// The config struct for the application
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
-#[serde(rename_all = "kebab-case")]
+#[serde(rename_all = "kebab-case", default)]
 pub struct Config {
     /// Custom file extension mappings between a file extension and a language
     ///
@@ -37,7 +37,6 @@ pub struct Config {
     pub grammar: GrammarConfig,
 
     /// Options for processing tree-sitter input.
-    #[serde(default)]
     pub input_processing: TreeSitterProcessor,
 
     /// The program to invoke if the given files can not be parsed by the available tree-sitter
