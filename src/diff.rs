@@ -459,9 +459,8 @@ where
     type Container = Vec<EditType<&'elem T>>;
 
     fn diff(&self, a: &'elem [T], b: &'elem [T]) -> Self::Container {
-        let mut res = Vec::new();
         // We know the worst case is deleting everything from a and inserting everything from b
-        res.reserve(a.len() + b.len());
+        let mut res = Vec::with_capacity(a.len() + b.len());
         let mut frontiers = MyersFrontiers::new(a.len(), b.len());
         Myers::diff_impl(&mut res, a, 0..a.len(), b, 0..b.len(), &mut frontiers);
         res
@@ -858,8 +857,8 @@ mod tests {
     #[test]
     fn myers_diff_single_substitution() {
         let myers = Myers::default();
-        let input_a = vec![1];
-        let input_b = vec![2];
+        let input_a = [1];
+        let input_b = [2];
         let edit_script = myers.diff(&input_a[..], &input_b[..]);
         let expected = vec![
             EditType::Addition(&input_b[0]),
@@ -871,8 +870,8 @@ mod tests {
     #[test]
     fn myers_diff_single_substitution_with_common_elements() {
         let myers = Myers::default();
-        let input_a = vec![0, 0, 0];
-        let input_b = vec![0, 1, 0];
+        let input_a = [0, 0, 0];
+        let input_b = [0, 1, 0];
         let edit_script = myers.diff(&input_a[..], &input_b[..]);
         let expected = vec![
             EditType::Addition(&input_b[1]),

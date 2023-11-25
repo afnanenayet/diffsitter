@@ -339,8 +339,7 @@ use phf::phf_map;
 
     // A vector of language strings that are used later for codegen, so we can dynamically created
     // the unsafe functions that load the grammar for each language
-    let mut languages = Vec::new();
-    languages.reserve(grammars.len());
+    let mut languages = Vec::with_capacity(grammars.len());
 
     // We create a vector of parameters so we can use Rayon's parallel iterators to compile
     // grammars in parallel
