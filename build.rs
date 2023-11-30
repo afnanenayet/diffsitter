@@ -239,91 +239,99 @@ fn grammars() -> Vec<GrammarCompileInfo<'static>> {
             display_name: "rust",
             path: PathBuf::from("grammars/tree-sitter-rust"),
             c_sources: vec!["parser.c", "scanner.c"],
-            ..GrammarCompileInfo::default()
+            ..Default::default()
         },
         GrammarCompileInfo {
             display_name: "cpp",
             path: PathBuf::from("grammars/tree-sitter-cpp"),
             c_sources: vec!["parser.c", "scanner.c"],
-            ..GrammarCompileInfo::default()
+            ..Default::default()
         },
         GrammarCompileInfo {
             display_name: "python",
             path: PathBuf::from("grammars/tree-sitter-python"),
             c_sources: vec!["parser.c", "scanner.c"],
-            ..GrammarCompileInfo::default()
+            ..Default::default()
         },
         GrammarCompileInfo {
             display_name: "bash",
             path: PathBuf::from("grammars/tree-sitter-bash"),
             c_sources: vec!["parser.c", "scanner.c"],
-            ..GrammarCompileInfo::default()
+            ..Default::default()
         },
         GrammarCompileInfo {
             display_name: "ocaml",
             path: PathBuf::from("grammars/tree-sitter-ocaml/ocaml"),
             c_sources: vec!["parser.c", "scanner.c"],
-            ..GrammarCompileInfo::default()
+            ..Default::default()
         },
         GrammarCompileInfo {
             display_name: "go",
             path: PathBuf::from("grammars/tree-sitter-go"),
             c_sources: vec!["parser.c"],
-            ..GrammarCompileInfo::default()
+            ..Default::default()
         },
         GrammarCompileInfo {
             display_name: "ruby",
             path: PathBuf::from("grammars/tree-sitter-ruby"),
             c_sources: vec!["parser.c"],
             cpp_sources: vec!["scanner.cc"],
+            ..GrammarCompileInfo::default()
         },
         GrammarCompileInfo {
             display_name: "java",
             path: PathBuf::from("grammars/tree-sitter-java"),
             c_sources: vec!["parser.c"],
-            ..GrammarCompileInfo::default()
+            ..Default::default()
         },
         GrammarCompileInfo {
             display_name: "c_sharp",
             path: PathBuf::from("grammars/tree-sitter-c-sharp"),
             c_sources: vec!["parser.c", "scanner.c"],
-            ..GrammarCompileInfo::default()
+            ..Default::default()
         },
         GrammarCompileInfo {
             display_name: "css",
             path: PathBuf::from("grammars/tree-sitter-css"),
             c_sources: vec!["parser.c", "scanner.c"],
-            ..GrammarCompileInfo::default()
+            ..Default::default()
         },
         GrammarCompileInfo {
             display_name: "php",
             path: PathBuf::from("grammars/tree-sitter-php"),
             c_sources: vec!["parser.c", "scanner.c"],
-            ..GrammarCompileInfo::default()
+            ..Default::default()
         },
         GrammarCompileInfo {
             display_name: "json",
             path: PathBuf::from("grammars/tree-sitter-json"),
             c_sources: vec!["parser.c"],
-            ..GrammarCompileInfo::default()
+            ..Default::default()
         },
         GrammarCompileInfo {
             display_name: "hcl",
             path: PathBuf::from("grammars/tree-sitter-hcl"),
             c_sources: vec!["parser.c"],
             cpp_sources: vec!["scanner.cc"],
+            ..Default::default()
         },
         GrammarCompileInfo {
             display_name: "typescript",
             path: PathBuf::from("grammars/tree-sitter-typescript/typescript"),
             c_sources: vec!["parser.c", "scanner.c"],
-            cpp_sources: vec![],
+            ..Default::default()
         },
         GrammarCompileInfo {
             display_name: "tsx",
             path: PathBuf::from("grammars/tree-sitter-typescript/tsx"),
             c_sources: vec!["parser.c", "scanner.c"],
-            cpp_sources: vec![],
+            ..Default::default()
+        },
+        GrammarCompileInfo {
+            display_name: "c",
+            path: PathBuf::from("grammars/tree-sitter-c"),
+            c_sources: vec!["parser.c"],
+            ..Default::default()
         }, // Add new grammars here...
     ];
     grammars
