@@ -90,6 +90,10 @@ fn codegen_language_map<T: ToString + Display>(languages: &[T]) -> String {
 }
 
 /// Compile a language's grammar
+///
+/// This builds the grammars and statically links them into the Rust binary using Crichton's cc
+/// library. We name the libraries "{grammar_name}-[cc|cxx]-diffsitter" to prevent clashing with
+/// any existing installed tree sitter libraries.
 #[cfg(feature = "static-grammar-libs")]
 fn compile_grammar(
     include: &Path,
@@ -107,7 +111,7 @@ fn compile_grammar(
             .warnings(false)
             .extra_warnings(false)
             .flag_if_supported("-std=c11")
-            .try_compile(output_name)?;
+            .try_compile(&format!("{}-cc-diffsitter", output_name))?;
     }
 
     if !cpp_sources.is_empty() {
@@ -117,8 +121,8 @@ fn compile_grammar(
             .files(cpp_sources)
             .warnings(false)
             .extra_warnings(false)
-            .flag_if_supported("-std=c++14")
-            .try_compile(&format!("{}-cpp-compile-diffsiter", &output_name))?;
+            .flag_if_supported("-std=c++17")
+            .try_compile(&format!("{}-cxx-diffsitter", &output_name))?;
     }
 
     Ok(())
