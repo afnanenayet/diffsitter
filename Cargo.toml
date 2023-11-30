@@ -71,6 +71,7 @@ unicode-segmentation = "1.10.1"
 human-panic = "1.2.2"
 shadow-rs = { version = "0.24.1", optional = true }
 enum_dispatch = "0.3.12"
+lazy_static = { version = "1.4.0", optional = true }
 
 [dev-dependencies]
 test-case = "3.3.0"
@@ -111,7 +112,7 @@ better-build-info = ["shadow-rs"]
 dynamic-grammar-libs = []
 
 # Compile the static tree-sitter grammars from the submodules in this repo.
-static-grammar-libs = []
+static-grammar-libs = ["lazy_static"]
 
 [profile.profiling]
 inherits = "release"

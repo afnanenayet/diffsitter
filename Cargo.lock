@@ -354,6 +354,7 @@ dependencies = [
  "insta",
  "jemallocator",
  "json5",
+ "lazy_static",
  "libloading",
  "log",
  "logging_timer",

@@ -27,14 +27,20 @@ mod tests {
         (path_a, path_b)
     }
 
-    #[test_case("short", "rust", "rs", true)]
-    #[test_case("short", "python", "py", true)]
-    #[test_case("short", "go", "go", true)]
-    #[test_case("medium", "rust", "rs", true)]
-    #[test_case("medium", "rust", "rs", false)]
-    #[test_case("medium", "cpp", "cpp", true)]
-    #[test_case("medium", "cpp", "cpp", false)]
-    fn diff_hunks_snapshot(test_type: &str, name: &str, ext: &str, split_graphemes: bool) {
+    #[test_case("short", "rust", "rs", true, true)]
+    #[test_case("short", "python", "py", true, true)]
+    #[test_case("short", "go", "go", true, true)]
+    #[test_case("medium", "rust", "rs", true, false)]
+    #[test_case("medium", "rust", "rs", false, false)]
+    #[test_case("medium", "cpp", "cpp", true, true)]
+    #[test_case("medium", "cpp", "cpp", false, true)]
+    fn diff_hunks_snapshot(
+        test_type: &str,
+        name: &str,
+        ext: &str,
+        split_graphemes: bool,
+        strip_whitespace: bool,
+    ) {
         let (path_a, path_b) = get_test_paths(test_type, name, ext);
         let config = GrammarConfig::default();
         let ast_data_a = generate_ast_vector_data(path_a, None, &config).unwrap();
@@ -42,6 +48,7 @@ mod tests {
 
         let processor = TreeSitterProcessor {
             split_graphemes,
+            strip_whitespace,
             ..Default::default()
         };
 
@@ -52,7 +59,7 @@ mod tests {
         // We have to set the snapshot name manually, otherwise there appear to be threading issues
         // and we end up with more snapshot files than there are tests, which cause
         // nondeterministic errors.
-        let snapshot_name = format!("{test_type}_{name}_{split_graphemes}");
+        let snapshot_name = format!("{test_type}_{name}_split_graphemes_{split_graphemes}_strip_whitespace_{strip_whitespace}");
         assert_debug_snapshot!(snapshot_name, diff_hunks);
     }
 }

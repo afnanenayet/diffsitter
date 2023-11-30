@@ -5,8 +5,10 @@
 
 use logging_timer::time;
 use serde::{Deserialize, Serialize};
+use std::borrow::Cow;
 use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
+use std::ops::{Deref, DerefMut};
 use std::{cell::RefCell, ops::Index, path::PathBuf};
 use tree_sitter::Node as TSNode;
 use tree_sitter::Point;
@@ -25,7 +27,7 @@ trait TSNodeTrait {
 
 /// The configuration options for processing tree-sitter output.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "kebab-case")]
+#[serde(rename_all = "kebab-case", default)]
 pub struct TreeSitterProcessor {
     /// Whether we should split the nodes graphemes.
     ///
@@ -43,6 +45,13 @@ pub struct TreeSitterProcessor {
     ///
     /// This is a set of strings that correspond to the tree sitter node types.
     pub include_kinds: Option<HashSet<String>>,
+
+    /// Whether to strip whitespace when processing node text.
+    ///
+    /// Whitespace includes whitespace characters and newlines. This can provide much more accurate
+    /// diffs that do not account for line breaks. This is useful especially for more text heavy
+    /// documents like markdown files.
+    pub strip_whitespace: bool,
 }
 
 impl Default for TreeSitterProcessor {
@@ -51,6 +60,7 @@ impl Default for TreeSitterProcessor {
             split_graphemes: true,
             exclude_kinds: None,
             include_kinds: None,
+            strip_whitespace: true,
         }
     }
 }
@@ -72,10 +82,33 @@ impl TreeSitterProcessor {
             .leaves
             .iter()
             .filter(|leaf| self.should_include_node(&TSNodeWrapper(leaf.reference)));
+        // Splitting on graphemes generates a vector of entries instead of a direct mapping, which
+        // is why we have the branching here
         if self.split_graphemes {
-            iter.flat_map(|leaf| leaf.split_on_graphemes()).collect()
+            iter.flat_map(|leaf| leaf.split_on_graphemes(self.strip_whitespace))
+                .collect()
         } else {
-            iter.map(|&x| Entry::from(x)).collect()
+            iter.map(|&x| self.process_leaf(x)).collect()
+        }
+    }
+
+    /// Process a vector leaf and turn it into an [Entry].
+    ///
+    /// This applies input processing according to the user provided options.
+    fn process_leaf<'a>(&self, leaf: VectorLeaf<'a>) -> Entry<'a> {
+        let new_text = if self.strip_whitespace {
+            // This includes newlines
+            Cow::from(leaf.text.trim())
+        } else {
+            Cow::from(leaf.text)
+        };
+
+        Entry {
+            reference: leaf.reference,
+            text: new_text,
+            start_position: leaf.reference.start_position(),
+            end_position: leaf.reference.start_position(),
+            kind_id: leaf.reference.kind_id(),
         }
     }
 
@@ -86,18 +119,15 @@ impl TreeSitterProcessor {
     /// check if the node kind is explicitly included. If either the exclusion or inclusion sets aren't specified,
     /// then the filter will not be applied.
     fn should_include_node(&self, node: &dyn TSNodeTrait) -> bool {
-        if let Some(exclude_kinds) = &self.exclude_kinds {
-            if exclude_kinds.contains(node.kind()) {
-                return false;
-            }
-        }
-
-        if let Some(include_kinds) = &self.include_kinds {
-            if !include_kinds.contains(node.kind()) {
-                return false;
-            }
-        }
-        true
+        let should_exclude = self
+            .exclude_kinds
+            .as_ref()
+            .is_some_and(|x| x.contains(node.kind()))
+            || self
+                .include_kinds
+                .as_ref()
+                .is_some_and(|x| !x.contains(node.kind()));
+        !should_exclude
     }
 }
 
@@ -139,20 +169,24 @@ struct PointWrapper {
 ///
 /// This is also all of the metadata the diff rendering interface has access to, and also defines
 /// the data that will be output by the JSON serializer.
-#[derive(Debug, Clone, Copy, Serialize)]
-pub struct Entry<'a> {
+#[derive(Debug, Clone, Serialize)]
+pub struct Entry<'node> {
     /// The node an entry in the diff vector refers to
     ///
     /// We keep a reference to the leaf node so that we can easily grab the text and other metadata
     /// surrounding the syntax
     #[serde(skip_serializing)]
-    pub reference: TSNode<'a>,
+    pub reference: TSNode<'node>,
 
     /// A reference to the text the node refers to
     ///
-    /// This is different from the `source_text` that the [AstVector](AstVector) refers to, as the
+    /// This is different from the `source_text` that the [AstVector] refers to, as the
     /// entry only holds a reference to the specific range of text that the node covers.
-    pub text: &'a str,
+    ///
+    /// We use a [Cow] here instead of a direct string reference because we might have to rewrite
+    /// the text based on input processing settings, but if we don't have to there's no need to
+    /// allocate an extra string.
+    pub text: Cow<'node, str>,
 
     /// The entry's start position in the document.
     #[serde(with = "PointWrapper")]
@@ -164,7 +198,9 @@ pub struct Entry<'a> {
 
     /// The cached kind_id from the TSNode reference.
     ///
-    /// Caching it here saves some time because it is queried repeatedly later.
+    /// Caching it here saves some time because it is queried repeatedly later. If we don't store
+    /// it inline then we have to cross the FFI boundary which incurs some overhead.
+    // PERF: Use cross language LTO to see if LLVM can optimize across the FFI boundary.
     pub kind_id: u16,
 }
 
@@ -176,7 +212,7 @@ impl<'a> VectorLeaf<'a> {
     ///
     /// This effectively maps out the byte position for each node from the unicode text, accounting
     /// for both newlines and grapheme splits.
-    fn split_on_graphemes(self) -> Vec<Entry<'a>> {
+    fn split_on_graphemes(self, strip_whitespace: bool) -> Vec<Entry<'a>> {
         let mut entries: Vec<Entry<'a>> = Vec::new();
 
         // We have to split lines because newline characters might be in the text for a tree sitter
@@ -193,6 +229,10 @@ impl<'a> VectorLeaf<'a> {
             for (idx, grapheme) in indices {
                 // Every grapheme has to be at least one byte
                 debug_assert!(!grapheme.is_empty());
+
+                if strip_whitespace && grapheme.chars().all(|c| c.is_whitespace()) {
+                    continue;
+                }
 
                 // We simply offset from the start position of the node if we are on the first
                 // line, which implies no newline offset needs to be applied. If the line_offset is
@@ -215,12 +255,15 @@ impl<'a> VectorLeaf<'a> {
                 debug_assert!(new_start_pos.row <= new_end_pos.row);
                 let entry = Entry {
                     reference: self.reference,
-                    text: &line[idx..idx + grapheme.len()],
+                    text: Cow::from(&line[idx..idx + grapheme.len()]),
                     start_position: new_start_pos,
                     end_position: new_end_pos,
                     kind_id: self.reference.kind_id(),
                 };
-                if let Some(&last_entry) = entries.last() {
+                // We add the debug assert config here because there's no need to even get a
+                // reference to the last element if we're not in debug mode.
+                #[cfg(debug_assertions)]
+                if let Some(last_entry) = entries.last() {
                     // Our invariant is that one of the following must hold true:
                     // 1. The last entry ended on a previous line (now we don't need to check the
                     //    column offset).
@@ -245,7 +288,7 @@ impl<'a> From<VectorLeaf<'a>> for Entry<'a> {
     fn from(leaf: VectorLeaf<'a>) -> Self {
         Self {
             reference: leaf.reference,
-            text: leaf.text,
+            text: Cow::from(leaf.text),
             start_position: leaf.reference.start_position(),
             end_position: leaf.reference.start_position(),
             kind_id: leaf.reference.kind_id(),
@@ -269,11 +312,11 @@ impl<'a> Entry<'a> {
 
 impl<'a> From<&'a Vector<'a>> for Vec<Entry<'a>> {
     fn from(ast_vector: &'a Vector<'a>) -> Self {
-        let mut entries = Vec::with_capacity(ast_vector.leaves.len());
-        for entry in &ast_vector.leaves {
-            entries.extend(entry.split_on_graphemes().iter());
-        }
-        entries
+        ast_vector
+            .leaves
+            .iter()
+            .flat_map(|entry| entry.split_on_graphemes(true))
+            .collect()
     }
 }
 
@@ -426,9 +469,40 @@ pub enum EditType<T> {
     Deletion(T),
 }
 
+impl<T> AsRef<T> for EditType<T> {
+    fn as_ref(&self) -> &T {
+        match self {
+            Self::Addition(x) | Self::Deletion(x) => x,
+        }
+    }
+}
+
+impl<T> Deref for EditType<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        match self {
+            Self::Addition(x) | Self::Deletion(x) => x,
+        }
+    }
+}
+
+impl<T> DerefMut for EditType<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        match self {
+            Self::Addition(x) | Self::Deletion(x) => x,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::GrammarConfig;
+    use tree_sitter::Parser;
+
+    #[cfg(feature = "static-grammar-libs")]
+    use crate::parse::generate_language;
 
     #[test]
     fn test_should_filter_node() {
@@ -441,6 +515,7 @@ mod tests {
             split_graphemes: false,
             exclude_kinds: Some(exclude_kinds.clone()),
             include_kinds: None,
+            ..Default::default()
         };
         assert!(!processor.should_include_node(&mock_node));
 
@@ -449,6 +524,7 @@ mod tests {
             split_graphemes: false,
             exclude_kinds: Some(exclude_kinds.clone()),
             include_kinds: Some(exclude_kinds),
+            ..Default::default()
         };
         assert!(!processor.should_include_node(&mock_node));
 
@@ -461,6 +537,7 @@ mod tests {
             split_graphemes: false,
             exclude_kinds: None,
             include_kinds: Some(include_kinds),
+            ..Default::default()
         };
         assert!(!processor.should_include_node(&mock_node));
 
@@ -470,6 +547,7 @@ mod tests {
             split_graphemes: false,
             exclude_kinds: None,
             include_kinds: Some(include_kinds),
+            ..Default::default()
         };
         assert!(processor.should_include_node(&mock_node));
 
@@ -478,7 +556,44 @@ mod tests {
             split_graphemes: false,
             exclude_kinds: None,
             include_kinds: None,
+            ..Default::default()
         };
         assert!(processor.should_include_node(&mock_node));
+    }
+
+    // NOTE: this has to be gated behind the 'static-grammar-libs' cargo feature, otherwise the
+    // crate won't be built with the grammars bundled into the binary which means this won't be
+    // able to load the markdown parser. It's possible that the markdown dynamic library is
+    // available even if we don't compile the grammars statically but there's no guarantees of
+    // which grammars are available dynamically, and we don't enforce that certain grammars have to
+    // be available.
+    #[cfg(feature = "static-grammar-libs")]
+    #[test]
+    fn test_strip_whitespace() {
+        let md_parser = generate_language("python", &GrammarConfig::default()).unwrap();
+        let mut parser = Parser::new();
+        parser.set_language(md_parser).unwrap();
+        let text_a = "'''# A heading\nThis has no diff.'''";
+        let text_b = "'''# A heading\nThis\nhas\nno diff.'''";
+        let tree_a = parser.parse(text_a, None).unwrap();
+        let tree_b = parser.parse(text_b, None).unwrap();
+        {
+            let processor = TreeSitterProcessor {
+                strip_whitespace: true,
+                ..Default::default()
+            };
+            let entries_a = processor.process(&tree_a, text_a);
+            let entries_b = processor.process(&tree_b, text_b);
+            assert_eq!(entries_a, entries_b);
+        }
+        {
+            let processor = TreeSitterProcessor {
+                strip_whitespace: false,
+                ..Default::default()
+            };
+            let entries_a = processor.process(&tree_a, text_a);
+            let entries_b = processor.process(&tree_b, text_b);
+            assert_ne!(entries_a, entries_b);
+        }
     }
 }
