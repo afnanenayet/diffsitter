@@ -34,6 +34,7 @@ mod tests {
     #[test_case("medium", "rust", "rs", false, false)]
     #[test_case("medium", "cpp", "cpp", true, true)]
     #[test_case("medium", "cpp", "cpp", false, true)]
+    #[test_case("short", "markdown", "md", true, true)]
     fn diff_hunks_snapshot(
         test_type: &str,
         name: &str,

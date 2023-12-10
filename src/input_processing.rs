@@ -54,6 +54,11 @@ pub struct TreeSitterProcessor {
     pub strip_whitespace: bool,
 }
 
+// TODO: if we want to do any string transformations we need to store Cow strings.
+// Most strings won't be modified so it's fine to use a pointer. For the few we do
+// modify we'll need to store the direct string.
+// We should add some abstractions to do input processing.
+
 impl Default for TreeSitterProcessor {
     fn default() -> Self {
         Self {
@@ -437,13 +442,14 @@ fn build<'a>(vector: &RefCell<Vec<VectorLeaf<'a>>>, node: tree_sitter::Node<'a>,
             // puts newlines into their own nodes, which later causes errors when trying to print
             // these nodes. We just ignore those nodes.
             if node_text
-                .replace('\n', "")
                 .replace("\r\n", "")
+                .replace('\n', "")
                 .replace('\r', "")
                 .is_empty()
             {
                 return;
             }
+
             vector.borrow_mut().push(VectorLeaf {
                 reference: node,
                 text: node_text,
@@ -574,7 +580,7 @@ mod tests {
         let mut parser = Parser::new();
         parser.set_language(md_parser).unwrap();
         let text_a = "'''# A heading\nThis has no diff.'''";
-        let text_b = "'''# A heading\nThis\nhas\nno diff.'''";
+        let text_b = "'''# A heading\nThis\nhas\r\nno diff.'''";
         let tree_a = parser.parse(text_a, None).unwrap();
         let tree_b = parser.parse(text_b, None).unwrap();
         {
