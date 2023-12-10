@@ -1,0 +1,56 @@
+---
+source: tests/regression_test.rs
+expression: diff_hunks
+---
+RichHunks(
+    [
+        New(
+            Hunk(
+                [
+                    Line {
+                        line_index: 5,
+                        entries: [
+                            Entry {
+                                reference: {Node inline (4, 0) - (5, 14)},
+                                text: "3",
+                                start_position: Point {
+                                    row: 5,
+                                    column: 13,
+                                },
+                                end_position: Point {
+                                    row: 5,
+                                    column: 14,
+                                },
+                                kind_id: 203,
+                            },
+                        ],
+                    },
+                ],
+            ),
+        ),
+        Old(
+            Hunk(
+                [
+                    Line {
+                        line_index: 6,
+                        entries: [
+                            Entry {
+                                reference: {Node inline (5, 0) - (6, 14)},
+                                text: "2",
+                                start_position: Point {
+                                    row: 6,
+                                    column: 13,
+                                },
+                                end_position: Point {
+                                    row: 6,
+                                    column: 14,
+                                },
+                                kind_id: 203,
+                            },
+                        ],
+                    },
+                ],
+            ),
+        ),
+    ],
+)

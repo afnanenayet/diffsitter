@@ -442,8 +442,8 @@ fn build<'a>(vector: &RefCell<Vec<VectorLeaf<'a>>>, node: tree_sitter::Node<'a>,
             // puts newlines into their own nodes, which later causes errors when trying to print
             // these nodes. We just ignore those nodes.
             if node_text
-                .replace('\n', "")
                 .replace("\r\n", "")
+                .replace('\n', "")
                 .replace('\r', "")
                 .is_empty()
             {
@@ -580,7 +580,7 @@ mod tests {
         let mut parser = Parser::new();
         parser.set_language(md_parser).unwrap();
         let text_a = "'''# A heading\nThis has no diff.'''";
-        let text_b = "'''# A heading\nThis\nhas\nno diff.'''";
+        let text_b = "'''# A heading\nThis\nhas\r\nno diff.'''";
         let tree_a = parser.parse(text_a, None).unwrap();
         let tree_b = parser.parse(text_b, None).unwrap();
         {
