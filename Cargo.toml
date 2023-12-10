@@ -74,7 +74,7 @@ enum_dispatch = "0.3.12"
 lazy_static = { version = "1.4.0", optional = true }
 
 [dev-dependencies]
-test-case = "3.3.0"
+test-case = "3.3.1"
 pretty_assertions = "1.4.0"
 mockall = "0.11.4"
 
