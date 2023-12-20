@@ -63,7 +63,7 @@ serde_json = "1.0.108"
 json5 = "0.4.1"
 pretty_env_logger = "0.5.0"
 log = { version = "0.4.20", features = ["std"] }
-thiserror = "1.0.50"
+thiserror = "1.0.51"
 logging_timer = "1.1.0"
 jemallocator = { version = "0.5.4", optional = true }
 libloading = "0.8.1"
@@ -97,7 +97,7 @@ phf = { version = "0.11.2", features = ["macros"] }
 anyhow = "1.0.75"
 cargo-emit = "0.2.1"
 rayon = "1.8.0"
-thiserror = "1.0.50"
+thiserror = "1.0.51"
 shadow-rs = { version = "0.25.0", optional = true }
 
 [features]
