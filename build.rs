@@ -108,9 +108,9 @@ fn compile_grammar(
         cc::Build::new()
             .include(include)
             .files(c_sources)
+            .flag_if_supported("-std=c11")
             .warnings(false)
             .extra_warnings(false)
-            .flag_if_supported("-std=c11")
             .try_compile(&format!("{}-cc-diffsitter", output_name))?;
     }
 
@@ -119,9 +119,9 @@ fn compile_grammar(
             .cpp(true)
             .include(include)
             .files(cpp_sources)
+            .flag_if_supported("-std=c++17")
             .warnings(false)
             .extra_warnings(false)
-            .flag_if_supported("-std=c++17")
             .try_compile(&format!("{}-cxx-diffsitter", &output_name))?;
     }
 
@@ -335,8 +335,9 @@ fn grammars() -> Vec<GrammarCompileInfo<'static>> {
         },
         GrammarCompileInfo {
             display_name: "markdown",
-            path: PathBuf::from("grammars/tree-sitter-markdown/tree-sitter-markdown"),
-            c_sources: vec!["parser.c", "scanner.c"],
+            path: PathBuf::from("grammars/tree-sitter-markdown"),
+            c_sources: vec!["parser.c"],
+            cpp_sources: vec!["scanner.cc"],
             ..Default::default()
         }, // Add new grammars here...
     ];
