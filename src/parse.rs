@@ -37,7 +37,7 @@ use std::{
     path::{Path, PathBuf},
 };
 use thiserror::Error;
-use tree_sitter::{Parser, Tree};
+use tree_sitter::{Parser, Tree, LANGUAGE_VERSION, MIN_COMPATIBLE_LANGUAGE_VERSION};
 
 /// A mapping of file extensions to their associated languages
 ///
@@ -102,6 +102,9 @@ pub enum LoadingError {
     #[cfg(feature = "dynamic-grammar-libs")]
     #[error("Unable to dynamically load grammar")]
     LibloadingError(#[from] libloading::Error),
+
+    #[error("Attempted to load a tree-sitter grammar with incompatible language ABI version: {0} (supported range: {1} - {2})")]
+    AbiOutOfRange(usize, usize, usize),
 }
 
 type StringMap = HashMap<String, String>;
@@ -364,6 +367,20 @@ pub fn ts_parser_for_language(
     config: &GrammarConfig,
 ) -> Result<Parser, LoadingError> {
     let ts_language = generate_language(language, config)?;
+
+    // We can dynamically load languages from arbitrary shared libraries, but it's not guaranteed
+    // that our version of the tree-sitter library can actually handle the version the tree-sitter
+    // grammar was compiled with, so we need to check that the tree-sitter language is within the
+    // supported ABI range of the tree-sitter library diffsitter was built with.
+    let loaded_ts_version = ts_language.version();
+    if loaded_ts_version < MIN_COMPATIBLE_LANGUAGE_VERSION || loaded_ts_version > LANGUAGE_VERSION {
+        return Err(LoadingError::AbiOutOfRange(
+            loaded_ts_version,
+            MIN_COMPATIBLE_LANGUAGE_VERSION,
+            LANGUAGE_VERSION,
+        ));
+    }
+
     let mut parser = Parser::new();
     parser.set_language(ts_language)?;
     Ok(parser)
