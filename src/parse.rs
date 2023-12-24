@@ -27,7 +27,6 @@ use phf::phf_map;
 #[cfg(not(feature = "static-grammar-libs"))]
 use tree_sitter::Language;
 
-use anyhow::Result;
 use log::{debug, error, info};
 use logging_timer::time;
 use serde::{Deserialize, Serialize};
@@ -357,6 +356,27 @@ pub fn lang_name_from_file_ext<'cfg>(
     }
 }
 
+/// A convenience function to check of a tree-sitter language has a compatible ABI version for
+/// `diffsitter`.
+///
+/// Diffsitter has a version of the tree-sitter library it's build against and that library
+/// supports a certain range of tree-sitter ABIs. Each compiled tree-sitter grammar reports its ABI
+/// version, so we can check whether the ABI versions are compatible before loading the grammar
+/// as a tree-sitter parser, which should prevent segfaults due to these sorts of mismatches.
+fn ts_language_abi_checked(ts_language: &Language) -> Result<(), LoadingError> {
+    let loaded_ts_version = ts_language.version();
+    let is_abi_compatible =
+        (MIN_COMPATIBLE_LANGUAGE_VERSION..=LANGUAGE_VERSION).contains(&loaded_ts_version);
+    if !is_abi_compatible {
+        return Err(LoadingError::AbiOutOfRange(
+            loaded_ts_version,
+            MIN_COMPATIBLE_LANGUAGE_VERSION,
+            LANGUAGE_VERSION,
+        ));
+    }
+    Ok(())
+}
+
 /// Creates a tree-sitter [Parser] for a given language.
 ///
 /// This handles the boilerplate for loading the tree-sitter library for the [language](Language) and setting
@@ -367,20 +387,7 @@ pub fn ts_parser_for_language(
     config: &GrammarConfig,
 ) -> Result<Parser, LoadingError> {
     let ts_language = generate_language(language, config)?;
-
-    // We can dynamically load languages from arbitrary shared libraries, but it's not guaranteed
-    // that our version of the tree-sitter library can actually handle the version the tree-sitter
-    // grammar was compiled with, so we need to check that the tree-sitter language is within the
-    // supported ABI range of the tree-sitter library diffsitter was built with.
-    let loaded_ts_version = ts_language.version();
-    if loaded_ts_version < MIN_COMPATIBLE_LANGUAGE_VERSION || loaded_ts_version > LANGUAGE_VERSION {
-        return Err(LoadingError::AbiOutOfRange(
-            loaded_ts_version,
-            MIN_COMPATIBLE_LANGUAGE_VERSION,
-            LANGUAGE_VERSION,
-        ));
-    }
-
+    ts_language_abi_checked(&ts_language)?;
     let mut parser = Parser::new();
     parser.set_language(ts_language)?;
     Ok(parser)
@@ -465,20 +472,13 @@ mod tests {
 
     #[cfg(feature = "static-grammar-libs")]
     #[test]
-    fn test_static_grammar_tree_sitter_abi_compatibility() {
-        for (language_name, language_ctor) in &LANGUAGES {
+    fn test_static_grammar_tree_sitter_abi_compatibility() -> Result<(), LoadingError> {
+        for (_, language_ctor) in &LANGUAGES {
             unsafe {
                 let language = language_ctor();
-                let version = language.version();
-                assert!(
-                    version >= MIN_COMPATIBLE_LANGUAGE_VERSION && version <= LANGUAGE_VERSION,
-                    "{} has incompatible ABI version: {}. Min/max ABI version = {} - {}",
-                    language_name,
-                    version,
-                    MIN_COMPATIBLE_LANGUAGE_VERSION,
-                    LANGUAGE_VERSION
-                );
+                ts_language_abi_checked(&language)?;
             }
         }
+        Ok(())
     }
 }
