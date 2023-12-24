@@ -462,4 +462,23 @@ mod tests {
 
         assert!(failures.is_empty(), "{:#?}", failures);
     }
+
+    #[cfg(feature = "static-grammar-libs")]
+    #[test]
+    fn test_static_grammar_tree_sitter_abi_compatibility() {
+        for (language_name, language_ctor) in &LANGUAGES {
+            unsafe {
+                let language = language_ctor();
+                let version = language.version();
+                assert!(
+                    version >= MIN_COMPATIBLE_LANGUAGE_VERSION && version <= LANGUAGE_VERSION,
+                    "{} has incompatible ABI version: {}. Min/max ABI version = {} - {}",
+                    language_name,
+                    version,
+                    MIN_COMPATIBLE_LANGUAGE_VERSION,
+                    LANGUAGE_VERSION
+                );
+            }
+        }
+    }
 }
