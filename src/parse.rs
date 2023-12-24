@@ -27,7 +27,6 @@ use phf::phf_map;
 #[cfg(not(feature = "static-grammar-libs"))]
 use tree_sitter::Language;
 
-use anyhow::Result;
 use log::{debug, error, info};
 use logging_timer::time;
 use serde::{Deserialize, Serialize};
@@ -37,7 +36,7 @@ use std::{
     path::{Path, PathBuf},
 };
 use thiserror::Error;
-use tree_sitter::{Parser, Tree};
+use tree_sitter::{Parser, Tree, LANGUAGE_VERSION, MIN_COMPATIBLE_LANGUAGE_VERSION};
 
 /// A mapping of file extensions to their associated languages
 ///
@@ -102,6 +101,9 @@ pub enum LoadingError {
     #[cfg(feature = "dynamic-grammar-libs")]
     #[error("Unable to dynamically load grammar")]
     LibloadingError(#[from] libloading::Error),
+
+    #[error("Attempted to load a tree-sitter grammar with incompatible language ABI version: {0} (supported range: {1} - {2})")]
+    AbiOutOfRange(usize, usize, usize),
 }
 
 type StringMap = HashMap<String, String>;
@@ -354,6 +356,27 @@ pub fn lang_name_from_file_ext<'cfg>(
     }
 }
 
+/// A convenience function to check of a tree-sitter language has a compatible ABI version for
+/// `diffsitter`.
+///
+/// Diffsitter has a version of the tree-sitter library it's build against and that library
+/// supports a certain range of tree-sitter ABIs. Each compiled tree-sitter grammar reports its ABI
+/// version, so we can check whether the ABI versions are compatible before loading the grammar
+/// as a tree-sitter parser, which should prevent segfaults due to these sorts of mismatches.
+fn ts_language_abi_checked(ts_language: &Language) -> Result<(), LoadingError> {
+    let loaded_ts_version = ts_language.version();
+    let is_abi_compatible =
+        (MIN_COMPATIBLE_LANGUAGE_VERSION..=LANGUAGE_VERSION).contains(&loaded_ts_version);
+    if !is_abi_compatible {
+        return Err(LoadingError::AbiOutOfRange(
+            loaded_ts_version,
+            MIN_COMPATIBLE_LANGUAGE_VERSION,
+            LANGUAGE_VERSION,
+        ));
+    }
+    Ok(())
+}
+
 /// Creates a tree-sitter [Parser] for a given language.
 ///
 /// This handles the boilerplate for loading the tree-sitter library for the [language](Language) and setting
@@ -364,6 +387,7 @@ pub fn ts_parser_for_language(
     config: &GrammarConfig,
 ) -> Result<Parser, LoadingError> {
     let ts_language = generate_language(language, config)?;
+    ts_language_abi_checked(&ts_language)?;
     let mut parser = Parser::new();
     parser.set_language(ts_language)?;
     Ok(parser)
@@ -444,5 +468,17 @@ mod tests {
         }
 
         assert!(failures.is_empty(), "{:#?}", failures);
+    }
+
+    #[cfg(feature = "static-grammar-libs")]
+    #[test]
+    fn test_static_grammar_tree_sitter_abi_compatibility() -> Result<(), LoadingError> {
+        for (_, language_ctor) in &LANGUAGES {
+            unsafe {
+                let language = language_ctor();
+                ts_language_abi_checked(&language)?;
+            }
+        }
+        Ok(())
     }
 }
