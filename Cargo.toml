@@ -38,6 +38,10 @@ path = "src/bin/diffsitter.rs"
 name = "diffsitter_completions"
 path = "src/bin/diffsitter_completions.rs"
 
+[[bin]]
+name = "diffsitter-utils"
+path = "src/bin/diffsitter_utils.rs"
+
 [lib]
 name = "libdiffsitter"
 path = "src/lib.rs"

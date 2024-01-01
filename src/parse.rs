@@ -98,7 +98,6 @@ pub enum LoadingError {
     #[error("Some IO error was encountered")]
     IoError(#[from] io::Error),
 
-    #[cfg(feature = "dynamic-grammar-libs")]
     #[error("Unable to dynamically load grammar")]
     LibloadingError(#[from] libloading::Error),
 
@@ -143,8 +142,14 @@ fn generate_language_static(lang: &str) -> Result<Language, LoadingError> {
 ///
 /// "tree-sitter-" will be prepended to the language and any dashes (-) will be converted
 /// to underscores (_).
-#[cfg(feature = "dynamic-grammar-libs")]
-fn fn_name_from_lang(lang: &str) -> String {
+///
+/// # Arguments
+///
+/// - lang: The name of the language that corresponds to the parser. This must be the language name
+///   that corresponds to the actual tree-sitter name for the language because it is used to
+///   generate the name of the symbol from the shared object library that serves as the
+///   constructor.
+pub fn tree_sitter_constructor_symbol_name(lang: &str) -> String {
     format!("tree_sitter_{}", lang.replace("-", "_"))
 }
 
@@ -167,6 +172,61 @@ fn lib_name_from_lang(lang: &str) -> String {
     format!("libtree-sitter-{}.{}", lang.replace("_", "-"), extension)
 }
 
+/// Create a tree sitter [Language] from a shared library object.
+///
+/// This creates a memory leak by leaking the shared library that's loaded from the file path
+/// (assuming that loading is succesful). This memory leak is *necessary* otherwise the program
+/// will segfault when trying to use the generated [Language] object with the tree-sitter library.
+/// The tree-sitter rust bindings wrap the tree-sitter C FFI interface, so the shared library
+/// object has to be loaded into memory while we want to use the [Language] object with any method
+/// in [tree_sitter].
+///
+/// # Arguments
+///
+/// - language_name: The tree-sitter language name.
+/// - parser_path: The path to the shared library object file.
+///
+/// # Errors
+///
+/// This will return an error if the file path doesn't exist or if there's an error trying to load
+/// symbols from the shared library object.
+///
+/// # Safety
+///
+/// This uses the [libloading] library to load symbols from the shared library object. This is
+/// inherently unsafe because it loads symbols from an arbitrary shared library object. Both the
+/// file path and the actual loaded symbol name can be generated from user input. This method does
+/// leak the shared library loaded with [libloading] to prevent segfaults because the parser loaded
+/// from the shared library may be used at any point for the duration of the program.
+pub fn construct_ts_lang_from_shared_lib(
+    language_name: &str,
+    parser_path: &Path,
+) -> Result<Language, LoadingError> {
+    info!(
+        "Loading dynamic library for language '{}' path '{}'",
+        language_name,
+        parser_path.to_string_lossy(),
+    );
+    let constructor_symbol_name = tree_sitter_constructor_symbol_name(language_name);
+    debug!(
+        "Using '{}' as symbol name for parser constructor method",
+        constructor_symbol_name
+    );
+    // We need to have the path as bytes for libloading
+    let grammar = unsafe {
+        // We leak the library because the symbol table has to be loaded in memory for the
+        // entire duration of the program up until the very end. There is probably a better way
+        // to do this that doesn't involve leaking memory, but I wasn't able to figure it out.
+        let shared_library = Box::new(libloading::Library::new(parser_path.as_os_str())?);
+        let static_shared_library = Box::leak(shared_library);
+        let constructor = static_shared_library.get::<libloading::Symbol<
+            unsafe extern "C" fn() -> Language,
+        >>(constructor_symbol_name.as_bytes())?;
+        constructor()
+    };
+    Ok(grammar)
+}
+
 /// Attempt to generate a tree-sitter grammar from a shared library
 #[cfg(feature = "dynamic-grammar-libs")]
 fn generate_language_dynamic(
@@ -181,20 +241,8 @@ fn generate_language_dynamic(
     } else {
         &default_fname
     };
-    info!("Loading dynamic library from {}", lib_fname);
-    let fn_name = fn_name_from_lang(lang);
-    debug!("Using name {} for dynamic function", fn_name);
-
-    let grammar = unsafe {
-        // We leak the library because the symbol table has to be loaded in memory for the
-        // entire duration of the program up until the very end. There is probably a better way
-        // to do this that doesn't involve leaking memory, but I wasn't able to figure it out.
-        let ptr = libloading::Library::new(lib_fname)?;
-        let constructor =
-            ptr.get::<libloading::Symbol<unsafe extern "C" fn() -> Language>>(fn_name.as_bytes())?;
-        constructor()
-    };
-    Ok(grammar)
+    let language_path = PathBuf::from(lib_fname);
+    construct_ts_lang_from_shared_lib(lang, &language_path)
 }
 
 /// Generate a tree-sitter language from a language string.
@@ -363,7 +411,7 @@ pub fn lang_name_from_file_ext<'cfg>(
 /// supports a certain range of tree-sitter ABIs. Each compiled tree-sitter grammar reports its ABI
 /// version, so we can check whether the ABI versions are compatible before loading the grammar
 /// as a tree-sitter parser, which should prevent segfaults due to these sorts of mismatches.
-fn ts_language_abi_checked(ts_language: &Language) -> Result<(), LoadingError> {
+pub fn ts_language_abi_checked(ts_language: &Language) -> Result<(), LoadingError> {
     let loaded_ts_version = ts_language.version();
     let is_abi_compatible =
         (MIN_COMPATIBLE_LANGUAGE_VERSION..=LANGUAGE_VERSION).contains(&loaded_ts_version);
