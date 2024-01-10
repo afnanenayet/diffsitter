@@ -1201,15 +1201,15 @@ dependencies = [
 
 [[package]]
 name = "shadow-rs"
-version = "0.25.0"
+version = "0.26.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "615d846f7174a0850dca101bca72f6913e3376a64c5fda2b965d7fc3d1ff60cb"
+checksum = "878cb1e3162d98ee1016b832efbb683ad6302b462a2894c54f488dc0bd96f11c"
 dependencies = [
  "const_format",
  "git2",
  "is_debug",
  "time",
- "tzdb 0.5.10",
+ "tzdb",
 ]
 
 [[package]]
@@ -1454,17 +1454,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "33851b15c848fad2cf4b105c6bb66eb9512b6f6c44a4b13f57c53c73c707e2b4"
 dependencies = [
  "const_fn",
-]
-
-[[package]]
-name = "tzdb"
-version = "0.5.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6a18ee5bde3433d683d41859650804a5ad89cad17f153a53f1e6a96e0da2d969"
-dependencies = [
- "iana-time-zone",
- "tz-rs",
- "tzdb 0.6.1",
 ]
 
 [[package]]
