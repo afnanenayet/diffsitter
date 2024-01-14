@@ -298,7 +298,7 @@ fn grammars() -> Vec<GrammarCompileInfo<'static>> {
         },
         GrammarCompileInfo {
             display_name: "php",
-            path: PathBuf::from("grammars/tree-sitter-php"),
+            path: PathBuf::from("grammars/tree-sitter-php/php"),
             c_sources: vec!["parser.c", "scanner.c"],
             ..Default::default()
         },
