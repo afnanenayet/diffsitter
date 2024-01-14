@@ -235,7 +235,7 @@ impl<'a> VectorLeaf<'a> {
                 // Every grapheme has to be at least one byte
                 debug_assert!(!grapheme.is_empty());
 
-                if strip_whitespace && grapheme.chars().all(|c| c.is_whitespace()) {
+                if strip_whitespace && grapheme.chars().all(char::is_whitespace) {
                     continue;
                 }
 
@@ -443,8 +443,7 @@ fn build<'a>(vector: &RefCell<Vec<VectorLeaf<'a>>>, node: tree_sitter::Node<'a>,
             // these nodes. We just ignore those nodes.
             if node_text
                 .replace("\r\n", "")
-                .replace('\n', "")
-                .replace('\r', "")
+                .replace(['\n', '\r'], "")
                 .is_empty()
             {
                 return;

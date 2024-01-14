@@ -184,7 +184,7 @@ impl Unified {
         // stack horizontally be default
         let term_width = if let Some(term_info) = term_info {
             if let Some((_height, width)) = term_info.size_checked() {
-                width.try_into().unwrap()
+                width.into()
             } else {
                 title_len
             }
