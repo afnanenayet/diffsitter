@@ -443,8 +443,7 @@ fn build<'a>(vector: &RefCell<Vec<VectorLeaf<'a>>>, node: tree_sitter::Node<'a>,
             // these nodes. We just ignore those nodes.
             if node_text
                 .replace("\r\n", "")
-                .replace('\n', "")
-                .replace('\r', "")
+                .replace(['\n', '\r'], "")
                 .is_empty()
             {
                 return;

@@ -150,7 +150,7 @@ fn generate_language_static(lang: &str) -> Result<Language, LoadingError> {
 ///   generate the name of the symbol from the shared object library that serves as the
 ///   constructor.
 pub fn tree_sitter_constructor_symbol_name(lang: &str) -> String {
-    format!("tree_sitter_{}", lang.replace("-", "_"))
+    format!("tree_sitter_{}", lang.replace('-', "_"))
 }
 
 /// Generate the name of the library to `dlopen` given the name of the langauge.
