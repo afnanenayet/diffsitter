@@ -11,7 +11,7 @@ RichHunks(
                         line_index: 5,
                         entries: [
                             Entry {
-                                reference: {Node paragraph (4, 0) - (6, 0)},
+                                reference: {Node inline (4, 0) - (5, 14)},
                                 text: "3",
                                 start_position: Point {
                                     row: 5,
@@ -21,7 +21,7 @@ RichHunks(
                                     row: 5,
                                     column: 14,
                                 },
-                                kind_id: 127,
+                                kind_id: 204,
                             },
                         ],
                     },
@@ -35,7 +35,7 @@ RichHunks(
                         line_index: 6,
                         entries: [
                             Entry {
-                                reference: {Node paragraph (5, 0) - (7, 0)},
+                                reference: {Node inline (5, 0) - (6, 14)},
                                 text: "2",
                                 start_position: Point {
                                     row: 6,
@@ -45,7 +45,7 @@ RichHunks(
                                     row: 6,
                                     column: 14,
                                 },
-                                kind_id: 127,
+                                kind_id: 204,
                             },
                         ],
                     },
