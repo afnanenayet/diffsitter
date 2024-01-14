@@ -1,15 +1,16 @@
-use crate::diff::{Hunk, Line, RichHunk, RichHunks};
-use crate::render::{
-    default_option, opt_color_def, ColorDef, DisplayData, EmphasizedStyle, RegularStyle, Renderer,
+use crate::{
+    diff::{Hunk, Line, RichHunk, RichHunks},
+    render::{
+        default_option, opt_color_def, ColorDef, DisplayData, EmphasizedStyle, RegularStyle,
+        Renderer,
+    },
+    term_ui::{term_box::TermBox, TerminalRenderError, TerminalRenderable},
 };
 use anyhow::Result;
 use console::{Color, Style, Term};
 use log::{debug, error, info};
 use serde::{Deserialize, Serialize};
-use std::{cmp::max, io::Write};
-
-/// The ascii separator used after the diff title
-const TITLE_SEPARATOR: &str = "=";
+use std::io::Write;
 
 /// The ascii separator used after the hunk title
 const HUNK_TITLE_SEPARATOR: &str = "-";
@@ -167,7 +168,7 @@ impl Unified {
         old_fmt: &FormattingDirectives,
         new_fmt: &FormattingDirectives,
         term_info: Option<&Term>,
-    ) -> std::io::Result<()> {
+    ) -> Result<(), TerminalRenderError> {
         // The different ways we can stack the title
         #[derive(Debug, Eq, PartialEq, PartialOrd, Ord, strum_macros::Display)]
         #[strum(serialize_all = "snake_case")]
@@ -175,7 +176,7 @@ impl Unified {
             Vertical,
             Horizontal,
         }
-        let divider = " -> ";
+        let divider = " → ";
 
         // We construct the fully horizontal title string. If wider than the terminal, then we
         // format another title string that's vertically stacked
@@ -204,31 +205,30 @@ impl Unified {
 
         // Generate a title string and separator based on the stacking style we determined from
         // the terminal width
-        let (styled_title_str, title_sep) = match stack_style {
+        let styled_title_str = match stack_style {
             TitleStack::Horizontal => {
-                let title_len = old_fname.len() + divider.len() + new_fname.len();
                 let styled_title_str = format!(
                     "{}{}{}",
                     old_fmt.regular.0.apply_to(old_fname),
                     divider,
                     new_fmt.regular.0.apply_to(new_fname)
                 );
-                let title_sep = TITLE_SEPARATOR.repeat(title_len);
-                (styled_title_str, title_sep)
+                styled_title_str
             }
             TitleStack::Vertical => {
-                let title_len = max(old_fname.len(), new_fname.len());
                 let styled_title_str = format!(
                     "{}\n{}",
                     old_fmt.regular.0.apply_to(old_fname),
                     new_fmt.regular.0.apply_to(new_fname)
                 );
-                let title_sep = TITLE_SEPARATOR.repeat(title_len);
-                (styled_title_str, title_sep)
+                styled_title_str
             }
         };
-        writeln!(term, "{styled_title_str}")?;
-        writeln!(term, "{title_sep}")?;
+        TermBox {
+            padding: 1,
+            text: &styled_title_str,
+        }
+        .draw(term)?;
         Ok(())
     }
 

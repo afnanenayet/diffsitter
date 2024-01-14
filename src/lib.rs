@@ -16,6 +16,7 @@ pub mod input_processing;
 pub mod neg_idx_vec;
 pub mod parse;
 pub mod render;
+pub mod term_ui;
 
 use anyhow::Result;
 use input_processing::VectorData;

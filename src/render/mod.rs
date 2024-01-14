@@ -11,6 +11,7 @@
 mod json;
 mod unified;
 
+use self::json::Json;
 use crate::diff::RichHunks;
 use console::{Color, Style, Term};
 use enum_dispatch::enum_dispatch;
@@ -19,8 +20,6 @@ use std::collections::HashMap;
 use std::io::Write;
 use strum::{self, Display, EnumIter, EnumString};
 use unified::Unified;
-
-use self::json::Json;
 
 /// The parameters required to display a diff for a particular document
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
