@@ -7,5 +7,5 @@ use clap::Parser;
 struct Args {}
 
 fn main() {
-    eprintln!("This functionality has not yet been implemented.")
+    eprintln!("This functionality has not yet been implemented.");
 }

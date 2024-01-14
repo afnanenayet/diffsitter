@@ -92,7 +92,7 @@ fn codegen_language_map<T: ToString + Display>(languages: &[T]) -> String {
 /// Compile a language's grammar
 ///
 /// This builds the grammars and statically links them into the Rust binary using Crichton's cc
-/// library. We name the libraries "{grammar_name}-[cc|cxx]-diffsitter" to prevent clashing with
+/// library. We name the libraries "{`grammar_name`}-[cc|cxx]-diffsitter" to prevent clashing with
 /// any existing installed tree sitter libraries.
 #[cfg(feature = "static-grammar-libs")]
 fn compile_grammar(
@@ -111,7 +111,7 @@ fn compile_grammar(
             .flag_if_supported("-std=c11")
             .warnings(false)
             .extra_warnings(false)
-            .try_compile(&format!("{}-cc-diffsitter", output_name))?;
+            .try_compile(&format!("{output_name}-cc-diffsitter"))?;
     }
 
     if !cpp_sources.is_empty() {
@@ -349,10 +349,10 @@ fn compile_static_grammars() -> Result<()> {
     let grammars = grammars();
     // The string represented the generated code that we get from the tree sitter grammars
     let mut codegen = String::from(
-        r#"
+        r"
 use tree_sitter::Language;
 use phf::phf_map;
-"#,
+",
     );
 
     // A vector of language strings that are used later for codegen, so we can dynamically created

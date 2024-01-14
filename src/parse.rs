@@ -149,6 +149,7 @@ fn generate_language_static(lang: &str) -> Result<Language, LoadingError> {
 ///   that corresponds to the actual tree-sitter name for the language because it is used to
 ///   generate the name of the symbol from the shared object library that serves as the
 ///   constructor.
+#[must_use]
 pub fn tree_sitter_constructor_symbol_name(lang: &str) -> String {
     format!("tree_sitter_{}", lang.replace('-', "_"))
 }
@@ -179,12 +180,12 @@ fn lib_name_from_lang(lang: &str) -> String {
 /// will segfault when trying to use the generated [Language] object with the tree-sitter library.
 /// The tree-sitter rust bindings wrap the tree-sitter C FFI interface, so the shared library
 /// object has to be loaded into memory while we want to use the [Language] object with any method
-/// in [tree_sitter].
+/// in [`tree_sitter`].
 ///
 /// # Arguments
 ///
-/// - language_name: The tree-sitter language name.
-/// - parser_path: The path to the shared library object file.
+/// - `language_name`: The tree-sitter language name.
+/// - `parser_path`: The path to the shared library object file.
 ///
 /// # Errors
 ///
@@ -380,7 +381,7 @@ pub fn language_from_ext(
 /// # Errors
 ///
 /// This will return an error if an associated language is not found for the given file extension.
-/// If this is the case, this function returns an [UnsupportedExt](LoadingError::UnsupportedExt)
+/// If this is the case, this function returns an [`UnsupportedExt`](LoadingError::UnsupportedExt)
 /// error.
 ///
 /// # Examples
