@@ -243,7 +243,7 @@ brief help messages).
 
 You can configure file associations and formatting options for `diffsitter`
 using a config file. If a config is not supplied, the app will use the default
-config, which you can see with `diffsitter --cmd dump_default_config`. It will
+config, which you can see with `diffsitter dump-default-config`. It will
 look for a config at `${XDG_HOME:-$HOME}/.config/diffsitter/config.json5` on
 macOS and Linux, and the standard directory for Windows. You can also refer to
 the [sample config](/assets/sample_config.json5).
