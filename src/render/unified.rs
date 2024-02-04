@@ -224,11 +224,7 @@ impl Unified {
                 styled_title_str
             }
         };
-        TermBox {
-            padding: 1,
-            text: &styled_title_str,
-        }
-        .draw(term)?;
+        TermBox::new(&styled_title_str, 1).unwrap().draw(term)?;
         Ok(())
     }
 

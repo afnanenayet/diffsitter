@@ -17,6 +17,7 @@ pub mod neg_idx_vec;
 pub mod parse;
 pub mod render;
 pub mod term_ui;
+mod test_utils;
 
 use anyhow::Result;
 use input_processing::VectorData;

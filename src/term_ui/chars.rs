@@ -10,4 +10,4 @@ pub const UPPER_BLOCK: char = '▔';
 pub const RIGHT_BLOCK: char = '▕';
 
 /// Left side one-eigth unicode blcok
-pub const LEFT_BLOCK: char = '▕';
+pub const LEFT_BLOCK: char = '▏';
