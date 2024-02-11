@@ -65,11 +65,12 @@ static FILE_EXTS: phf::Map<&'static str, &'static str> = phf_map! {
     "hcl" => "hcl",
     "ts" => "typescript",
     "tsx" => "tsx",
+    "js" => "typescript",
+    "jsx" => "tsx",
     "hpp" => "cpp",
     "tpp" => "tpp",
     "h" => "c",
     "tf" => "hcl",
-    "js" => "javascript",
     "md" => "markdown",
 };
 
