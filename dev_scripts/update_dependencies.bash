@@ -9,7 +9,7 @@
 #
 # If these can't be found the script will exit with an error.
 
-required_binaries=("cargo" "cargo-upgrade" "cargo-update" "cargo-nextest")
+required_binaries=("cargo" "cargo-upgrade" "cargo-nextest")
 
 for cmd in "${required_binaries[@]}"
 do
