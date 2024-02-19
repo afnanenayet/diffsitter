@@ -121,7 +121,8 @@ fn default_config_file_path() -> Result<PathBuf> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::env;
+    use anyhow::Context;
+    use std::{env, fs::read_dir};
 
     #[test]
     fn test_sample_config() {
@@ -133,5 +134,35 @@ mod tests {
             .collect::<PathBuf>();
         assert!(sample_config_path.exists());
         Config::try_from_file(Some(sample_config_path).as_ref()).unwrap();
+    }
+
+    #[test]
+    fn test_configs() {
+        let mut test_config_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
+        test_config_dir.push("resources/test_configs");
+        assert!(test_config_dir.is_dir());
+
+        for config_file_path in read_dir(test_config_dir).unwrap() {
+            let config_file_path = config_file_path.unwrap().path();
+            let has_correct_ext = if let Some(ext) = config_file_path.extension() {
+                ext == "json5"
+            } else {
+                false
+            };
+            if !config_file_path.is_file() || !has_correct_ext {
+                continue;
+            }
+            let config_parses = Config::try_from_file(Some(&config_file_path).as_ref()).is_ok();
+            assert!(
+                config_parses,
+                "Could not parse {} as a valid config",
+                // We use unwrap here because panics will be caught by the test harness and we
+                // expect that all of the file names are valid for the test cases we construct in
+                // this repo.
+                &config_file_path.file_name().unwrap().to_str().unwrap()
+            );
+        }
+
+        // Loop over all of the configs and check that they parse correctly
     }
 }
