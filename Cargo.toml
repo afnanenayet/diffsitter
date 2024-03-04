@@ -70,7 +70,7 @@ log = { version = "0.4.20", features = ["std"] }
 thiserror = "1.0.57"
 logging_timer = "1.1.0"
 jemallocator = { version = "0.5.4", optional = true }
-libloading = "0.8.1"
+libloading = "0.8.2"
 unicode-segmentation = "1.11.0"
 human-panic = "1.2.3"
 shadow-rs = { version = "0.26.1", optional = true }
