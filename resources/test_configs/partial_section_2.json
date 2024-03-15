@@ -1,0 +1,29 @@
+{
+  "formatting": {
+    "deletion": {
+      "regular-foreground": "red",
+      "emphasized-foreground": "red",
+      "underline": false,
+      "prefix": "-"
+    },
+    "custom": {
+      "custom_render_mode": {
+        "type": "unified",
+        "deletion": {
+          "regular-foreground": "red"
+        }
+      }
+    }
+  },
+  "grammar": {
+    "file-associations": {
+      "rs": "rust"
+    },
+    "dylib-overrides": {
+      "rust": "libtree-sitter-rust.so",
+      "c": "/usr/lib/libtree-sitter-c.so",
+      "cpp": "../libtree-sitter-cpp.so"
+    }
+  },
+  "fallback-cmd": "diff"
+}
