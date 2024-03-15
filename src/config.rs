@@ -152,17 +152,17 @@ mod tests {
             if !config_file_path.is_file() || !has_correct_ext {
                 continue;
             }
-            let config_parses = Config::try_from_file(Some(&config_file_path).as_ref()).is_ok();
-            assert!(
-                config_parses,
-                "Could not parse {} as a valid config",
-                // We use unwrap here because panics will be caught by the test harness and we
-                // expect that all of the file names are valid for the test cases we construct in
-                // this repo.
-                &config_file_path.file_name().unwrap().to_str().unwrap()
-            );
+            // We add the context so if there is an error you'll see the actual deserialization
+            // error from serde and which file it failed on, which makes for a much more
+            // informative error message in the test logs.
+            Config::try_from_file(Some(&config_file_path))
+                .with_context(|| {
+                    format!(
+                        "Parsing file {}",
+                        &config_file_path.file_name().unwrap().to_string_lossy()
+                    )
+                })
+                .unwrap();
         }
-
-        // Loop over all of the configs and check that they parse correctly
     }
 }
