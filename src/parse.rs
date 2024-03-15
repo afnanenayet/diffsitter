@@ -290,6 +290,7 @@ pub fn generate_language(lang: &str, config: &GrammarConfig) -> Result<Language,
         match candidate_result {
             Ok(grammar) => {
                 info!("Succeeded loading grammar for {}", lang);
+                ts_language_abi_checked(&grammar)?;
                 return Ok(grammar);
             }
             Err(e) => {
@@ -427,22 +428,6 @@ pub fn ts_language_abi_checked(ts_language: &Language) -> Result<(), LoadingErro
     Ok(())
 }
 
-/// Creates a tree-sitter [Parser] for a given language.
-///
-/// This handles the boilerplate for loading the tree-sitter library for the [language](Language) and setting
-/// the parser object to use that language. The resulting object can then be used to parse text to
-/// a tree sitter [tree](Tree).
-pub fn ts_parser_for_language(
-    language: &str,
-    config: &GrammarConfig,
-) -> Result<Parser, LoadingError> {
-    let ts_language = generate_language(language, config)?;
-    ts_language_abi_checked(&ts_language)?;
-    let mut parser = Parser::new();
-    parser.set_language(ts_language)?;
-    Ok(parser)
-}
-
 /// Parse a file to an AST
 ///
 /// The user may optionally supply the language to use. If the language is not supplied, it will be
@@ -465,7 +450,9 @@ pub fn parse_file(
             }
         }
     }?;
-    let mut parser = ts_parser_for_language(resolved_language, config)?;
+    let mut parser = Parser::new();
+    let ts_lang = generate_language(resolved_language, config)?;
+    parser.set_language(&ts_lang)?;
     let text = fs::read_to_string(p)?;
     match parser.parse(&text, None) {
         Some(ast) => {
@@ -491,7 +478,10 @@ mod tests {
 
         for (&name, lang) in &LANGUAGES {
             let mut parser = tree_sitter::Parser::new();
-            let result = parser.set_language(unsafe { lang() });
+            let result = unsafe {
+                let ts_lang = lang();
+                parser.set_language(&ts_lang)
+            };
 
             if let Err(e) = result {
                 failures.push((name, e));

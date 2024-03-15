@@ -577,7 +577,7 @@ mod tests {
     fn test_strip_whitespace() {
         let md_parser = generate_language("python", &GrammarConfig::default()).unwrap();
         let mut parser = Parser::new();
-        parser.set_language(md_parser).unwrap();
+        parser.set_language(&md_parser).unwrap();
         let text_a = "'''# A heading\nThis has no diff.'''";
         let text_b = "'''# A heading\nThis\nhas\r\nno diff.'''";
         let tree_a = parser.parse(text_a, None).unwrap();
