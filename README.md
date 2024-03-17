@@ -156,7 +156,8 @@ It also has extensive logging if you want to debug or see timing information:
 You can filter the nodes that are considered in the diff by setting
 `include_nodes` or `exclude_nodes` in the config file. `exclude_nodes` always
 takes precedence over `include_nodes`, and the type of a node is the `kind`
-of a tree-sitter node.
+of a tree-sitter node. The `kind` directly corresponds to whatever is reported
+by the tree-sitter API, so this example may occasionally go out of date.
 
 This feature currently only applies to leaf nodes, but we could exclude nodes
 recursively if there's demand for it.
@@ -164,7 +165,7 @@ recursively if there's demand for it.
 ```json5
 "input-processing": {
     // You can exclude different tree sitter node types - this rule takes precedence over `include_kinds`.
-    "exclude_kinds": ["string"],
+    "exclude_kinds": ["string_content"],
     // You can specifically allow only certain tree sitter node types
     "include_kinds": ["method_definition"],
 }
