@@ -49,8 +49,8 @@ path = "src/lib.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tree-sitter = "0.22.1"
-clap = { version = "4.5.3", features = [
+tree-sitter = "0.22.2"
+clap = { version = "4.5.4", features = [
   "derive",
   "env",
   "unicode",
@@ -63,7 +63,7 @@ console = "0.15.8"
 strum = { version = "0.26.2", features = ["derive"] }
 strum_macros = "0.26.2"
 serde = { version = "1.0.197", features = ["derive"] }
-serde_json = "1.0.114"
+serde_json = "1.0.115"
 json5 = "0.4.1"
 pretty_env_logger = "0.5.0"
 log = { version = "0.4.21", features = ["std"] }
@@ -74,7 +74,7 @@ libloading = "0.8.3"
 unicode-segmentation = "1.11.0"
 human-panic = "1.2.3"
 shadow-rs = { version = "0.27.1", optional = true }
-enum_dispatch = "0.3.12"
+enum_dispatch = "0.3.13"
 lazy_static = { version = "1.4.0", optional = true }
 
 [dev-dependencies]
@@ -85,7 +85,7 @@ mockall = "0.12.1"
 # We need the backtrace feature to enable snapshot name generation in
 # single-threaded tests (tests using cargo cross run single-threaded due to
 # limitations with QEMU).
-insta = { version = "1.36.1" }
+insta = { version = "1.38.0" }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 # We use directories next to get the windows config path
@@ -100,7 +100,7 @@ cc = { version = "1.0.90", features = ["parallel"] }
 phf = { version = "0.11.2", features = ["macros"] }
 anyhow = "1.0.81"
 cargo-emit = "0.2.1"
-rayon = "1.9.0"
+rayon = "1.10.0"
 thiserror = "1.0.58"
 shadow-rs = { version = "0.27.1", optional = true }
 
