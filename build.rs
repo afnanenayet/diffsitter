@@ -39,6 +39,11 @@ struct GrammarCompileInfo<'a> {
     /// The files supplied here will be compiled into a library named
     /// "tree-sitter-{language}-cpp-compile-diffsitter" to avoid clashing with other symbols.
     cpp_sources: Vec<&'a str>,
+
+    /// Additional include paths to pass to the compiler.
+    ///
+    /// By default this is set to <path>/include, but some repos may have a different include path.
+    include_paths: Option<Vec<PathBuf>>,
 }
 
 /// The compilation parameters that are passed into the `compile_grammar` function
@@ -47,7 +52,7 @@ struct GrammarCompileInfo<'a> {
 /// a parallel iterator to compile all of the grammars at once over a threadpool.
 #[cfg(feature = "static-grammar-libs")]
 struct CompileParams {
-    pub dir: PathBuf,
+    pub include_dirs: Vec<PathBuf>,
     pub c_sources: Vec<PathBuf>,
     pub cpp_sources: Vec<PathBuf>,
     pub display_name: String,
@@ -96,7 +101,7 @@ fn codegen_language_map<T: ToString + Display>(languages: &[T]) -> String {
 /// any existing installed tree sitter libraries.
 #[cfg(feature = "static-grammar-libs")]
 fn compile_grammar(
-    include: &Path,
+    includes: &[PathBuf],
     c_sources: &[PathBuf],
     cpp_sources: &[PathBuf],
     output_name: &str,
@@ -106,7 +111,7 @@ fn compile_grammar(
     // are only scanners. This resolves a linker error we were seeing on Linux.
     if !c_sources.is_empty() {
         cc::Build::new()
-            .include(include)
+            .includes(includes)
             .files(c_sources)
             .flag_if_supported("-std=c11")
             .warnings(false)
@@ -117,7 +122,7 @@ fn compile_grammar(
     if !cpp_sources.is_empty() {
         cc::Build::new()
             .cpp(true)
-            .include(include)
+            .includes(includes)
             .files(cpp_sources)
             .flag_if_supported("-std=c++17")
             .warnings(false)
@@ -167,8 +172,13 @@ fn extra_cargo_directives() {
 /// ```
 #[cfg(feature = "static-grammar-libs")]
 fn preprocess_compile_info(grammar: &GrammarCompileInfo) -> CompileParams {
-    // The directory to the source files
     let dir = grammar.path.join("src");
+    // The directory to the source files
+    let include_dirs = if let Some(includes) = grammar.include_paths.clone() {
+        includes.clone()
+    } else {
+        vec![dir.clone()]
+    };
 
     let cpp_sources: Vec<_> = grammar
         .cpp_sources
@@ -184,7 +194,7 @@ fn preprocess_compile_info(grammar: &GrammarCompileInfo) -> CompileParams {
         .collect();
 
     CompileParams {
-        dir,
+        include_dirs,
         c_sources,
         cpp_sources,
         display_name: grammar.display_name.into(),
@@ -197,10 +207,12 @@ fn preprocess_compile_info(grammar: &GrammarCompileInfo) -> CompileParams {
 /// the C/C++ toolchains when files are missing.
 #[cfg(feature = "static-grammar-libs")]
 fn verify_compile_params(compile_params: &CompileParams) -> Result<(), CompileParamError> {
-    if !compile_params.dir.exists() {
-        return Err(CompileParamError::SubdirectoryNotFound(
-            compile_params.display_name.to_string(),
-        ));
+    for include_dir in &compile_params.include_dirs {
+        if !include_dir.exists() {
+            return Err(CompileParamError::SubdirectoryNotFound(
+                compile_params.display_name.to_string(),
+            ));
+        }
     }
 
     let missing_sources = compile_params
@@ -376,7 +388,7 @@ use phf::phf_map;
         .par_iter()
         .map(|p| {
             compile_grammar(
-                &p.dir,
+                &p.include_dirs,
                 &p.c_sources[..],
                 &p.cpp_sources[..],
                 &p.display_name,
