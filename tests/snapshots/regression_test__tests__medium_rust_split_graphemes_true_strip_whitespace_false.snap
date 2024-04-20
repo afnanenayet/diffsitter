@@ -21,7 +21,7 @@ RichHunks(
                                     row: 2,
                                     column: 27,
                                 },
-                                kind_id: 53,
+                                kind_id: 81,
                             },
                         ],
                     },
@@ -95,7 +95,7 @@ RichHunks(
                                     row: 42,
                                     column: 20,
                                 },
-                                kind_id: 53,
+                                kind_id: 81,
                             },
                         ],
                     },
@@ -149,14 +149,14 @@ RichHunks(
                             },
                             Entry {
                                 reference: {Node identifier (59, 4) - (59, 9)},
-                                text: "t",
+                                text: "a",
                                 start_position: Point {
                                     row: 59,
-                                    column: 8,
+                                    column: 7,
                                 },
                                 end_position: Point {
                                     row: 59,
-                                    column: 9,
+                                    column: 8,
                                 },
                                 kind_id: 1,
                             },
@@ -173,14 +173,14 @@ RichHunks(
                         entries: [
                             Entry {
                                 reference: {Node identifier (53, 7) - (53, 11)},
-                                text: "t",
+                                text: "a",
                                 start_position: Point {
                                     row: 53,
-                                    column: 7,
+                                    column: 8,
                                 },
                                 end_position: Point {
                                     row: 53,
-                                    column: 8,
+                                    column: 9,
                                 },
                                 kind_id: 1,
                             },
@@ -209,6 +209,208 @@ RichHunks(
                                     column: 11,
                                 },
                                 kind_id: 1,
+                            },
+                        ],
+                    },
+                ],
+            ),
+        ),
+        Old(
+            Hunk(
+                [
+                    Line {
+                        line_index: 55,
+                        entries: [
+                            Entry {
+                                reference: {Node string_content (55, 18) - (55, 41)},
+                                text: "p",
+                                start_position: Point {
+                                    row: 55,
+                                    column: 21,
+                                },
+                                end_position: Point {
+                                    row: 55,
+                                    column: 22,
+                                },
+                                kind_id: 143,
+                            },
+                            Entry {
+                                reference: {Node string_content (55, 18) - (55, 41)},
+                                text: "u",
+                                start_position: Point {
+                                    row: 55,
+                                    column: 23,
+                                },
+                                end_position: Point {
+                                    row: 55,
+                                    column: 24,
+                                },
+                                kind_id: 143,
+                            },
+                            Entry {
+                                reference: {Node string_content (55, 18) - (55, 41)},
+                                text: "s",
+                                start_position: Point {
+                                    row: 55,
+                                    column: 24,
+                                },
+                                end_position: Point {
+                                    row: 55,
+                                    column: 25,
+                                },
+                                kind_id: 143,
+                            },
+                            Entry {
+                                reference: {Node string_content (55, 18) - (55, 41)},
+                                text: "e",
+                                start_position: Point {
+                                    row: 55,
+                                    column: 25,
+                                },
+                                end_position: Point {
+                                    row: 55,
+                                    column: 26,
+                                },
+                                kind_id: 143,
+                            },
+                        ],
+                    },
+                ],
+            ),
+        ),
+        New(
+            Hunk(
+                [
+                    Line {
+                        line_index: 61,
+                        entries: [
+                            Entry {
+                                reference: {Node string_content (61, 12) - (61, 34)},
+                                text: "b",
+                                start_position: Point {
+                                    row: 61,
+                                    column: 15,
+                                },
+                                end_position: Point {
+                                    row: 61,
+                                    column: 16,
+                                },
+                                kind_id: 143,
+                            },
+                            Entry {
+                                reference: {Node string_content (61, 12) - (61, 34)},
+                                text: "e",
+                                start_position: Point {
+                                    row: 61,
+                                    column: 16,
+                                },
+                                end_position: Point {
+                                    row: 61,
+                                    column: 17,
+                                },
+                                kind_id: 143,
+                            },
+                            Entry {
+                                reference: {Node string_content (61, 12) - (61, 34)},
+                                text: "t",
+                                start_position: Point {
+                                    row: 61,
+                                    column: 18,
+                                },
+                                end_position: Point {
+                                    row: 61,
+                                    column: 19,
+                                },
+                                kind_id: 143,
+                            },
+                        ],
+                    },
+                ],
+            ),
+        ),
+        New(
+            Hunk(
+                [
+                    Line {
+                        line_index: 67,
+                        entries: [
+                            Entry {
+                                reference: {Node identifier (67, 9) - (67, 11)},
+                                text: "e",
+                                start_position: Point {
+                                    row: 67,
+                                    column: 9,
+                                },
+                                end_position: Point {
+                                    row: 67,
+                                    column: 10,
+                                },
+                                kind_id: 1,
+                            },
+                            Entry {
+                                reference: {Node identifier (67, 9) - (67, 11)},
+                                text: "d",
+                                start_position: Point {
+                                    row: 67,
+                                    column: 10,
+                                },
+                                end_position: Point {
+                                    row: 67,
+                                    column: 11,
+                                },
+                                kind_id: 1,
+                            },
+                            Entry {
+                                reference: {Node string_content (67, 34) - (67, 39)},
+                                text: "L",
+                                start_position: Point {
+                                    row: 67,
+                                    column: 34,
+                                },
+                                end_position: Point {
+                                    row: 67,
+                                    column: 35,
+                                },
+                                kind_id: 143,
+                            },
+                            Entry {
+                                reference: {Node string_content (67, 34) - (67, 39)},
+                                text: "g",
+                                start_position: Point {
+                                    row: 67,
+                                    column: 36,
+                                },
+                                end_position: Point {
+                                    row: 67,
+                                    column: 37,
+                                },
+                                kind_id: 143,
+                            },
+                            Entry {
+                                reference: {Node string_content (67, 34) - (67, 39)},
+                                text: "a",
+                                start_position: Point {
+                                    row: 67,
+                                    column: 37,
+                                },
+                                end_position: Point {
+                                    row: 67,
+                                    column: 38,
+                                },
+                                kind_id: 143,
+                            },
+                            Entry {
+                                reference: {Node string_content (67, 34) - (67, 39)},
+                                text: "n",
+                                start_position: Point {
+                                    row: 67,
+                                    column: 38,
+                                },
+                                end_position: Point {
+                                    row: 67,
+                                    column: 39,
+                                },
+                                kind_id: 143,
                             },
                         ],
                     },
@@ -286,42 +488,57 @@ RichHunks(
                                 },
                                 kind_id: 1,
                             },
-                        ],
-                    },
-                ],
-            ),
-        ),
-        New(
-            Hunk(
-                [
-                    Line {
-                        line_index: 67,
-                        entries: [
                             Entry {
-                                reference: {Node identifier (67, 9) - (67, 11)},
-                                text: "e",
+                                reference: {Node string_content (61, 40) - (61, 45)},
+                                text: "D",
                                 start_position: Point {
-                                    row: 67,
-                                    column: 9,
+                                    row: 61,
+                                    column: 40,
                                 },
                                 end_position: Point {
-                                    row: 67,
-                                    column: 10,
+                                    row: 61,
+                                    column: 41,
                                 },
-                                kind_id: 1,
+                                kind_id: 143,
                             },
                             Entry {
-                                reference: {Node identifier (67, 9) - (67, 11)},
-                                text: "d",
+                                reference: {Node string_content (61, 40) - (61, 45)},
+                                text: "l",
                                 start_position: Point {
-                                    row: 67,
-                                    column: 10,
+                                    row: 61,
+                                    column: 42,
                                 },
                                 end_position: Point {
-                                    row: 67,
-                                    column: 11,
+                                    row: 61,
+                                    column: 43,
                                 },
-                                kind_id: 1,
+                                kind_id: 143,
+                            },
+                            Entry {
+                                reference: {Node string_content (61, 40) - (61, 45)},
+                                text: "l",
+                                start_position: Point {
+                                    row: 61,
+                                    column: 43,
+                                },
+                                end_position: Point {
+                                    row: 61,
+                                    column: 44,
+                                },
+                                kind_id: 143,
+                            },
+                            Entry {
+                                reference: {Node string_content (61, 40) - (61, 45)},
+                                text: "y",
+                                start_position: Point {
+                                    row: 61,
+                                    column: 44,
+                                },
+                                end_position: Point {
+                                    row: 61,
+                                    column: 45,
+                                },
+                                kind_id: 143,
                             },
                         ],
                     },
@@ -358,7 +575,7 @@ RichHunks(
                                     row: 70,
                                     column: 4,
                                 },
-                                kind_id: 56,
+                                kind_id: 77,
                             },
                             Entry {
                                 reference: {Node field_identifier (70, 4) - (70, 9)},
@@ -371,7 +588,7 @@ RichHunks(
                                     row: 70,
                                     column: 5,
                                 },
-                                kind_id: 325,
+                                kind_id: 341,
                             },
                             Entry {
                                 reference: {Node field_identifier (70, 4) - (70, 9)},
@@ -384,7 +601,7 @@ RichHunks(
                                     row: 70,
                                     column: 6,
                                 },
-                                kind_id: 325,
+                                kind_id: 341,
                             },
                             Entry {
                                 reference: {Node field_identifier (70, 4) - (70, 9)},
@@ -397,7 +614,7 @@ RichHunks(
                                     row: 70,
                                     column: 7,
                                 },
-                                kind_id: 325,
+                                kind_id: 341,
                             },
                             Entry {
                                 reference: {Node field_identifier (70, 4) - (70, 9)},
@@ -410,7 +627,7 @@ RichHunks(
                                     row: 70,
                                     column: 8,
                                 },
-                                kind_id: 325,
+                                kind_id: 341,
                             },
                         ],
                     },
@@ -427,6 +644,19 @@ RichHunks(
                                 end_position: Point {
                                     row: 71,
                                     column: 2,
+                                },
+                                kind_id: 1,
+                            },
+                            Entry {
+                                reference: {Node identifier (71, 1) - (71, 3)},
+                                text: "d",
+                                start_position: Point {
+                                    row: 71,
+                                    column: 2,
+                                },
+                                end_position: Point {
+                                    row: 71,
+                                    column: 3,
                                 },
                                 kind_id: 1,
                             },
@@ -449,17 +679,17 @@ RichHunks(
                                 kind_id: 1,
                             },
                             Entry {
-                                reference: {Node identifier (72, 1) - (72, 3)},
-                                text: "d",
+                                reference: {Node . (72, 3) - (72, 4)},
+                                text: ".",
                                 start_position: Point {
-                                    row: 72,
-                                    column: 2,
-                                },
-                                end_position: Point {
                                     row: 72,
                                     column: 3,
                                 },
-                                kind_id: 1,
+                                end_position: Point {
+                                    row: 72,
+                                    column: 4,
+                                },
+                                kind_id: 77,
                             },
                             Entry {
                                 reference: {Node field_identifier (72, 4) - (72, 9)},
@@ -472,7 +702,7 @@ RichHunks(
                                     row: 72,
                                     column: 5,
                                 },
-                                kind_id: 325,
+                                kind_id: 341,
                             },
                             Entry {
                                 reference: {Node field_identifier (72, 4) - (72, 9)},
@@ -485,7 +715,7 @@ RichHunks(
                                     row: 72,
                                     column: 6,
                                 },
-                                kind_id: 325,
+                                kind_id: 341,
                             },
                             Entry {
                                 reference: {Node field_identifier (72, 4) - (72, 9)},
@@ -498,7 +728,7 @@ RichHunks(
                                     row: 72,
                                     column: 7,
                                 },
-                                kind_id: 325,
+                                kind_id: 341,
                             },
                             Entry {
                                 reference: {Node field_identifier (72, 4) - (72, 9)},
@@ -511,7 +741,7 @@ RichHunks(
                                     row: 72,
                                     column: 8,
                                 },
-                                kind_id: 325,
+                                kind_id: 341,
                             },
                         ],
                     },
@@ -587,7 +817,7 @@ RichHunks(
                                     row: 64,
                                     column: 10,
                                 },
-                                kind_id: 56,
+                                kind_id: 77,
                             },
                             Entry {
                                 reference: {Node field_identifier (64, 10) - (64, 14)},
@@ -600,7 +830,7 @@ RichHunks(
                                     row: 64,
                                     column: 12,
                                 },
-                                kind_id: 325,
+                                kind_id: 341,
                             },
                             Entry {
                                 reference: {Node field_identifier (64, 10) - (64, 14)},
@@ -613,7 +843,7 @@ RichHunks(
                                     row: 64,
                                     column: 13,
                                 },
-                                kind_id: 325,
+                                kind_id: 341,
                             },
                             Entry {
                                 reference: {Node field_identifier (64, 10) - (64, 14)},
@@ -626,13 +856,26 @@ RichHunks(
                                     row: 64,
                                     column: 14,
                                 },
-                                kind_id: 325,
+                                kind_id: 341,
                             },
                         ],
                     },
                     Line {
                         line_index: 65,
                         entries: [
+                            Entry {
+                                reference: {Node identifier (65, 4) - (65, 9)},
+                                text: "d",
+                                start_position: Point {
+                                    row: 65,
+                                    column: 4,
+                                },
+                                end_position: Point {
+                                    row: 65,
+                                    column: 5,
+                                },
+                                kind_id: 1,
+                            },
                             Entry {
                                 reference: {Node identifier (65, 4) - (65, 9)},
                                 text: "o",
@@ -692,19 +935,6 @@ RichHunks(
                         entries: [
                             Entry {
                                 reference: {Node identifier (66, 4) - (66, 9)},
-                                text: "d",
-                                start_position: Point {
-                                    row: 66,
-                                    column: 4,
-                                },
-                                end_position: Point {
-                                    row: 66,
-                                    column: 5,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node identifier (66, 4) - (66, 9)},
                                 text: "o",
                                 start_position: Point {
                                     row: 66,
@@ -756,6 +986,19 @@ RichHunks(
                                 kind_id: 1,
                             },
                             Entry {
+                                reference: {Node . (66, 9) - (66, 10)},
+                                text: ".",
+                                start_position: Point {
+                                    row: 66,
+                                    column: 9,
+                                },
+                                end_position: Point {
+                                    row: 66,
+                                    column: 10,
+                                },
+                                kind_id: 77,
+                            },
+                            Entry {
                                 reference: {Node field_identifier (66, 10) - (66, 14)},
                                 text: "a",
                                 start_position: Point {
@@ -766,7 +1009,7 @@ RichHunks(
                                     row: 66,
                                     column: 12,
                                 },
-                                kind_id: 325,
+                                kind_id: 341,
                             },
                             Entry {
                                 reference: {Node field_identifier (66, 10) - (66, 14)},
@@ -779,7 +1022,7 @@ RichHunks(
                                     row: 66,
                                     column: 13,
                                 },
-                                kind_id: 325,
+                                kind_id: 341,
                             },
                             Entry {
                                 reference: {Node field_identifier (66, 10) - (66, 14)},
@@ -792,7 +1035,7 @@ RichHunks(
                                     row: 66,
                                     column: 14,
                                 },
-                                kind_id: 325,
+                                kind_id: 341,
                             },
                         ],
                     },
