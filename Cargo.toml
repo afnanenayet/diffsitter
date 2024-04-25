@@ -49,30 +49,30 @@ path = "src/lib.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tree-sitter = "0.22.2"
+tree-sitter = "0.22.5"
 clap = { version = "4.5.4", features = [
   "derive",
   "env",
   "unicode",
   "wrap_help",
 ] }
-clap_complete = "4.5.1"
-anyhow = { version = "1.0.81", features = ["backtrace"] }
+clap_complete = "4.5.2"
+anyhow = { version = "1.0.82", features = ["backtrace"] }
 phf = { version = "0.11.2", features = ["macros"] }
 console = "0.15.8"
 strum = { version = "0.26.2", features = ["derive"] }
 strum_macros = "0.26.2"
-serde = { version = "1.0.197", features = ["derive"] }
-serde_json = "1.0.115"
+serde = { version = "1.0.198", features = ["derive"] }
+serde_json = "1.0.116"
 json5 = "0.4.1"
 pretty_env_logger = "0.5.0"
 log = { version = "0.4.21", features = ["std"] }
-thiserror = "1.0.58"
+thiserror = "1.0.59"
 logging_timer = "1.1.1"
 jemallocator = { version = "0.5.4", optional = true }
 libloading = "0.8.3"
 unicode-segmentation = "1.11.0"
-human-panic = "1.2.3"
+human-panic = "2.0.0"
 shadow-rs = { version = "0.27.1", optional = true }
 enum_dispatch = "0.3.13"
 lazy_static = { version = "1.4.0", optional = true }
@@ -96,12 +96,12 @@ directories-next = "2.0.0"
 xdg = "2.5.2"
 
 [build-dependencies]
-cc = { version = "1.0.90", features = ["parallel"] }
+cc = { version = "1.0.95", features = ["parallel"] }
 phf = { version = "0.11.2", features = ["macros"] }
-anyhow = "1.0.81"
+anyhow = "1.0.82"
 cargo-emit = "0.2.1"
 rayon = "1.10.0"
-thiserror = "1.0.58"
+thiserror = "1.0.59"
 shadow-rs = { version = "0.27.1", optional = true }
 
 [features]
