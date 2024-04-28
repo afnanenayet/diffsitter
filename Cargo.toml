@@ -2,7 +2,7 @@
 name = "diffsitter"
 description = "An AST based difftool for meaningful diffs"
 readme = "README.md"
-version = "0.8.2"
+version = "0.8.3"
 authors = ["Afnan Enayet <afnan@afnan.io>"]
 edition = "2021"
 license = "MIT"
