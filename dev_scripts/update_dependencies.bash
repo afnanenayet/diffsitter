@@ -24,7 +24,7 @@ done
 # we don't accidentally commit other changes.
 has_changes=$(git diff-files --quiet)
 
-if [ "$has_changes" -ne "0" ]; then
+if [[ "$has_changes" -ne 0 ]]; then
   echo "ERROR: detected local changes. You must run this script with a clean git context."
   exit 1
 fi
