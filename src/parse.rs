@@ -171,7 +171,7 @@ fn lib_name_from_lang(lang: &str) -> String {
     } else {
         panic!("Dynamic libraries are not supported for this platform.");
     };
-    format!("libtree-sitter-{}.{}", lang.replace("_", "-"), extension)
+    format!("libtree-sitter-{}.{}", lang.replace('_', "-"), extension)
 }
 
 /// Create a tree sitter [Language] from a shared library object.
