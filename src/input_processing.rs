@@ -3,9 +3,11 @@
 //! These methods handle preprocessing the input data so it can be fed into the diff engines to
 //! compute diff data.
 
+use anyhow::Context;
+use log::info;
 use logging_timer::time;
 use serde::{Deserialize, Serialize};
-use std::borrow::Cow;
+use std::borrow::{Borrow, Cow};
 use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
 use std::ops::{Deref, DerefMut};
@@ -52,6 +54,13 @@ pub struct TreeSitterProcessor {
     /// diffs that do not account for line breaks. This is useful especially for more text heavy
     /// documents like markdown files.
     pub strip_whitespace: bool,
+
+    /// A tree sitter query to use to filter the nodes.
+    ///
+    /// Users can optionally specify a tree sitter query that will be used to determine which nodes
+    /// are eligible for comparison. This can be used to exclude certain nodes or patterns from
+    /// diffs.
+    pub tree_sitter_query: Option<String>,
 }
 
 // TODO: if we want to do any string transformations we need to store Cow strings.
@@ -66,6 +75,7 @@ impl Default for TreeSitterProcessor {
             exclude_kinds: None,
             include_kinds: None,
             strip_whitespace: true,
+            tree_sitter_query: None,
         }
     }
 }
@@ -81,20 +91,21 @@ impl<'a> TSNodeTrait for TSNodeWrapper<'a> {
 
 impl TreeSitterProcessor {
     #[time("info", "ast::{}")]
-    pub fn process<'a>(&self, tree: &'a TSTree, text: &'a str) -> Vec<Entry<'a>> {
-        let ast_vector = from_ts_tree(tree, text);
+    pub fn process<'a>(&self, tree: &'a TSTree, text: &'a str) -> anyhow::Result<Vec<Entry<'a>>> {
+        let ast_vector = from_ts_tree(tree, text, self.tree_sitter_query.as_deref())?;
+
         let iter = ast_vector
             .leaves
             .iter()
             .filter(|leaf| self.should_include_node(&TSNodeWrapper(leaf.reference)));
         // Splitting on graphemes generates a vector of entries instead of a direct mapping, which
         // is why we have the branching here
-        if self.split_graphemes {
+        Ok(if self.split_graphemes {
             iter.flat_map(|leaf| leaf.split_on_graphemes(self.strip_whitespace))
                 .collect()
         } else {
             iter.map(|&x| self.process_leaf(x)).collect()
-        }
+        })
     }
 
     /// Process a vector leaf and turn it into an [Entry].
@@ -136,17 +147,66 @@ impl TreeSitterProcessor {
     }
 }
 
+/// Helper function to create a vector of leaves from a tree-sitter AST given a query.
+///
+/// This will assemble the leaf nodes that are matched by the query and perform the appropriate
+/// text transformations and filter out nodes that have an empty byte range.
+///
+/// # Warning
+///
+/// This only uses the leaf nodes that match on the query. It will not try to look at the
+/// descendants of the matches.
+fn flatten_matches_from_query<'a>(
+    tree: &'a TSTree,
+    text: &'a str,
+    query: &str,
+) -> anyhow::Result<Vector<'a>> {
+    let mut leaves = Vec::new();
+    let compiled_query = tree_sitter::Query::new(tree.language().borrow(), query)
+        .with_context(|| format!("The user provided tree-sitter query '{query}' did not compile. Check the full error text for more details."))?;
+    let mut query_cursor = tree_sitter::QueryCursor::new();
+    let matches = query_cursor.matches(&compiled_query, tree.root_node(), text.as_bytes());
+    let visited_node_ids: HashSet<usize> = HashSet::new();
+    for m in matches {
+        for capture in m.captures {
+            let node = capture.node;
+            if !visited_node_ids.contains(&node.id()) && node.child_count() == 0 {
+                if let Some(leaf) = maybe_create_vec_leaf(node, text) {
+                    leaves.push(leaf);
+                }
+            }
+        }
+    }
+    Ok(Vector {
+        leaves,
+        source_text: text,
+    })
+}
+
 /// Create a `DiffVector` from a `tree_sitter` tree
 ///
 /// This method calls a helper function that does an in-order traversal of the tree and adds
 /// leaf nodes to a vector
+///
+/// The user can optionally supply a tree sitter query that will be used to filter the tree sitter
+/// nodes instead of doing an in-order traversal.
 #[time("info", "ast::{}")]
-fn from_ts_tree<'a>(tree: &'a TSTree, text: &'a str) -> Vector<'a> {
-    let leaves = RefCell::new(Vec::new());
-    build(&leaves, tree.root_node(), text);
-    Vector {
-        leaves: leaves.into_inner(),
-        source_text: text,
+fn from_ts_tree<'a>(
+    tree: &'a TSTree,
+    text: &'a str,
+    query: Option<&str>,
+) -> anyhow::Result<Vector<'a>> {
+    if let Some(query) = query {
+        info!("Tree sitter query was supplied");
+        flatten_matches_from_query(tree, text, query)
+    } else {
+        info!("No tree sitter query supplied");
+        let leaves = RefCell::new(Vec::new());
+        build(&leaves, tree.root_node(), text);
+        Ok(Vector {
+            leaves: leaves.into_inner(),
+            source_text: text,
+        })
     }
 }
 
@@ -425,6 +485,41 @@ impl<'a> PartialEq for Vector<'a> {
     }
 }
 
+/// Potentially process a node into a vector leaf object.
+///
+/// This assumes that the given node is an actual leaf node. This method will check some extra
+/// parameters and preprocess the text.
+///
+/// A node's text will be stripped of any newlines in the text.
+///
+/// In release mode this function will *not* check that the node is an actual leaf node because
+/// that would incur a lot of extra overhead.
+///
+/// This method will return `None` if the byte range the node refers to is an empty range.
+fn maybe_create_vec_leaf<'a>(node: tree_sitter::Node<'a>, text: &'a str) -> Option<VectorLeaf<'a>> {
+    debug_assert!(node.child_count() == 0);
+
+    if node.byte_range().is_empty() {
+        return None;
+    }
+    let node_text: &'a str = &text[node.byte_range()];
+
+    // HACK: this is a workaround that was put in place to work around the Go parser which
+    // puts newlines into their own nodes, which later causes errors when trying to print
+    // these nodes. We just ignore those nodes.
+    if node_text
+        .replace("\r\n", "")
+        .replace(['\n', '\r'], "")
+        .is_empty()
+    {
+        return None;
+    }
+    Some(VectorLeaf {
+        reference: node,
+        text: node_text,
+    })
+}
+
 /// Recursively build a vector from a given node
 ///
 /// This is a helper function that simply walks the tree and collects leaves in an in-order manner.
@@ -433,26 +528,8 @@ impl<'a> PartialEq for Vector<'a> {
 fn build<'a>(vector: &RefCell<Vec<VectorLeaf<'a>>>, node: tree_sitter::Node<'a>, text: &'a str) {
     // If the node is a leaf, we can stop traversing
     if node.child_count() == 0 {
-        // We only push an entry if the referenced text range isn't empty, since there's no point
-        // in having an empty text range. This also fixes a bug where the program would panic
-        // because it would attempt to access the 0th index in an empty text range.
-        if !node.byte_range().is_empty() {
-            let node_text: &'a str = &text[node.byte_range()];
-            // HACK: this is a workaround that was put in place to work around the Go parser which
-            // puts newlines into their own nodes, which later causes errors when trying to print
-            // these nodes. We just ignore those nodes.
-            if node_text
-                .replace("\r\n", "")
-                .replace(['\n', '\r'], "")
-                .is_empty()
-            {
-                return;
-            }
-
-            vector.borrow_mut().push(VectorLeaf {
-                reference: node,
-                text: node_text,
-            });
+        if let Some(leaf) = maybe_create_vec_leaf(node, text) {
+            vector.borrow_mut().push(leaf);
         }
         return;
     }
@@ -587,8 +664,8 @@ mod tests {
                 strip_whitespace: true,
                 ..Default::default()
             };
-            let entries_a = processor.process(&tree_a, text_a);
-            let entries_b = processor.process(&tree_b, text_b);
+            let entries_a = processor.process(&tree_a, text_a).unwrap();
+            let entries_b = processor.process(&tree_b, text_b).unwrap();
             assert_eq!(entries_a, entries_b);
         }
         {
@@ -596,8 +673,8 @@ mod tests {
                 strip_whitespace: false,
                 ..Default::default()
             };
-            let entries_a = processor.process(&tree_a, text_a);
-            let entries_b = processor.process(&tree_b, text_b);
+            let entries_a = processor.process(&tree_a, text_a).unwrap();
+            let entries_b = processor.process(&tree_b, text_b).unwrap();
             assert_ne!(entries_a, entries_b);
         }
     }

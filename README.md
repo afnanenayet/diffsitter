@@ -171,6 +171,24 @@ recursively if there's demand for it.
 }
 ```
 
+You can also provide a
+[tree sitter query](https://tree-sitter.github.io/tree-sitter/using-parsers#pattern-matching-with-queries)
+that will be applied to the AST parsed by the tree sitter library before the
+diff is computed. This can be used to perform advanced filtering to ignore
+certain types of changes from your diffs, for example.
+
+You can pass a query using the `--query` or `-q` flag when invoking the CLI.
+For example, if we only want to check for diffs between function names, we can
+invoke the CLI with the following parameters:
+
+```sh
+diffsitter a.txt b.txt --query "(function_definition name: (identifier) @name)"
+```
+
+If your tree-sitter query is malformed or can't be compiled by the tree-sitter
+library for any reason, `diffsitter` will exit with an error and relay the
+error printed by the tree-sitter library.
+
 ## Installation
 
 <a href="https://repology.org/project/diffsitter/versions">

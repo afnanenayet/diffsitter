@@ -37,14 +37,23 @@ static GLOBAL: Jemalloc = Jemalloc;
 ///
 /// If a config path isn't provided or there is some other failure, fall back to the default
 /// config. This will error out if a config is found but is found to be an invalid config.
+///
+/// This method may also override config options with command line flags that take precedence over
+/// the config file.
 fn derive_config(args: &Args) -> Result<Config> {
     if args.no_config {
         info!("`no_config` specified, falling back to default config");
         return Ok(Config::default());
     }
     match Config::try_from_file(args.config.as_ref()) {
-        // If the config was parsed correctly with no issue, we don't have to do anything
-        Ok(config) => Ok(config),
+        // If the config was parsed properly, we can add options from the command line
+        Ok(mut config) => {
+            // Only override the query in the config if the command line flag is set
+            if let Some(query) = &args.query {
+                config.input_processing.tree_sitter_query = Some(query.to_string());
+            }
+            Ok(config)
+        }
         // If there was an error, we need to figure out whether to propagate the error or fall
         // back to the default config
         Err(e) => match e {
@@ -135,10 +144,10 @@ fn run_diff(args: Args, config: Config) -> Result<()> {
     let ast_data_b = generate_ast_vector_data(path_b.clone(), file_type, &config.grammar)?;
     let diff_vec_a = config
         .input_processing
-        .process(&ast_data_a.tree, &ast_data_a.text);
+        .process(&ast_data_a.tree, &ast_data_a.text)?;
     let diff_vec_b = config
         .input_processing
-        .process(&ast_data_b.tree, &ast_data_b.text);
+        .process(&ast_data_b.tree, &ast_data_b.text)?;
 
     let hunks = diff::compute_edit_script(&diff_vec_a, &diff_vec_b)?;
     let params = DisplayData {

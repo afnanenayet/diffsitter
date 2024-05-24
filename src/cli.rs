@@ -67,6 +67,16 @@ pub struct Args {
     /// If no option is supplied then this will fall back to the default renderer.
     #[clap(short, long)]
     pub renderer: Option<String>,
+
+    /// A tree sitter query to apply to the ASTs before computing the diff.
+    ///
+    /// You can use this to filter out patterns and nodes that you don't want to show up inside of
+    /// a diff.
+    ///
+    /// If a query is supplied include/exlude specific node types from the config will be *ignored* and the diff
+    /// will only consider leaf nodes in the AST that match on the query.
+    #[clap(short, long)]
+    pub query: Option<String>,
 }
 
 /// A wrapper struct for `clap_complete::Shell`.
