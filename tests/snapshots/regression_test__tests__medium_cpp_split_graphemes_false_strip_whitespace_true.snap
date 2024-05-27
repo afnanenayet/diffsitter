@@ -121,7 +121,7 @@ RichHunks(
                                     row: 43,
                                     column: 4,
                                 },
-                                kind_id: 526,
+                                kind_id: 525,
                             },
                             Entry {
                                 reference: {Node :: (43, 7) - (43, 9)},
@@ -152,7 +152,7 @@ RichHunks(
                                     row: 44,
                                     column: 4,
                                 },
-                                kind_id: 526,
+                                kind_id: 525,
                             },
                             Entry {
                                 reference: {Node :: (44, 7) - (44, 9)},
@@ -183,7 +183,7 @@ RichHunks(
                                     row: 45,
                                     column: 4,
                                 },
-                                kind_id: 526,
+                                kind_id: 525,
                             },
                             Entry {
                                 reference: {Node :: (45, 7) - (45, 9)},
@@ -214,7 +214,7 @@ RichHunks(
                                     row: 46,
                                     column: 4,
                                 },
-                                kind_id: 526,
+                                kind_id: 525,
                             },
                             Entry {
                                 reference: {Node :: (46, 7) - (46, 9)},
