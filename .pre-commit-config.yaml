@@ -3,12 +3,16 @@ repos:
   rev: v4.5.0
   hooks:
   - id: check-yaml
+    exclude: ^grammars/.*
   - id: end-of-file-fixer
+    exclude: ^grammars/.*
   - id: trailing-whitespace
+    exclude: grammars/.*
 - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
   rev: v2.12.0
   hooks:
    - id: pretty-format-rust
+     exclude: ^grammars/.*|^test_data/.*
 - repo: https://github.com/afnanenayet/pre-commit-hooks
   rev: v0.1.0
   hooks:
