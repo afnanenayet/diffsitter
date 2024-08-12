@@ -50,29 +50,29 @@ path = "src/lib.rs"
 
 [dependencies]
 tree-sitter = "0.22.6"
-clap = { version = "4.5.9", features = [
+clap = { version = "4.5.15", features = [
   "derive",
   "env",
   "unicode",
   "wrap_help",
 ] }
-clap_complete = "4.5.7"
+clap_complete = "4.5.16"
 anyhow = { version = "1.0.86", features = ["backtrace"] }
 phf = { version = "0.11.2", features = ["macros"] }
 console = "0.15.8"
 strum = { version = "0.26.3", features = ["derive"] }
 strum_macros = "0.26.4"
-serde = { version = "1.0.206", features = ["derive"] }
-serde_json = "1.0.120"
+serde = { version = "1.0.207", features = ["derive"] }
+serde_json = "1.0.124"
 json5 = "0.4.1"
 pretty_env_logger = "0.5.0"
 log = { version = "0.4.22", features = ["std"] }
-thiserror = "1.0.61"
+thiserror = "1.0.63"
 logging_timer = "1.1.1"
 jemallocator = { version = "0.5.4", optional = true }
-libloading = "0.8.4"
+libloading = "0.8.5"
 unicode-segmentation = "1.11.0"
-human-panic = "2.0.0"
+human-panic = "2.0.1"
 shadow-rs = { version = "0.29.0", optional = true }
 enum_dispatch = "0.3.13"
 lazy_static = { version = "1.5.0", optional = true }
@@ -96,12 +96,12 @@ directories-next = "2.0.0"
 xdg = "2.5.2"
 
 [build-dependencies]
-cc = { version = "1.1.6", features = ["parallel"] }
+cc = { version = "1.1.10", features = ["parallel"] }
 phf = { version = "0.11.2", features = ["macros"] }
 anyhow = "1.0.86"
 cargo-emit = "0.2.1"
 rayon = "1.10.0"
-thiserror = "1.0.61"
+thiserror = "1.0.63"
 shadow-rs = { version = "0.29.0", optional = true }
 
 [features]
