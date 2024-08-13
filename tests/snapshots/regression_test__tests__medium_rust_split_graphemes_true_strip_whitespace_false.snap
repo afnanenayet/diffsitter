@@ -1,1046 +1,133 @@
 ---
 source: tests/regression_test.rs
-expression: diff_hunks
+expression: snapshot_string
 ---
-RichHunks(
-    [
-        New(
-            Hunk(
-                [
-                    Line {
-                        line_index: 2,
-                        entries: [
-                            Entry {
-                                reference: {Node , (2, 26) - (2, 27)},
-                                text: ",",
-                                start_position: Point {
-                                    row: 2,
-                                    column: 26,
-                                },
-                                end_position: Point {
-                                    row: 2,
-                                    column: 27,
-                                },
-                                kind_id: 81,
-                            },
-                        ],
-                    },
-                ],
-            ),
-        ),
-        New(
-            Hunk(
-                [
-                    Line {
-                        line_index: 20,
-                        entries: [
-                            Entry {
-                                reference: {Node identifier (20, 4) - (20, 15)},
-                                text: "_",
-                                start_position: Point {
-                                    row: 20,
-                                    column: 12,
-                                },
-                                end_position: Point {
-                                    row: 20,
-                                    column: 13,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node identifier (20, 4) - (20, 15)},
-                                text: "f",
-                                start_position: Point {
-                                    row: 20,
-                                    column: 13,
-                                },
-                                end_position: Point {
-                                    row: 20,
-                                    column: 14,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node identifier (20, 4) - (20, 15)},
-                                text: "n",
-                                start_position: Point {
-                                    row: 20,
-                                    column: 14,
-                                },
-                                end_position: Point {
-                                    row: 20,
-                                    column: 15,
-                                },
-                                kind_id: 1,
-                            },
-                        ],
-                    },
-                ],
-            ),
-        ),
-        New(
-            Hunk(
-                [
-                    Line {
-                        line_index: 42,
-                        entries: [
-                            Entry {
-                                reference: {Node , (42, 19) - (42, 20)},
-                                text: ",",
-                                start_position: Point {
-                                    row: 42,
-                                    column: 19,
-                                },
-                                end_position: Point {
-                                    row: 42,
-                                    column: 20,
-                                },
-                                kind_id: 81,
-                            },
-                        ],
-                    },
-                ],
-            ),
-        ),
-        New(
-            Hunk(
-                [
-                    Line {
-                        line_index: 59,
-                        entries: [
-                            Entry {
-                                reference: {Node identifier (59, 4) - (59, 9)},
-                                text: "b",
-                                start_position: Point {
-                                    row: 59,
-                                    column: 4,
-                                },
-                                end_position: Point {
-                                    row: 59,
-                                    column: 5,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node identifier (59, 4) - (59, 9)},
-                                text: "l",
-                                start_position: Point {
-                                    row: 59,
-                                    column: 5,
-                                },
-                                end_position: Point {
-                                    row: 59,
-                                    column: 6,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node identifier (59, 4) - (59, 9)},
-                                text: "e",
-                                start_position: Point {
-                                    row: 59,
-                                    column: 6,
-                                },
-                                end_position: Point {
-                                    row: 59,
-                                    column: 7,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node identifier (59, 4) - (59, 9)},
-                                text: "a",
-                                start_position: Point {
-                                    row: 59,
-                                    column: 7,
-                                },
-                                end_position: Point {
-                                    row: 59,
-                                    column: 8,
-                                },
-                                kind_id: 1,
-                            },
-                        ],
-                    },
-                ],
-            ),
-        ),
-        Old(
-            Hunk(
-                [
-                    Line {
-                        line_index: 53,
-                        entries: [
-                            Entry {
-                                reference: {Node identifier (53, 7) - (53, 11)},
-                                text: "a",
-                                start_position: Point {
-                                    row: 53,
-                                    column: 8,
-                                },
-                                end_position: Point {
-                                    row: 53,
-                                    column: 9,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node identifier (53, 7) - (53, 11)},
-                                text: "l",
-                                start_position: Point {
-                                    row: 53,
-                                    column: 9,
-                                },
-                                end_position: Point {
-                                    row: 53,
-                                    column: 10,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node identifier (53, 7) - (53, 11)},
-                                text: "k",
-                                start_position: Point {
-                                    row: 53,
-                                    column: 10,
-                                },
-                                end_position: Point {
-                                    row: 53,
-                                    column: 11,
-                                },
-                                kind_id: 1,
-                            },
-                        ],
-                    },
-                ],
-            ),
-        ),
-        Old(
-            Hunk(
-                [
-                    Line {
-                        line_index: 55,
-                        entries: [
-                            Entry {
-                                reference: {Node string_content (55, 18) - (55, 41)},
-                                text: "p",
-                                start_position: Point {
-                                    row: 55,
-                                    column: 21,
-                                },
-                                end_position: Point {
-                                    row: 55,
-                                    column: 22,
-                                },
-                                kind_id: 143,
-                            },
-                            Entry {
-                                reference: {Node string_content (55, 18) - (55, 41)},
-                                text: "u",
-                                start_position: Point {
-                                    row: 55,
-                                    column: 23,
-                                },
-                                end_position: Point {
-                                    row: 55,
-                                    column: 24,
-                                },
-                                kind_id: 143,
-                            },
-                            Entry {
-                                reference: {Node string_content (55, 18) - (55, 41)},
-                                text: "s",
-                                start_position: Point {
-                                    row: 55,
-                                    column: 24,
-                                },
-                                end_position: Point {
-                                    row: 55,
-                                    column: 25,
-                                },
-                                kind_id: 143,
-                            },
-                            Entry {
-                                reference: {Node string_content (55, 18) - (55, 41)},
-                                text: "e",
-                                start_position: Point {
-                                    row: 55,
-                                    column: 25,
-                                },
-                                end_position: Point {
-                                    row: 55,
-                                    column: 26,
-                                },
-                                kind_id: 143,
-                            },
-                        ],
-                    },
-                ],
-            ),
-        ),
-        New(
-            Hunk(
-                [
-                    Line {
-                        line_index: 61,
-                        entries: [
-                            Entry {
-                                reference: {Node string_content (61, 12) - (61, 34)},
-                                text: "b",
-                                start_position: Point {
-                                    row: 61,
-                                    column: 15,
-                                },
-                                end_position: Point {
-                                    row: 61,
-                                    column: 16,
-                                },
-                                kind_id: 143,
-                            },
-                            Entry {
-                                reference: {Node string_content (61, 12) - (61, 34)},
-                                text: "e",
-                                start_position: Point {
-                                    row: 61,
-                                    column: 16,
-                                },
-                                end_position: Point {
-                                    row: 61,
-                                    column: 17,
-                                },
-                                kind_id: 143,
-                            },
-                            Entry {
-                                reference: {Node string_content (61, 12) - (61, 34)},
-                                text: "t",
-                                start_position: Point {
-                                    row: 61,
-                                    column: 18,
-                                },
-                                end_position: Point {
-                                    row: 61,
-                                    column: 19,
-                                },
-                                kind_id: 143,
-                            },
-                        ],
-                    },
-                ],
-            ),
-        ),
-        New(
-            Hunk(
-                [
-                    Line {
-                        line_index: 67,
-                        entries: [
-                            Entry {
-                                reference: {Node identifier (67, 9) - (67, 11)},
-                                text: "e",
-                                start_position: Point {
-                                    row: 67,
-                                    column: 9,
-                                },
-                                end_position: Point {
-                                    row: 67,
-                                    column: 10,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node identifier (67, 9) - (67, 11)},
-                                text: "d",
-                                start_position: Point {
-                                    row: 67,
-                                    column: 10,
-                                },
-                                end_position: Point {
-                                    row: 67,
-                                    column: 11,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node string_content (67, 34) - (67, 39)},
-                                text: "L",
-                                start_position: Point {
-                                    row: 67,
-                                    column: 34,
-                                },
-                                end_position: Point {
-                                    row: 67,
-                                    column: 35,
-                                },
-                                kind_id: 143,
-                            },
-                            Entry {
-                                reference: {Node string_content (67, 34) - (67, 39)},
-                                text: "g",
-                                start_position: Point {
-                                    row: 67,
-                                    column: 36,
-                                },
-                                end_position: Point {
-                                    row: 67,
-                                    column: 37,
-                                },
-                                kind_id: 143,
-                            },
-                            Entry {
-                                reference: {Node string_content (67, 34) - (67, 39)},
-                                text: "a",
-                                start_position: Point {
-                                    row: 67,
-                                    column: 37,
-                                },
-                                end_position: Point {
-                                    row: 67,
-                                    column: 38,
-                                },
-                                kind_id: 143,
-                            },
-                            Entry {
-                                reference: {Node string_content (67, 34) - (67, 39)},
-                                text: "n",
-                                start_position: Point {
-                                    row: 67,
-                                    column: 38,
-                                },
-                                end_position: Point {
-                                    row: 67,
-                                    column: 39,
-                                },
-                                kind_id: 143,
-                            },
-                        ],
-                    },
-                ],
-            ),
-        ),
-        Old(
-            Hunk(
-                [
-                    Line {
-                        line_index: 61,
-                        entries: [
-                            Entry {
-                                reference: {Node identifier (61, 12) - (61, 17)},
-                                text: "d",
-                                start_position: Point {
-                                    row: 61,
-                                    column: 12,
-                                },
-                                end_position: Point {
-                                    row: 61,
-                                    column: 13,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node identifier (61, 12) - (61, 17)},
-                                text: "o",
-                                start_position: Point {
-                                    row: 61,
-                                    column: 13,
-                                },
-                                end_position: Point {
-                                    row: 61,
-                                    column: 14,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node identifier (61, 12) - (61, 17)},
-                                text: "l",
-                                start_position: Point {
-                                    row: 61,
-                                    column: 14,
-                                },
-                                end_position: Point {
-                                    row: 61,
-                                    column: 15,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node identifier (61, 12) - (61, 17)},
-                                text: "l",
-                                start_position: Point {
-                                    row: 61,
-                                    column: 15,
-                                },
-                                end_position: Point {
-                                    row: 61,
-                                    column: 16,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node identifier (61, 12) - (61, 17)},
-                                text: "y",
-                                start_position: Point {
-                                    row: 61,
-                                    column: 16,
-                                },
-                                end_position: Point {
-                                    row: 61,
-                                    column: 17,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node string_content (61, 40) - (61, 45)},
-                                text: "D",
-                                start_position: Point {
-                                    row: 61,
-                                    column: 40,
-                                },
-                                end_position: Point {
-                                    row: 61,
-                                    column: 41,
-                                },
-                                kind_id: 143,
-                            },
-                            Entry {
-                                reference: {Node string_content (61, 40) - (61, 45)},
-                                text: "l",
-                                start_position: Point {
-                                    row: 61,
-                                    column: 42,
-                                },
-                                end_position: Point {
-                                    row: 61,
-                                    column: 43,
-                                },
-                                kind_id: 143,
-                            },
-                            Entry {
-                                reference: {Node string_content (61, 40) - (61, 45)},
-                                text: "l",
-                                start_position: Point {
-                                    row: 61,
-                                    column: 43,
-                                },
-                                end_position: Point {
-                                    row: 61,
-                                    column: 44,
-                                },
-                                kind_id: 143,
-                            },
-                            Entry {
-                                reference: {Node string_content (61, 40) - (61, 45)},
-                                text: "y",
-                                start_position: Point {
-                                    row: 61,
-                                    column: 44,
-                                },
-                                end_position: Point {
-                                    row: 61,
-                                    column: 45,
-                                },
-                                kind_id: 143,
-                            },
-                        ],
-                    },
-                ],
-            ),
-        ),
-        New(
-            Hunk(
-                [
-                    Line {
-                        line_index: 70,
-                        entries: [
-                            Entry {
-                                reference: {Node identifier (70, 1) - (70, 3)},
-                                text: "e",
-                                start_position: Point {
-                                    row: 70,
-                                    column: 1,
-                                },
-                                end_position: Point {
-                                    row: 70,
-                                    column: 2,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node . (70, 3) - (70, 4)},
-                                text: ".",
-                                start_position: Point {
-                                    row: 70,
-                                    column: 3,
-                                },
-                                end_position: Point {
-                                    row: 70,
-                                    column: 4,
-                                },
-                                kind_id: 77,
-                            },
-                            Entry {
-                                reference: {Node field_identifier (70, 4) - (70, 9)},
-                                text: "b",
-                                start_position: Point {
-                                    row: 70,
-                                    column: 4,
-                                },
-                                end_position: Point {
-                                    row: 70,
-                                    column: 5,
-                                },
-                                kind_id: 341,
-                            },
-                            Entry {
-                                reference: {Node field_identifier (70, 4) - (70, 9)},
-                                text: "l",
-                                start_position: Point {
-                                    row: 70,
-                                    column: 5,
-                                },
-                                end_position: Point {
-                                    row: 70,
-                                    column: 6,
-                                },
-                                kind_id: 341,
-                            },
-                            Entry {
-                                reference: {Node field_identifier (70, 4) - (70, 9)},
-                                text: "e",
-                                start_position: Point {
-                                    row: 70,
-                                    column: 6,
-                                },
-                                end_position: Point {
-                                    row: 70,
-                                    column: 7,
-                                },
-                                kind_id: 341,
-                            },
-                            Entry {
-                                reference: {Node field_identifier (70, 4) - (70, 9)},
-                                text: "a",
-                                start_position: Point {
-                                    row: 70,
-                                    column: 7,
-                                },
-                                end_position: Point {
-                                    row: 70,
-                                    column: 8,
-                                },
-                                kind_id: 341,
-                            },
-                        ],
-                    },
-                    Line {
-                        line_index: 71,
-                        entries: [
-                            Entry {
-                                reference: {Node identifier (71, 1) - (71, 3)},
-                                text: "e",
-                                start_position: Point {
-                                    row: 71,
-                                    column: 1,
-                                },
-                                end_position: Point {
-                                    row: 71,
-                                    column: 2,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node identifier (71, 1) - (71, 3)},
-                                text: "d",
-                                start_position: Point {
-                                    row: 71,
-                                    column: 2,
-                                },
-                                end_position: Point {
-                                    row: 71,
-                                    column: 3,
-                                },
-                                kind_id: 1,
-                            },
-                        ],
-                    },
-                    Line {
-                        line_index: 72,
-                        entries: [
-                            Entry {
-                                reference: {Node identifier (72, 1) - (72, 3)},
-                                text: "e",
-                                start_position: Point {
-                                    row: 72,
-                                    column: 1,
-                                },
-                                end_position: Point {
-                                    row: 72,
-                                    column: 2,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node . (72, 3) - (72, 4)},
-                                text: ".",
-                                start_position: Point {
-                                    row: 72,
-                                    column: 3,
-                                },
-                                end_position: Point {
-                                    row: 72,
-                                    column: 4,
-                                },
-                                kind_id: 77,
-                            },
-                            Entry {
-                                reference: {Node field_identifier (72, 4) - (72, 9)},
-                                text: "b",
-                                start_position: Point {
-                                    row: 72,
-                                    column: 4,
-                                },
-                                end_position: Point {
-                                    row: 72,
-                                    column: 5,
-                                },
-                                kind_id: 341,
-                            },
-                            Entry {
-                                reference: {Node field_identifier (72, 4) - (72, 9)},
-                                text: "l",
-                                start_position: Point {
-                                    row: 72,
-                                    column: 5,
-                                },
-                                end_position: Point {
-                                    row: 72,
-                                    column: 6,
-                                },
-                                kind_id: 341,
-                            },
-                            Entry {
-                                reference: {Node field_identifier (72, 4) - (72, 9)},
-                                text: "e",
-                                start_position: Point {
-                                    row: 72,
-                                    column: 6,
-                                },
-                                end_position: Point {
-                                    row: 72,
-                                    column: 7,
-                                },
-                                kind_id: 341,
-                            },
-                            Entry {
-                                reference: {Node field_identifier (72, 4) - (72, 9)},
-                                text: "a",
-                                start_position: Point {
-                                    row: 72,
-                                    column: 7,
-                                },
-                                end_position: Point {
-                                    row: 72,
-                                    column: 8,
-                                },
-                                kind_id: 341,
-                            },
-                        ],
-                    },
-                ],
-            ),
-        ),
-        Old(
-            Hunk(
-                [
-                    Line {
-                        line_index: 64,
-                        entries: [
-                            Entry {
-                                reference: {Node identifier (64, 4) - (64, 9)},
-                                text: "o",
-                                start_position: Point {
-                                    row: 64,
-                                    column: 5,
-                                },
-                                end_position: Point {
-                                    row: 64,
-                                    column: 6,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node identifier (64, 4) - (64, 9)},
-                                text: "l",
-                                start_position: Point {
-                                    row: 64,
-                                    column: 6,
-                                },
-                                end_position: Point {
-                                    row: 64,
-                                    column: 7,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node identifier (64, 4) - (64, 9)},
-                                text: "l",
-                                start_position: Point {
-                                    row: 64,
-                                    column: 7,
-                                },
-                                end_position: Point {
-                                    row: 64,
-                                    column: 8,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node identifier (64, 4) - (64, 9)},
-                                text: "y",
-                                start_position: Point {
-                                    row: 64,
-                                    column: 8,
-                                },
-                                end_position: Point {
-                                    row: 64,
-                                    column: 9,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node . (64, 9) - (64, 10)},
-                                text: ".",
-                                start_position: Point {
-                                    row: 64,
-                                    column: 9,
-                                },
-                                end_position: Point {
-                                    row: 64,
-                                    column: 10,
-                                },
-                                kind_id: 77,
-                            },
-                            Entry {
-                                reference: {Node field_identifier (64, 10) - (64, 14)},
-                                text: "a",
-                                start_position: Point {
-                                    row: 64,
-                                    column: 11,
-                                },
-                                end_position: Point {
-                                    row: 64,
-                                    column: 12,
-                                },
-                                kind_id: 341,
-                            },
-                            Entry {
-                                reference: {Node field_identifier (64, 10) - (64, 14)},
-                                text: "l",
-                                start_position: Point {
-                                    row: 64,
-                                    column: 12,
-                                },
-                                end_position: Point {
-                                    row: 64,
-                                    column: 13,
-                                },
-                                kind_id: 341,
-                            },
-                            Entry {
-                                reference: {Node field_identifier (64, 10) - (64, 14)},
-                                text: "k",
-                                start_position: Point {
-                                    row: 64,
-                                    column: 13,
-                                },
-                                end_position: Point {
-                                    row: 64,
-                                    column: 14,
-                                },
-                                kind_id: 341,
-                            },
-                        ],
-                    },
-                    Line {
-                        line_index: 65,
-                        entries: [
-                            Entry {
-                                reference: {Node identifier (65, 4) - (65, 9)},
-                                text: "d",
-                                start_position: Point {
-                                    row: 65,
-                                    column: 4,
-                                },
-                                end_position: Point {
-                                    row: 65,
-                                    column: 5,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node identifier (65, 4) - (65, 9)},
-                                text: "o",
-                                start_position: Point {
-                                    row: 65,
-                                    column: 5,
-                                },
-                                end_position: Point {
-                                    row: 65,
-                                    column: 6,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node identifier (65, 4) - (65, 9)},
-                                text: "l",
-                                start_position: Point {
-                                    row: 65,
-                                    column: 6,
-                                },
-                                end_position: Point {
-                                    row: 65,
-                                    column: 7,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node identifier (65, 4) - (65, 9)},
-                                text: "l",
-                                start_position: Point {
-                                    row: 65,
-                                    column: 7,
-                                },
-                                end_position: Point {
-                                    row: 65,
-                                    column: 8,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node identifier (65, 4) - (65, 9)},
-                                text: "y",
-                                start_position: Point {
-                                    row: 65,
-                                    column: 8,
-                                },
-                                end_position: Point {
-                                    row: 65,
-                                    column: 9,
-                                },
-                                kind_id: 1,
-                            },
-                        ],
-                    },
-                    Line {
-                        line_index: 66,
-                        entries: [
-                            Entry {
-                                reference: {Node identifier (66, 4) - (66, 9)},
-                                text: "o",
-                                start_position: Point {
-                                    row: 66,
-                                    column: 5,
-                                },
-                                end_position: Point {
-                                    row: 66,
-                                    column: 6,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node identifier (66, 4) - (66, 9)},
-                                text: "l",
-                                start_position: Point {
-                                    row: 66,
-                                    column: 6,
-                                },
-                                end_position: Point {
-                                    row: 66,
-                                    column: 7,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node identifier (66, 4) - (66, 9)},
-                                text: "l",
-                                start_position: Point {
-                                    row: 66,
-                                    column: 7,
-                                },
-                                end_position: Point {
-                                    row: 66,
-                                    column: 8,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node identifier (66, 4) - (66, 9)},
-                                text: "y",
-                                start_position: Point {
-                                    row: 66,
-                                    column: 8,
-                                },
-                                end_position: Point {
-                                    row: 66,
-                                    column: 9,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node . (66, 9) - (66, 10)},
-                                text: ".",
-                                start_position: Point {
-                                    row: 66,
-                                    column: 9,
-                                },
-                                end_position: Point {
-                                    row: 66,
-                                    column: 10,
-                                },
-                                kind_id: 77,
-                            },
-                            Entry {
-                                reference: {Node field_identifier (66, 10) - (66, 14)},
-                                text: "a",
-                                start_position: Point {
-                                    row: 66,
-                                    column: 11,
-                                },
-                                end_position: Point {
-                                    row: 66,
-                                    column: 12,
-                                },
-                                kind_id: 341,
-                            },
-                            Entry {
-                                reference: {Node field_identifier (66, 10) - (66, 14)},
-                                text: "l",
-                                start_position: Point {
-                                    row: 66,
-                                    column: 12,
-                                },
-                                end_position: Point {
-                                    row: 66,
-                                    column: 13,
-                                },
-                                kind_id: 341,
-                            },
-                            Entry {
-                                reference: {Node field_identifier (66, 10) - (66, 14)},
-                                text: "k",
-                                start_position: Point {
-                                    row: 66,
-                                    column: 13,
-                                },
-                                end_position: Point {
-                                    row: 66,
-                                    column: 14,
-                                },
-                                kind_id: 341,
-                            },
-                        ],
-                    },
-                ],
-            ),
-        ),
-    ],
+New(Line={line_index=2, entries=
+[
+    Entry{',', start=(2, 26), end=(2, 27)}
+]}
+)
+New(Line={line_index=20, entries=
+[
+    Entry{'_', start=(20, 12), end=(20, 13)}
+    Entry{'f', start=(20, 13), end=(20, 14)}
+    Entry{'n', start=(20, 14), end=(20, 15)}
+]}
+)
+New(Line={line_index=42, entries=
+[
+    Entry{',', start=(42, 19), end=(42, 20)}
+]}
+)
+New(Line={line_index=59, entries=
+[
+    Entry{'b', start=(59, 4), end=(59, 5)}
+    Entry{'l', start=(59, 5), end=(59, 6)}
+    Entry{'e', start=(59, 6), end=(59, 7)}
+    Entry{'a', start=(59, 7), end=(59, 8)}
+]}
+)
+Old(Line={line_index=53, entries=
+[
+    Entry{'a', start=(53, 8), end=(53, 9)}
+    Entry{'l', start=(53, 9), end=(53, 10)}
+    Entry{'k', start=(53, 10), end=(53, 11)}
+]}
+)
+Old(Line={line_index=55, entries=
+[
+    Entry{'p', start=(55, 21), end=(55, 22)}
+    Entry{'u', start=(55, 23), end=(55, 24)}
+    Entry{'s', start=(55, 24), end=(55, 25)}
+    Entry{'e', start=(55, 25), end=(55, 26)}
+]}
+)
+New(Line={line_index=61, entries=
+[
+    Entry{'b', start=(61, 15), end=(61, 16)}
+    Entry{'e', start=(61, 16), end=(61, 17)}
+    Entry{'t', start=(61, 18), end=(61, 19)}
+]}
+)
+New(Line={line_index=67, entries=
+[
+    Entry{'e', start=(67, 9), end=(67, 10)}
+    Entry{'d', start=(67, 10), end=(67, 11)}
+    Entry{'L', start=(67, 34), end=(67, 35)}
+    Entry{'g', start=(67, 36), end=(67, 37)}
+    Entry{'a', start=(67, 37), end=(67, 38)}
+    Entry{'n', start=(67, 38), end=(67, 39)}
+]}
+)
+Old(Line={line_index=61, entries=
+[
+    Entry{'d', start=(61, 12), end=(61, 13)}
+    Entry{'o', start=(61, 13), end=(61, 14)}
+    Entry{'l', start=(61, 14), end=(61, 15)}
+    Entry{'l', start=(61, 15), end=(61, 16)}
+    Entry{'y', start=(61, 16), end=(61, 17)}
+    Entry{'D', start=(61, 40), end=(61, 41)}
+    Entry{'l', start=(61, 42), end=(61, 43)}
+    Entry{'l', start=(61, 43), end=(61, 44)}
+    Entry{'y', start=(61, 44), end=(61, 45)}
+]}
+)
+New(Line={line_index=70, entries=
+[
+    Entry{'e', start=(70, 1), end=(70, 2)}
+    Entry{'.', start=(70, 3), end=(70, 4)}
+    Entry{'b', start=(70, 4), end=(70, 5)}
+    Entry{'l', start=(70, 5), end=(70, 6)}
+    Entry{'e', start=(70, 6), end=(70, 7)}
+    Entry{'a', start=(70, 7), end=(70, 8)}
+]}
+
+Line={line_index=71, entries=
+[
+    Entry{'e', start=(71, 1), end=(71, 2)}
+    Entry{'d', start=(71, 2), end=(71, 3)}
+]}
+
+Line={line_index=72, entries=
+[
+    Entry{'e', start=(72, 1), end=(72, 2)}
+    Entry{'.', start=(72, 3), end=(72, 4)}
+    Entry{'b', start=(72, 4), end=(72, 5)}
+    Entry{'l', start=(72, 5), end=(72, 6)}
+    Entry{'e', start=(72, 6), end=(72, 7)}
+    Entry{'a', start=(72, 7), end=(72, 8)}
+]}
+)
+Old(Line={line_index=64, entries=
+[
+    Entry{'o', start=(64, 5), end=(64, 6)}
+    Entry{'l', start=(64, 6), end=(64, 7)}
+    Entry{'l', start=(64, 7), end=(64, 8)}
+    Entry{'y', start=(64, 8), end=(64, 9)}
+    Entry{'.', start=(64, 9), end=(64, 10)}
+    Entry{'a', start=(64, 11), end=(64, 12)}
+    Entry{'l', start=(64, 12), end=(64, 13)}
+    Entry{'k', start=(64, 13), end=(64, 14)}
+]}
+
+Line={line_index=65, entries=
+[
+    Entry{'d', start=(65, 4), end=(65, 5)}
+    Entry{'o', start=(65, 5), end=(65, 6)}
+    Entry{'l', start=(65, 6), end=(65, 7)}
+    Entry{'l', start=(65, 7), end=(65, 8)}
+    Entry{'y', start=(65, 8), end=(65, 9)}
+]}
+
+Line={line_index=66, entries=
+[
+    Entry{'o', start=(66, 5), end=(66, 6)}
+    Entry{'l', start=(66, 6), end=(66, 7)}
+    Entry{'l', start=(66, 7), end=(66, 8)}
+    Entry{'y', start=(66, 8), end=(66, 9)}
+    Entry{'.', start=(66, 9), end=(66, 10)}
+    Entry{'a', start=(66, 11), end=(66, 12)}
+    Entry{'l', start=(66, 12), end=(66, 13)}
+    Entry{'k', start=(66, 13), end=(66, 14)}
+]}
 )

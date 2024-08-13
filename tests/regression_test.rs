@@ -1,12 +1,65 @@
 #[cfg(test)]
 mod tests {
-    use insta::assert_debug_snapshot;
+    use insta::assert_snapshot;
     use libdiffsitter::{
-        diff::compute_edit_script, generate_ast_vector_data, input_processing::TreeSitterProcessor,
+        diff::{compute_edit_script, DocumentType, Hunk, RichHunks},
+        generate_ast_vector_data,
+        input_processing::{Entry, TreeSitterProcessor},
         parse::GrammarConfig,
     };
     use std::path::PathBuf;
     use test_case::test_case;
+
+    fn generate_snapshot_entries_string(entries: &[&Entry<'_>]) -> String {
+        let each_entry: Vec<String> = entries
+            .iter()
+            .map(|entry| {
+                format!(
+                    // Keep the indent so the snapshot diffs are more aesthetically pleasing
+                    "    Entry{{'{}', start=({}, {}), end=({}, {})}}",
+                    entry.text,
+                    entry.start_position.row,
+                    entry.start_position.column,
+                    entry.end_position.row,
+                    entry.end_position.column,
+                )
+            })
+            .collect();
+        each_entry.join("\n")
+    }
+
+    fn generate_snapshot_hunk_string(hunk: &Hunk) -> String {
+        hunk.0
+            .iter()
+            .map(|line| {
+                format!(
+                    // Added the newlines so the diffs from `insta` are easier to parse
+                    "Line={{line_index={}, entries=\n[\n{}\n]}}\n",
+                    line.line_index,
+                    &generate_snapshot_entries_string(line.entries.as_slice())
+                )
+            })
+            .collect::<Vec<String>>()
+            .join("\n")
+    }
+
+    /// Generate a string representation of a rich hunk object so it can be compared using the
+    /// `insta` snapshot library.
+    ///
+    /// We use this instead of the [Debug] representation of the type because the debug
+    /// representation includes fields like kind_id that are a little more finnicky and break tests
+    /// often.
+    fn generate_snapshot_rich_hunks_string(hunks: RichHunks<'_>) -> String {
+        hunks
+            .0
+            .iter()
+            .map(|document_type| match document_type {
+                DocumentType::Old(hunk) => format!("Old({})", generate_snapshot_hunk_string(hunk)),
+                DocumentType::New(hunk) => format!("New({})", generate_snapshot_hunk_string(hunk)),
+            })
+            .collect::<Vec<String>>()
+            .join("\n")
+    }
 
     /// Get paths to input files for tests
     fn get_test_paths(test_type: &str, test_name: &str, ext: &str) -> (PathBuf, PathBuf) {
@@ -61,6 +114,7 @@ mod tests {
         // and we end up with more snapshot files than there are tests, which cause
         // nondeterministic errors.
         let snapshot_name = format!("{test_type}_{name}_split_graphemes_{split_graphemes}_strip_whitespace_{strip_whitespace}");
-        assert_debug_snapshot!(snapshot_name, diff_hunks);
+        let snapshot_string = generate_snapshot_rich_hunks_string(diff_hunks);
+        assert_snapshot!(snapshot_name, snapshot_string);
     }
 }
