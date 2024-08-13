@@ -275,7 +275,6 @@ fn grammars() -> Vec<GrammarCompileInfo<'static>> {
             display_name: "ocaml",
             path: PathBuf::from("grammars/tree-sitter-ocaml/grammars/ocaml"),
             c_sources: vec!["parser.c", "scanner.c"],
-            include_paths: Some(vec!["grammars/tree-sitter-ocaml/include".into()]),
             ..Default::default()
         },
         GrammarCompileInfo {
