@@ -1,56 +1,14 @@
 ---
 source: tests/regression_test.rs
-expression: diff_hunks
+expression: snapshot_string
 ---
-RichHunks(
-    [
-        New(
-            Hunk(
-                [
-                    Line {
-                        line_index: 5,
-                        entries: [
-                            Entry {
-                                reference: {Node inline (4, 0) - (5, 14)},
-                                text: "3",
-                                start_position: Point {
-                                    row: 5,
-                                    column: 13,
-                                },
-                                end_position: Point {
-                                    row: 5,
-                                    column: 14,
-                                },
-                                kind_id: 204,
-                            },
-                        ],
-                    },
-                ],
-            ),
-        ),
-        Old(
-            Hunk(
-                [
-                    Line {
-                        line_index: 6,
-                        entries: [
-                            Entry {
-                                reference: {Node inline (5, 0) - (6, 14)},
-                                text: "2",
-                                start_position: Point {
-                                    row: 6,
-                                    column: 13,
-                                },
-                                end_position: Point {
-                                    row: 6,
-                                    column: 14,
-                                },
-                                kind_id: 204,
-                            },
-                        ],
-                    },
-                ],
-            ),
-        ),
-    ],
+New(Line={line_index=5, entries=
+[
+    Entry{'3', start=(5, 13), end=(5, 14)}
+]}
+)
+Old(Line={line_index=6, entries=
+[
+    Entry{'2', start=(6, 13), end=(6, 14)}
+]}
 )

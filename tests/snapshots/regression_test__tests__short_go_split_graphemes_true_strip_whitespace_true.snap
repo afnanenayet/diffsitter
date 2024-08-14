@@ -1,217 +1,30 @@
 ---
 source: tests/regression_test.rs
-expression: diff_hunks
+expression: snapshot_string
 ---
-RichHunks(
-    [
-        New(
-            Hunk(
-                [
-                    Line {
-                        line_index: 5,
-                        entries: [
-                            Entry {
-                                reference: {Node identifier (5, 1) - (5, 3)},
-                                text: "d",
-                                start_position: Point {
-                                    row: 5,
-                                    column: 1,
-                                },
-                                end_position: Point {
-                                    row: 5,
-                                    column: 2,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node identifier (5, 1) - (5, 3)},
-                                text: "o",
-                                start_position: Point {
-                                    row: 5,
-                                    column: 2,
-                                },
-                                end_position: Point {
-                                    row: 5,
-                                    column: 3,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node ( (5, 3) - (5, 4)},
-                                text: "(",
-                                start_position: Point {
-                                    row: 5,
-                                    column: 3,
-                                },
-                                end_position: Point {
-                                    row: 5,
-                                    column: 4,
-                                },
-                                kind_id: 9,
-                            },
-                            Entry {
-                                reference: {Node ) (5, 4) - (5, 5)},
-                                text: ")",
-                                start_position: Point {
-                                    row: 5,
-                                    column: 4,
-                                },
-                                end_position: Point {
-                                    row: 5,
-                                    column: 5,
-                                },
-                                kind_id: 10,
-                            },
-                        ],
-                    },
-                    Line {
-                        line_index: 6,
-                        entries: [
-                            Entry {
-                                reference: {Node } (6, 0) - (6, 1)},
-                                text: "}",
-                                start_position: Point {
-                                    row: 6,
-                                    column: 0,
-                                },
-                                end_position: Point {
-                                    row: 6,
-                                    column: 1,
-                                },
-                                kind_id: 24,
-                            },
-                        ],
-                    },
-                ],
-            ),
-        ),
-        New(
-            Hunk(
-                [
-                    Line {
-                        line_index: 8,
-                        entries: [
-                            Entry {
-                                reference: {Node func (8, 0) - (8, 4)},
-                                text: "f",
-                                start_position: Point {
-                                    row: 8,
-                                    column: 0,
-                                },
-                                end_position: Point {
-                                    row: 8,
-                                    column: 1,
-                                },
-                                kind_id: 15,
-                            },
-                            Entry {
-                                reference: {Node func (8, 0) - (8, 4)},
-                                text: "u",
-                                start_position: Point {
-                                    row: 8,
-                                    column: 1,
-                                },
-                                end_position: Point {
-                                    row: 8,
-                                    column: 2,
-                                },
-                                kind_id: 15,
-                            },
-                            Entry {
-                                reference: {Node func (8, 0) - (8, 4)},
-                                text: "n",
-                                start_position: Point {
-                                    row: 8,
-                                    column: 2,
-                                },
-                                end_position: Point {
-                                    row: 8,
-                                    column: 3,
-                                },
-                                kind_id: 15,
-                            },
-                            Entry {
-                                reference: {Node func (8, 0) - (8, 4)},
-                                text: "c",
-                                start_position: Point {
-                                    row: 8,
-                                    column: 3,
-                                },
-                                end_position: Point {
-                                    row: 8,
-                                    column: 4,
-                                },
-                                kind_id: 15,
-                            },
-                            Entry {
-                                reference: {Node identifier (8, 5) - (8, 7)},
-                                text: "d",
-                                start_position: Point {
-                                    row: 8,
-                                    column: 5,
-                                },
-                                end_position: Point {
-                                    row: 8,
-                                    column: 6,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node identifier (8, 5) - (8, 7)},
-                                text: "o",
-                                start_position: Point {
-                                    row: 8,
-                                    column: 6,
-                                },
-                                end_position: Point {
-                                    row: 8,
-                                    column: 7,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node ( (8, 7) - (8, 8)},
-                                text: "(",
-                                start_position: Point {
-                                    row: 8,
-                                    column: 7,
-                                },
-                                end_position: Point {
-                                    row: 8,
-                                    column: 8,
-                                },
-                                kind_id: 9,
-                            },
-                            Entry {
-                                reference: {Node ) (8, 8) - (8, 9)},
-                                text: ")",
-                                start_position: Point {
-                                    row: 8,
-                                    column: 8,
-                                },
-                                end_position: Point {
-                                    row: 8,
-                                    column: 9,
-                                },
-                                kind_id: 10,
-                            },
-                            Entry {
-                                reference: {Node { (8, 10) - (8, 11)},
-                                text: "{",
-                                start_position: Point {
-                                    row: 8,
-                                    column: 10,
-                                },
-                                end_position: Point {
-                                    row: 8,
-                                    column: 11,
-                                },
-                                kind_id: 23,
-                            },
-                        ],
-                    },
-                ],
-            ),
-        ),
-    ],
+New(Line={line_index=5, entries=
+[
+    Entry{'d', start=(5, 1), end=(5, 2)}
+    Entry{'o', start=(5, 2), end=(5, 3)}
+    Entry{'(', start=(5, 3), end=(5, 4)}
+    Entry{')', start=(5, 4), end=(5, 5)}
+]}
+
+Line={line_index=6, entries=
+[
+    Entry{'}', start=(6, 0), end=(6, 1)}
+]}
+)
+New(Line={line_index=8, entries=
+[
+    Entry{'f', start=(8, 0), end=(8, 1)}
+    Entry{'u', start=(8, 1), end=(8, 2)}
+    Entry{'n', start=(8, 2), end=(8, 3)}
+    Entry{'c', start=(8, 3), end=(8, 4)}
+    Entry{'d', start=(8, 5), end=(8, 6)}
+    Entry{'o', start=(8, 6), end=(8, 7)}
+    Entry{'(', start=(8, 7), end=(8, 8)}
+    Entry{')', start=(8, 8), end=(8, 9)}
+    Entry{'{', start=(8, 10), end=(8, 11)}
+]}
 )

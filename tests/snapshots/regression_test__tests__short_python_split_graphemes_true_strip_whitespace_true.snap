@@ -1,108 +1,18 @@
 ---
 source: tests/regression_test.rs
-expression: diff_hunks
+expression: snapshot_string
 ---
-RichHunks(
-    [
-        New(
-            Hunk(
-                [
-                    Line {
-                        line_index: 4,
-                        entries: [
-                            Entry {
-                                reference: {Node string_content (1, 7) - (5, 4)},
-                                text: "n",
-                                start_position: Point {
-                                    row: 4,
-                                    column: 12,
-                                },
-                                end_position: Point {
-                                    row: 4,
-                                    column: 13,
-                                },
-                                kind_id: 231,
-                            },
-                            Entry {
-                                reference: {Node string_content (1, 7) - (5, 4)},
-                                text: "o",
-                                start_position: Point {
-                                    row: 4,
-                                    column: 13,
-                                },
-                                end_position: Point {
-                                    row: 4,
-                                    column: 14,
-                                },
-                                kind_id: 231,
-                            },
-                            Entry {
-                                reference: {Node string_content (1, 7) - (5, 4)},
-                                text: "t",
-                                start_position: Point {
-                                    row: 4,
-                                    column: 14,
-                                },
-                                end_position: Point {
-                                    row: 4,
-                                    column: 15,
-                                },
-                                kind_id: 231,
-                            },
-                        ],
-                    },
-                ],
-            ),
-        ),
-        New(
-            Hunk(
-                [
-                    Line {
-                        line_index: 8,
-                        entries: [
-                            Entry {
-                                reference: {Node identifier (8, 4) - (8, 5)},
-                                text: "x",
-                                start_position: Point {
-                                    row: 8,
-                                    column: 4,
-                                },
-                                end_position: Point {
-                                    row: 8,
-                                    column: 5,
-                                },
-                                kind_id: 1,
-                            },
-                            Entry {
-                                reference: {Node = (8, 10) - (8, 11)},
-                                text: "=",
-                                start_position: Point {
-                                    row: 8,
-                                    column: 10,
-                                },
-                                end_position: Point {
-                                    row: 8,
-                                    column: 11,
-                                },
-                                kind_id: 44,
-                            },
-                            Entry {
-                                reference: {Node integer (8, 12) - (8, 13)},
-                                text: "1",
-                                start_position: Point {
-                                    row: 8,
-                                    column: 12,
-                                },
-                                end_position: Point {
-                                    row: 8,
-                                    column: 13,
-                                },
-                                kind_id: 93,
-                            },
-                        ],
-                    },
-                ],
-            ),
-        ),
-    ],
+New(Line={line_index=4, entries=
+[
+    Entry{'n', start=(4, 12), end=(4, 13)}
+    Entry{'o', start=(4, 13), end=(4, 14)}
+    Entry{'t', start=(4, 14), end=(4, 15)}
+]}
+)
+New(Line={line_index=8, entries=
+[
+    Entry{'x', start=(8, 4), end=(8, 5)}
+    Entry{'=', start=(8, 10), end=(8, 11)}
+    Entry{'1', start=(8, 12), end=(8, 13)}
+]}
 )
