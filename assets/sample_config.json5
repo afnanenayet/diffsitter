@@ -37,6 +37,8 @@
               "underline": false,
               "prefix": "-",
           },
+          // Truncate the diffed filepaths to the terminal width.
+          "truncate-paths-to-term-width": true,
         },
         // We can also define custom render modes which are defined as a
         // key-value mapping of tags to rendering configs.
@@ -72,6 +74,7 @@
                 "underline": false,
                 "prefix": "-",
             },
+            "truncate-paths-to-term-width": true,
           },
         },
     },
