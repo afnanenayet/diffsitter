@@ -39,6 +39,28 @@ pub fn truncate_str(s: &str, width: usize, fill: &str) -> String {
     format!("{}{}{}", &s[..length_to_take], fill, &s[end_idx..])
 }
 
+/// Create a string from multiple objects that support `AsRef<str>`.
+///
+/// This was lifted from
+/// [concat-string](https://github.com/FaultyRAM/concat-string/blob/942a4aa8244d5ff00dd9b9a34ecd0484feaf9a7f/src/lib.rs#L69C1-L79C2)
+/// and incorporates a [proposed PR](https://github.com/FaultyRAM/concat-string/pull/1.) to add
+/// support for trailing commas.
+///
+/// This is supposed to be pretty efficient, compared to all of the string concatenation techniques
+/// in Rust according to some [benchmarks](https://github.com/hoodie/concatenation_benchmarks-rs).
+#[macro_export]
+macro_rules! concat_string {
+    () => { String::with_capacity(0) };
+    ($($s:expr),+ $(,)?) => {{
+        use std::ops::AddAssign;
+        let mut len = 0;
+        $(len.add_assign(AsRef::<str>::as_ref(&$s).len());)+
+        let mut buf = String::with_capacity(len);
+        $(buf.push_str($s.as_ref());)+
+        buf
+    }};
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -65,5 +87,33 @@ mod tests {
     #[should_panic]
     fn test_bad_fill_length() {
         truncate_str(".", 1, "ahh too long!");
+    }
+
+    // Concat string tests were copied from
+    // https://github.com/FaultyRAM/concat-string/blob/942a4aa8244d5ff00dd9b9a34ecd0484feaf9a7f/src/lib.rs
+
+    #[test]
+    fn concat_string_0_args() {
+        let s = concat_string!();
+        assert_eq!(s, String::from(""));
+    }
+
+    #[test]
+    fn concat_string_1_arg() {
+        let s = concat_string!("foo");
+        assert_eq!(s, String::from("foo"));
+    }
+
+    #[test]
+    fn concat_string_str_string() {
+        // Skipping formatting here because we want to test that the trailing comma works
+        #[rustfmt::skip]
+        let s = {
+        concat_string!(
+            "foo",
+            String::from("bar"),
+        )
+        };
+        assert_eq!(s, String::from("foobar"));
     }
 }
