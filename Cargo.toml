@@ -79,7 +79,7 @@ lazy_static = { version = "1.5.0", optional = true }
 
 [dev-dependencies]
 test-case = "3.3.1"
-pretty_assertions = "1.4.0"
+pretty_assertions = "1.4.1"
 mockall = "0.13.0"
 
 # We need the backtrace feature to enable snapshot name generation in
