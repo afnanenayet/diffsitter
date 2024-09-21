@@ -14,7 +14,7 @@ use std::ops::{Index, IndexMut};
 /// ```
 ///
 /// A negative index corresponds to an offset from the end of the vector.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct NegIdxVec<T> {
     /// The underlying vector for the negative index vector
     pub data: Vec<T>,
@@ -43,6 +43,24 @@ impl<T> NegIdxVec<T> {
         v.resize_with(len, f);
 
         Self { data: v, len }
+    }
+
+    /// Reserve capacity for a number of *additional* elements.
+    pub fn reserve(&mut self, additional: usize) {
+        self.data.reserve(additional);
+    }
+
+    /// Reserve space for exactly `additional` elements.
+    ///
+    /// This will not over-allocate.
+    pub fn reserve_exact(&mut self, additional: usize) {
+        self.data.reserve_exact(additional);
+    }
+
+    /// Return the total number of elements the vector can hold without requiring another
+    /// allocation.
+    pub fn capacity(&self) -> usize {
+        self.data.capacity()
     }
 
     /// An internal helper for the indexing methods.
@@ -87,6 +105,22 @@ impl<T> From<Vec<T>> for NegIdxVec<T> {
     }
 }
 
+impl<T> FromIterator<T> for NegIdxVec<T> {
+    fn from_iter<Iter: IntoIterator<Item = T>>(iter: Iter) -> Self {
+        let data = Vec::from_iter(iter);
+        let len = data.len();
+        Self { data, len }
+    }
+}
+
+impl<T: Clone> From<&[T]> for NegIdxVec<T> {
+    fn from(value: &[T]) -> Self {
+        let v: Vec<T> = Vec::from(value);
+        let len = v.len();
+        Self { data: v, len }
+    }
+}
+
 impl<T> Default for NegIdxVec<T> {
     fn default() -> Self {
         Self {
@@ -123,6 +157,8 @@ impl<T> IntoIterator for NegIdxVec<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use pretty_assertions::assert_eq;
+    use rstest::rstest;
 
     /// Generate a test vector for test cases
     fn test_vector() -> Vec<u32> {
@@ -157,10 +193,67 @@ mod tests {
     }
 
     #[test]
+    fn test_is_empty() {
+        {
+            let vec = NegIdxVec::<u8>::default();
+            assert!(vec.is_empty());
+            assert_eq!(vec.len(), 0);
+        }
+        {
+            let vec = NegIdxVec::<u8>::from(vec![0, 1, 2, 3]);
+            assert!(!vec.is_empty());
+            assert_eq!(vec.len(), 4);
+        }
+    }
+
+    #[test]
     #[should_panic]
     fn test_negative_overflow() {
         let vec = NegIdxVec::<u32>::from(test_vector());
         let idx = (vec.len() as i32) * -2;
         let _ = vec[idx];
+    }
+
+    #[rstest]
+    #[case(1)]
+    #[case(2)]
+    #[case(10)]
+    fn test_create_new_with_size(#[case] size: usize) {
+        let vec = NegIdxVec::<u32>::new(size, Default::default);
+        assert_eq!(vec.len(), size);
+    }
+
+    #[rstest]
+    #[case(1)]
+    #[case(10)]
+    #[case(200)]
+    fn test_reserve_inexact(#[case] additional_elements: usize) {
+        let mut vec = NegIdxVec::<u8>::default();
+        assert_eq!(vec.len(), 0);
+        vec.reserve(additional_elements);
+        assert!(vec.capacity() >= additional_elements);
+    }
+
+    #[test]
+    fn test_create_default() {
+        let vec = NegIdxVec::<u8>::default();
+        assert_eq!(vec.len(), 0);
+        assert!(vec.is_empty());
+    }
+
+    #[test]
+    fn test_into_iter() {
+        let source_vec: Vec<i32> = vec![0, 1, 2, 3, 10, 49];
+        let neg_idx_vec: NegIdxVec<i32> = NegIdxVec::from(&source_vec[..]);
+        let collected_vec: Vec<i32> = neg_idx_vec.into_iter().collect();
+        assert_eq!(source_vec, collected_vec);
+    }
+
+    #[test]
+    fn test_from_iter() {
+        let source_vec: Vec<i32> = vec![0, 1, 2, 3, 10, 49];
+        let neg_idx_vec = NegIdxVec::from_iter(source_vec.clone().into_iter());
+        let extracted_vec: Vec<i32> = neg_idx_vec.into_iter().collect();
+        assert_eq!(source_vec, extracted_vec);
     }
 }
