@@ -1,6 +1,11 @@
-use crate::diff::{Hunk, Line, RichHunk, RichHunks};
-use crate::render::{
-    default_option, opt_color_def, ColorDef, DisplayData, EmphasizedStyle, RegularStyle, Renderer,
+use crate::{
+    concat_string,
+    diff::{Hunk, Line, RichHunk, RichHunks},
+    render::{
+        default_option, opt_color_def, ColorDef, DisplayData, EmphasizedStyle, RegularStyle,
+        Renderer,
+    },
+    string_utils::truncate_str,
 };
 use anyhow::Result;
 use console::{Color, Style, Term};
@@ -14,6 +19,9 @@ const TITLE_SEPARATOR: &str = "=";
 /// The ascii separator used after the hunk title
 const HUNK_TITLE_SEPARATOR: &str = "-";
 
+/// The string to fill in when truncating paths that are too long for the term width.
+const PATH_TRUNCATION_STR: &str = "...";
+
 /// Something similar to the unified diff format.
 ///
 /// NOTE: is a huge misnomer because this isn't really a unified diff.
@@ -26,6 +34,16 @@ const HUNK_TITLE_SEPARATOR: &str = "-";
 pub struct Unified {
     pub addition: TextStyle,
     pub deletion: TextStyle,
+
+    /// Whether to truncate displayed paths to fit the terminal width.
+    ///
+    /// When diffsitter displays this diff, it will show the filenames being compared first. If the
+    /// length of a filename exceeds the width of the terminal, diffsitter will truncate the
+    /// filename so it fits within the reported terminal width. If this is disabled, no truncation
+    /// will be applied and the path length might wrap around.
+    ///
+    /// Truncation will not apply if diffsitter can't detect the terminal width.
+    pub truncate_paths_to_term_width: bool,
 }
 
 /// Text style options for additions or deleetions.
@@ -70,6 +88,7 @@ impl Default for Unified {
                 underline: false,
                 prefix: "- ".into(),
             },
+            truncate_paths_to_term_width: true,
         }
     }
 }
@@ -182,14 +201,14 @@ impl Unified {
         let title_len = format!("{old_fname}{divider}{new_fname}").len();
         // Set terminal width equal to the title length if there is no terminal info is available, then the title will
         // stack horizontally be default
-        let term_width = if let Some(term_info) = term_info {
+        let (term_width, detected_term_width) = if let Some(term_info) = term_info {
             if let Some((_height, width)) = term_info.size_checked() {
-                width.into()
+                (width.into(), true)
             } else {
-                title_len
+                (title_len, false)
             }
         } else {
-            title_len
+            (title_len, false)
         };
         // We only display the horizontal title format if we know we have enough horizontal space
         // to display it. If we can't determine the terminal width, play it safe and default to
@@ -207,21 +226,38 @@ impl Unified {
         let (styled_title_str, title_sep) = match stack_style {
             TitleStack::Horizontal => {
                 let title_len = old_fname.len() + divider.len() + new_fname.len();
-                let styled_title_str = format!(
-                    "{}{}{}",
-                    old_fmt.regular.0.apply_to(old_fname),
+                let styled_title_str = concat_string!(
+                    old_fmt.regular.0.apply_to(old_fname).to_string(),
                     divider,
-                    new_fmt.regular.0.apply_to(new_fname)
+                    new_fmt.regular.0.apply_to(new_fname).to_string(),
                 );
                 let title_sep = TITLE_SEPARATOR.repeat(title_len);
                 (styled_title_str, title_sep)
             }
             TitleStack::Vertical => {
-                let title_len = max(old_fname.len(), new_fname.len());
-                let styled_title_str = format!(
-                    "{}\n{}",
-                    old_fmt.regular.0.apply_to(old_fname),
-                    new_fmt.regular.0.apply_to(new_fname)
+                // Truncate a string if the user config option is set and we found the terminal
+                // width.
+                let maybe_truncate = |fname: &str| {
+                    if self.truncate_paths_to_term_width && detected_term_width {
+                        truncate_str(old_fname, term_width, PATH_TRUNCATION_STR)
+                    } else {
+                        fname.to_string()
+                    }
+                };
+
+                // Possibly truncate a string (based on config options and term info) and apply
+                // the given regular style to it.
+                let style_maybe_trunc = |fname: &str, fmt: &FormattingDirectives| {
+                    let s = maybe_truncate(fname);
+                    fmt.regular.0.apply_to(&s).to_string()
+                };
+                let old_fname_to_display = maybe_truncate(old_fname);
+                let new_fname_to_display = maybe_truncate(new_fname);
+                let title_len = max(old_fname_to_display.len(), new_fname_to_display.len());
+                let styled_title_str = concat_string!(
+                    style_maybe_trunc(&old_fname_to_display, old_fmt),
+                    "\n",
+                    style_maybe_trunc(&new_fname_to_display, new_fmt),
                 );
                 let title_sep = TITLE_SEPARATOR.repeat(title_len);
                 (styled_title_str, title_sep)
