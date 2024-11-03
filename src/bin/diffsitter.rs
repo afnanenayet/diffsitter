@@ -38,32 +38,7 @@ static GLOBAL: Jemalloc = Jemalloc;
 /// If a config path isn't provided or there is some other failure, fall back to the default
 /// config. This will error out if a config is found but is found to be an invalid config.
 fn derive_config(args: &Args) -> Result<Config> {
-    if args.no_config {
-        info!("`no_config` specified, falling back to default config");
-        return Ok(Config::default());
-    }
-    match Config::try_from_file(args.config.as_ref()) {
-        // If the config was parsed correctly with no issue, we don't have to do anything
-        Ok(config) => Ok(config),
-        // If there was an error, we need to figure out whether to propagate the error or fall
-        // back to the default config
-        Err(e) => match e {
-            // If it is a recoverable error, ex: not being able to find the default file path or
-            // not finding a file at all isn't a hard error, it makes sense for us to use the
-            // default config.
-            ReadError::ReadFileFailure(_) | ReadError::NoDefault => {
-                warn!("{} - falling back to default config", e);
-                Ok(Config::default())
-            }
-            // If we *do* find a config file and it doesn't parse correctly, we should return an
-            // error and let the user know that their config is incorrect. This isn't a browser,
-            // we can't just silently march forward and hope for the best.
-            ReadError::DeserializationFailure(e) => {
-                error!("Failed to deserialize config file: {}", e);
-                Err(anyhow::anyhow!(e))
-            }
-        },
-    }
+    Ok(Config::new(args)?)
 }
 
 /// Check if the input files are supported by this program.
