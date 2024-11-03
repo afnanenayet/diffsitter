@@ -1,8 +1,9 @@
 //! Utilities and definitions for config handling
 
 use crate::input_processing::TreeSitterProcessor;
-use crate::{parse::GrammarConfig, render::RenderConfig};
+use crate::{cli::Args, parse::GrammarConfig, render::RenderConfig};
 use anyhow::{Context, Result};
+use figment;
 use json5 as json;
 use log::info;
 use serde::{Deserialize, Serialize};
@@ -18,6 +19,12 @@ use directories_next::ProjectDirs;
 
 /// The expected filename for the config file
 const CFG_FILE_NAME: &str = "config.json5";
+
+/// The app name used for configuration purposes.
+const APP_NAME: &str = "diffsitter";
+
+/// Prefix for setting config values through an environmnt variable
+const ENV_CFG_PREFIX: &str = "DIFFSITTER_";
 
 /// The config struct for the application
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
@@ -92,6 +99,30 @@ impl Config {
             .with_context(|| format!("Failed to parse config at {}", config_fp.to_string_lossy()))
             .map_err(ReadError::DeserializationFailure)?;
         Ok(config)
+    }
+
+    /// Create a new config, parsed hierarchically.
+    ///
+    /// Checks the following sources (in order of precedence):
+    ///
+    /// - command line flags (can we actually do this?)
+    /// - Config file passed in via command line flag XOR config file specified by env var
+    /// - Defaults
+    // TODO: check if we can incorporate clap
+    pub fn new(cli_args: &Args) -> Result<Self> {
+        use figment::providers::{Env, Format, Json, Serialized, Toml};
+        let fig = {
+            let mut fig = figment::Figment::from(Serialized::defaults(Config::default()));
+            if !cli_args.no_config {
+                fig = fig.merge(Json::file(default_config_file_path()?));
+
+                if let Some(p) = &cli_args.config {
+                    fig = fig.merge(Json::file(p));
+                }
+            }
+            fig.merge(Env::prefixed(ENV_CFG_PREFIX))
+        };
+        Ok(fig.extract()?)
     }
 }
 
