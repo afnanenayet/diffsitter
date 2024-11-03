@@ -1,11 +1,14 @@
 //! Utilities and definitions for config handling
 
 use crate::input_processing::TreeSitterProcessor;
-use crate::{parse::GrammarConfig, render::RenderConfig};
+use crate::{cli::Args, parse::GrammarConfig, render::RenderConfig};
 use anyhow::{Context, Result};
+use figment::{self, providers::Format, Provider};
 use json5 as json;
 use log::info;
 use serde::{Deserialize, Serialize};
+use std::ffi::OsStr;
+use std::ops::Deref;
 use std::{
     collections::HashMap,
     fs, io,
@@ -18,6 +21,12 @@ use directories_next::ProjectDirs;
 
 /// The expected filename for the config file
 const CFG_FILE_NAME: &str = "config.json5";
+
+/// The app name used for configuration purposes.
+const APP_NAME: &str = "diffsitter";
+
+/// Prefix for setting config values through an environmnt variable
+const ENV_CFG_PREFIX: &str = "DIFFSITTER_";
 
 /// The config struct for the application
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
@@ -92,6 +101,80 @@ impl Config {
             .with_context(|| format!("Failed to parse config at {}", config_fp.to_string_lossy()))
             .map_err(ReadError::DeserializationFailure)?;
         Ok(config)
+    }
+
+    /// Create a new config, parsed hierarchically.
+    ///
+    /// Config values are pulled from the following sources listed in order of precedence:
+    ///
+    /// - environment variables
+    /// - command line flags
+    /// - config files specified at the command line
+    /// - the hardcoded defaults
+    // TODO: check if we can incorporate clap or add the command line flags somehow
+    pub fn new(cli_args: &Args) -> Result<Self> {
+        use figment::{
+            providers::{Env, Serialized},
+            Figment,
+        };
+        let fig: Figment = {
+            let mut fig = figment::Figment::from(Serialized::defaults(Config::default()));
+            let cfg_paths = config_file_path_helper(cli_args)?;
+            // Most important paths come first, but with fig we reverse the order so the most
+            // important sources override the sources with lower precedence.
+            for path in cfg_paths.iter().rev() {
+                fig = fig_file_format_helper(fig, path)?;
+            }
+            fig.merge(Env::prefixed(ENV_CFG_PREFIX))
+        };
+        Ok(fig.extract()?)
+    }
+}
+
+/// Get the file paths to read the config from based on the command line arguments, in order of
+/// precedence.
+///
+/// This can return an empty vector if the user specifies the --no-config flag, which means we should only use
+/// the built-in default values.
+///
+/// The return value lists files in order of highest precedence to lowest precedence.
+fn config_file_path_helper(args: &Args) -> Result<Vec<PathBuf>> {
+    if args.no_config {
+        return Ok(Vec::new());
+    }
+    let mut res = Vec::new();
+    if let Some(path) = &args.config {
+        res.push(path.clone());
+    }
+    res.push(default_config_file_path()?);
+    Ok(res)
+}
+
+/// Helper function that dispatches a parser based on the file extension.
+///
+/// We have this because the app uses JSON files for configs, which was done because of some old
+/// issues with the TOML crate and a mistake around serde and defaults. This app will migrate to
+/// TOML, but we will continue allowing JSON so we don't break people's workflows.
+///
+/// The function takes the figment as an argument because we can't return the objects generically
+/// as dyn Traits (they need to be sized), and you can't use return impl since we might return
+/// differnt types, so we just merge with the figment in this function.
+fn fig_file_format_helper(fig: figment::Figment, path: &Path) -> Result<figment::Figment> {
+    use figment::providers::{Json, Toml};
+    let ext = {
+        if let Some(ext) = path.extension().and_then(OsStr::to_str) {
+            ext
+        } else {
+            anyhow::bail!(
+                "Config path {} does not have a valid extension",
+                path.to_string_lossy()
+            );
+        }
+    };
+    match ext {
+        ".json" | ".json5" => Ok(fig.merge(Json::file(path))),
+        ".toml" => Ok(fig.merge(Toml::file(path))),
+        _ => Err(anyhow::anyhow!("Unrecognized extension {ext}")),
     }
 }
 
