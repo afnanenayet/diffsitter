@@ -50,30 +50,30 @@ path = "src/lib.rs"
 
 [dependencies]
 tree-sitter = "0.22.6"
-clap = { version = "4.5.20", features = [
+clap = { version = "4.5.21", features = [
   "derive",
   "env",
   "unicode",
   "wrap_help",
 ] }
-clap_complete = "4.5.35"
-anyhow = { version = "1.0.89", features = ["backtrace"] }
+clap_complete = "4.5.38"
+anyhow = { version = "1.0.93", features = ["backtrace"] }
 phf = { version = "0.11.2", features = ["macros"] }
 console = "0.15.8"
 strum = { version = "0.26.3", features = ["derive"] }
 strum_macros = "0.26.4"
-serde = { version = "1.0.210", features = ["derive"] }
-serde_json = "1.0.128"
+serde = { version = "1.0.215", features = ["derive"] }
+serde_json = "1.0.133"
 json5 = "0.4.1"
 pretty_env_logger = "0.5.0"
 log = { version = "0.4.22", features = ["std"] }
-thiserror = "1.0.64"
+thiserror = "1.0.69"
 logging_timer = "1.1.1"
 jemallocator = { version = "0.5.4", optional = true }
 libloading = "0.8.5"
 unicode-segmentation = "1.12.0"
 human-panic = "2.0.2"
-shadow-rs = { version = "0.35.1", optional = true }
+shadow-rs = { version = "0.35.2", optional = true }
 enum_dispatch = "0.3.13"
 lazy_static = { version = "1.5.0", optional = true }
 
@@ -86,7 +86,7 @@ rstest = "0.23"
 # We need the backtrace feature to enable snapshot name generation in
 # single-threaded tests (tests using cargo cross run single-threaded due to
 # limitations with QEMU).
-insta = { version = "1.40.0" }
+insta = { version = "1.41.1" }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 # We use directories next to get the windows config path
@@ -97,13 +97,13 @@ directories-next = "2.0.0"
 xdg = "2.5.2"
 
 [build-dependencies]
-cc = { version = "1.1.30", features = ["parallel"] }
+cc = { version = "1.2.1", features = ["parallel"] }
 phf = { version = "0.11.2", features = ["macros"] }
-anyhow = "1.0.89"
+anyhow = "1.0.93"
 cargo-emit = "0.2.1"
 rayon = "1.10.0"
-thiserror = "1.0.64"
-shadow-rs = { version = "0.35.1", optional = true }
+thiserror = "1.0.69"
+shadow-rs = { version = "0.35.2", optional = true }
 
 [features]
 default = ["static-grammar-libs"]
