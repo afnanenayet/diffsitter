@@ -252,7 +252,7 @@ mod tests {
     #[test]
     fn test_from_iter() {
         let source_vec: Vec<i32> = vec![0, 1, 2, 3, 10, 49];
-        let neg_idx_vec = NegIdxVec::from_iter(source_vec.clone().into_iter());
+        let neg_idx_vec = NegIdxVec::from_iter(source_vec.clone());
         let extracted_vec: Vec<i32> = neg_idx_vec.into_iter().collect();
         assert_eq!(source_vec, extracted_vec);
     }

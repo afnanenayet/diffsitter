@@ -90,7 +90,7 @@ pub struct Line<'a> {
     pub entries: Vec<&'a Entry<'a>>,
 }
 
-impl<'a> Line<'a> {
+impl Line<'_> {
     #[must_use]
     pub fn new(line_index: usize) -> Self {
         Line {
@@ -224,7 +224,7 @@ impl<'a> Hunk<'a> {
     }
 }
 
-impl<'a> Default for Hunk<'a> {
+impl Default for Hunk<'_> {
     fn default() -> Self {
         Self::new()
     }
@@ -383,7 +383,7 @@ impl<'a> RichHunksBuilder<'a> {
     }
 }
 
-impl<'a> Default for RichHunksBuilder<'a> {
+impl Default for RichHunksBuilder<'_> {
     fn default() -> Self {
         Self::new()
     }
@@ -420,7 +420,7 @@ impl<'a> Hunks<'a> {
     }
 }
 
-impl<'a> Default for Hunks<'a> {
+impl Default for Hunks<'_> {
     fn default() -> Self {
         Self::new()
     }
