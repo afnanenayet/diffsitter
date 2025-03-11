@@ -434,7 +434,10 @@ fn main() -> anyhow::Result<()> {
     compile_static_grammars()?;
 
     #[cfg(feature = "better-build-info")]
-    shadow_rs::new().map_err(|e| return anyhow::anyhow!(e.to_string()))?;
+    shadow_rs::ShadowBuilder::builder()
+        .build_pattern(shadow_rs::BuildPattern::RealTime)
+        .build()
+        .map_err(|e| return anyhow::anyhow!(e.to_string()))?;
 
     // TODO(afnan): add generaetd shell completion scripts
     Ok(())
