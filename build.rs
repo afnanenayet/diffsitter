@@ -437,7 +437,7 @@ fn main() -> anyhow::Result<()> {
     shadow_rs::ShadowBuilder::builder()
         .build_pattern(shadow_rs::BuildPattern::RealTime)
         .build()
-        .map_err(|e| return anyhow::anyhow!(e.to_string()))?;
+        .map_err(|e| anyhow::anyhow!(e.to_string()))?;
 
     // TODO(afnan): add generaetd shell completion scripts
     Ok(())
