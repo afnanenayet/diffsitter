@@ -58,6 +58,11 @@
     "include-kinds": [
       "method_definition"
     ],
-    "strip-whitespace": true
+    "strip-whitespace": true,
+    "pseudo-leaf-types": {
+      "markdown": [
+        "inline"
+      ]
+    }
   }
 }
