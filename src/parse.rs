@@ -415,7 +415,7 @@ pub fn lang_name_from_file_ext<'cfg>(
 /// version, so we can check whether the ABI versions are compatible before loading the grammar
 /// as a tree-sitter parser, which should prevent segfaults due to these sorts of mismatches.
 pub fn ts_language_abi_checked(ts_language: &Language) -> Result<(), LoadingError> {
-    let loaded_ts_version = ts_language.version();
+    let loaded_ts_version = ts_language.abi_version();
     let is_abi_compatible =
         (MIN_COMPATIBLE_LANGUAGE_VERSION..=LANGUAGE_VERSION).contains(&loaded_ts_version);
     if !is_abi_compatible {
