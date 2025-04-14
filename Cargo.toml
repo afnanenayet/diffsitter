@@ -50,7 +50,7 @@ path = "src/lib.rs"
 
 [dependencies]
 tree-sitter = "0.25.3"
-clap = { version = "4.5.35", features = [
+clap = { version = "4.5.36", features = [
   "derive",
   "env",
   "unicode",
