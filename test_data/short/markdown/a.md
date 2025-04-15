@@ -3,5 +3,7 @@
 This is
 a paragraph
 
-This 
+This
 is paragraph 2
+
+# Heading (A)
