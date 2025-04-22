@@ -11,16 +11,15 @@
 mod json;
 mod unified;
 
+use self::json::Json;
 use crate::diff::RichHunks;
+use anyhow::anyhow;
 use console::{Color, Style, Term};
 use enum_dispatch::enum_dispatch;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::io::Write;
-use strum::{self, Display, EnumIter, EnumString};
+use strum::{self, Display, EnumIter, EnumString, IntoEnumIterator};
 use unified::Unified;
-
-use self::json::Json;
 
 /// The parameters required to display a diff for a particular document
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -210,12 +209,6 @@ pub struct RenderConfig {
 
     unified: unified::Unified,
     json: json::Json,
-
-    /// A mapping of tags to custom rendering configurations.
-    ///
-    /// These names *must* be distinct from the renderer names, otherwise the keys will conflict
-    /// with the configs set for each renderer in this config section.
-    custom: HashMap<String, Renderers>,
 }
 
 impl Default for RenderConfig {
@@ -225,56 +218,24 @@ impl Default for RenderConfig {
             default: default_renderer.to_string(),
             unified: Unified::default(),
             json: Json::default(),
-            custom: HashMap::default(),
         }
     }
 }
 
 impl RenderConfig {
-    /// Verify that the custom user supplied keys don't conflict with built in types.
-    fn check_custom_render_keys(&self) -> anyhow::Result<()> {
-        let custom_map = &self.custom;
-        let render_iter = <Renderers as strum::IntoEnumIterator>::iter();
-        let conflicting_keys: Vec<String> = render_iter
-            .filter_map(|key| {
-                let key_str = key.to_string();
-                if custom_map.contains_key(&key_str) {
-                    Some(key_str)
-                } else {
-                    None
-                }
-            })
-            .collect();
-        let error_string = conflicting_keys.join(", ");
-        anyhow::ensure!(
-            conflicting_keys.is_empty(),
-            "Received invalid keys {}",
-            error_string
-        );
-        Ok(())
-    }
-
     /// Get the renderer specified by the given tag.
     ///
     /// If the tag is not specified this will fall back to the default renderer. This is a
     /// relatively expensive operation so it should be used once and the result should be saved.
     pub fn get_renderer(self, tag: Option<String>) -> anyhow::Result<Renderers> {
-        self.check_custom_render_keys()?;
-        let final_tag = if let Some(t) = tag { t } else { self.default };
-        let mut render_map = self.custom;
-
-        // TODO(afnan): automate this with a proc macro so we don't have to
-        // manually sync each renderer engine by hand.
-        render_map.insert("unified".into(), Renderers::from(self.unified));
-        render_map.insert("json".into(), Renderers::from(self.json));
-
-        if let Some(renderer) = render_map.remove(&final_tag) {
-            Ok(renderer)
+        if let Some(t) = tag {
+            let cand_enum = Renderers::iter().find(|e| e.to_string() == t);
+            match cand_enum {
+                None => Err(anyhow!("'{}' is not a valid renderer", &t)),
+                Some(renderer) => Ok(renderer),
+            }
         } else {
-            Err(anyhow::anyhow!(
-                "Specified tag {} not found in renderers",
-                final_tag
-            ))
+            Ok(Renderers::default())
         }
     }
 }
@@ -284,35 +245,18 @@ mod tests {
     use super::*;
     use test_case::test_case;
 
-    #[test]
-    fn test_default_render_keys() {
-        let cfg = RenderConfig::default();
-        assert!(cfg.check_custom_render_keys().is_ok());
-    }
-
-    #[test_case("unified", true)]
-    #[test_case("json", true)]
-    #[test_case("gibberish", false)]
-    fn test_custom_renderer_tags_collision(tag: &str, expect_err: bool) {
-        let custom_map: HashMap<String, Renderers> =
-            HashMap::from([(tag.to_string(), Renderers::Unified(Unified::default()))]);
-        let cfg = RenderConfig {
-            custom: custom_map,
-            ..Default::default()
-        };
-        let res = cfg.check_custom_render_keys();
-        if expect_err {
-            assert!(res.is_err());
-        } else {
-            assert!(res.is_ok());
-        }
-    }
-
     #[test_case("unified")]
     #[test_case("json")]
-    fn test_get_renderer_default_map(tag: &str) {
+    fn test_get_renderer_custom_tag(tag: &str) {
         let cfg = RenderConfig::default();
         let res = cfg.get_renderer(Some(tag.into()));
         assert!(res.is_ok());
+    }
+
+    #[test]
+    fn test_render_config_default_tag() {
+        let cfg = RenderConfig::default();
+        let res = cfg.get_renderer(None);
+        assert_eq!(res.unwrap(), Renderers::default());
     }
 }
