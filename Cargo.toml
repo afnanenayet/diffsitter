@@ -50,14 +50,14 @@ path = "src/lib.rs"
 
 [dependencies]
 tree-sitter = "0.25.3"
-clap = { version = "4.5.35", features = [
+clap = { version = "4.5.37", features = [
   "derive",
   "env",
   "unicode",
   "wrap_help",
 ] }
 clap_complete = "4.5.47"
-anyhow = { version = "1.0.97", features = ["backtrace"] }
+anyhow = { version = "1.0.98", features = ["backtrace"] }
 phf = { version = "0.11.3", features = ["macros"] }
 console = "0.15.11"
 strum = { version = "0.27.1", features = ["derive"] }
@@ -99,7 +99,7 @@ xdg = "2.5.2"
 [build-dependencies]
 cc = { version = "1.2.19", features = ["parallel"] }
 phf = { version = "0.11.3", features = ["macros"] }
-anyhow = "1.0.97"
+anyhow = "1.0.98"
 cargo-emit = "0.2.1"
 rayon = "1.10.0"
 thiserror = "2.0.12"
