@@ -86,7 +86,7 @@ rstest = "0.25"
 # We need the backtrace feature to enable snapshot name generation in
 # single-threaded tests (tests using cargo cross run single-threaded due to
 # limitations with QEMU).
-insta = { version = "1.42.2" }
+insta = { version = "1.43.0" }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 # We use directories next to get the windows config path
