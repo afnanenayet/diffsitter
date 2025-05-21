@@ -106,8 +106,16 @@ mod tests {
             ..Default::default()
         };
 
-        let diff_vec_a = processor.process(&ast_data_a.tree, &ast_data_a.text);
-        let diff_vec_b = processor.process(&ast_data_b.tree, &ast_data_b.text);
+        let diff_vec_a = processor.process(
+            &ast_data_a.tree,
+            &ast_data_a.text,
+            &ast_data_a.resolved_language,
+        );
+        let diff_vec_b = processor.process(
+            &ast_data_b.tree,
+            &ast_data_b.text,
+            &ast_data_b.resolved_language,
+        );
         let diff_hunks = compute_edit_script(&diff_vec_a, &diff_vec_b).unwrap();
 
         // We have to set the snapshot name manually, otherwise there appear to be threading issues
