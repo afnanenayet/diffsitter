@@ -437,7 +437,7 @@ pub fn parse_file(
     p: &Path,
     language: Option<&str>,
     config: &GrammarConfig,
-) -> Result<Tree, LoadingError> {
+) -> Result<(Tree, String), LoadingError> {
     // Either use the provided language or infer the language to use with the parser from the file
     // extension
     let resolved_language = match language {
@@ -457,7 +457,7 @@ pub fn parse_file(
     match parser.parse(&text, None) {
         Some(ast) => {
             debug!("Parsed AST");
-            Ok(ast)
+            Ok((ast, resolved_language.to_string()))
         }
         None => Err(LoadingError::TSParseFailure(p.to_owned())),
     }

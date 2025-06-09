@@ -6,7 +6,7 @@
 use logging_timer::time;
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::hash::{Hash, Hasher};
 use std::ops::{Deref, DerefMut};
 use std::{cell::RefCell, ops::Index, path::PathBuf};
@@ -52,6 +52,12 @@ pub struct TreeSitterProcessor {
     /// diffs that do not account for line breaks. This is useful especially for more text heavy
     /// documents like markdown files.
     pub strip_whitespace: bool,
+
+    /// A mapping of tree sitter languages to node types to treat like leaves.
+    ///
+    /// This is useful for grammars like markdown, which has an "inline" node type should be diffed
+    /// on. Users can set global leaf types using "all" as the language key.
+    pub pseudo_leaf_types: HashMap<String, HashSet<String>>,
 }
 
 // TODO: if we want to do any string transformations we need to store Cow strings.
@@ -61,11 +67,14 @@ pub struct TreeSitterProcessor {
 
 impl Default for TreeSitterProcessor {
     fn default() -> Self {
+        let pseudo_leaf_types: HashMap<String, HashSet<String>> =
+            HashMap::from([("markdown".into(), HashSet::from(["inline".into()]))]);
         Self {
             split_graphemes: true,
             exclude_kinds: None,
             include_kinds: None,
             strip_whitespace: true,
+            pseudo_leaf_types,
         }
     }
 }
@@ -81,8 +90,10 @@ impl<'a> TSNodeTrait for TSNodeWrapper<'a> {
 
 impl TreeSitterProcessor {
     #[time("info", "ast::{}")]
-    pub fn process<'a>(&self, tree: &'a TSTree, text: &'a str) -> Vec<Entry<'a>> {
-        let ast_vector = from_ts_tree(tree, text);
+    pub fn process<'a>(&self, tree: &'a TSTree, text: &'a str, lang_name: &str) -> Vec<Entry<'a>> {
+        let empty_set: HashSet<String> = HashSet::new();
+        let pseudo_leaf_types = self.pseudo_leaf_types.get(lang_name).unwrap_or(&empty_set);
+        let ast_vector = from_ts_tree(tree, text, pseudo_leaf_types);
         let iter = ast_vector
             .leaves
             .iter()
@@ -141,9 +152,13 @@ impl TreeSitterProcessor {
 /// This method calls a helper function that does an in-order traversal of the tree and adds
 /// leaf nodes to a vector
 #[time("info", "ast::{}")]
-fn from_ts_tree<'a>(tree: &'a TSTree, text: &'a str) -> Vector<'a> {
+fn from_ts_tree<'a>(
+    tree: &'a TSTree,
+    text: &'a str,
+    pseudo_leaf_types: &HashSet<String>,
+) -> Vector<'a> {
     let leaves = RefCell::new(Vec::new());
-    build(&leaves, tree.root_node(), text);
+    build(&leaves, tree.root_node(), text, pseudo_leaf_types);
     Vector {
         leaves: leaves.into_inner(),
         source_text: text,
@@ -356,6 +371,9 @@ pub struct VectorData {
 
     /// The file path that the text corresponds to
     pub path: PathBuf,
+
+    /// The identifier for the language that was inferred.
+    pub resolved_language: String,
 }
 
 impl<'a> Vector<'a> {
@@ -364,9 +382,13 @@ impl<'a> Vector<'a> {
     /// This method calls a helper function that does an in-order traversal of the tree and adds
     /// leaf nodes to a vector
     #[time("info", "ast::{}")]
-    pub fn from_ts_tree(tree: &'a TSTree, text: &'a str) -> Self {
+    pub fn from_ts_tree(
+        tree: &'a TSTree,
+        text: &'a str,
+        pseudo_leaf_types: &HashSet<String>,
+    ) -> Self {
         let leaves = RefCell::new(Vec::new());
-        build(&leaves, tree.root_node(), text);
+        build(&leaves, tree.root_node(), text, pseudo_leaf_types);
         Vector {
             leaves: leaves.into_inner(),
             source_text: text,
@@ -430,9 +452,14 @@ impl<'a> PartialEq for Vector<'a> {
 /// This is a helper function that simply walks the tree and collects leaves in an in-order manner.
 /// Every time it encounters a leaf node, it stores the metadata and reference to the node in an
 /// `Entry` struct.
-fn build<'a>(vector: &RefCell<Vec<VectorLeaf<'a>>>, node: tree_sitter::Node<'a>, text: &'a str) {
+fn build<'a>(
+    vector: &RefCell<Vec<VectorLeaf<'a>>>,
+    node: tree_sitter::Node<'a>,
+    text: &'a str,
+    pseudo_leaf_types: &HashSet<String>,
+) {
     // If the node is a leaf, we can stop traversing
-    if node.child_count() == 0 {
+    if node.child_count() == 0 || pseudo_leaf_types.contains(node.kind()) {
         // We only push an entry if the referenced text range isn't empty, since there's no point
         // in having an empty text range. This also fixes a bug where the program would panic
         // because it would attempt to access the 0th index in an empty text range.
@@ -458,9 +485,8 @@ fn build<'a>(vector: &RefCell<Vec<VectorLeaf<'a>>>, node: tree_sitter::Node<'a>,
     }
 
     let mut cursor = node.walk();
-
     for child in node.children(&mut cursor) {
-        build(vector, child, text);
+        build(vector, child, text, pseudo_leaf_types);
     }
 }
 
@@ -587,8 +613,8 @@ mod tests {
                 strip_whitespace: true,
                 ..Default::default()
             };
-            let entries_a = processor.process(&tree_a, text_a);
-            let entries_b = processor.process(&tree_b, text_b);
+            let entries_a = processor.process(&tree_a, text_a, "python");
+            let entries_b = processor.process(&tree_b, text_b, "python");
             assert_eq!(entries_a, entries_b);
         }
         {
@@ -596,8 +622,8 @@ mod tests {
                 strip_whitespace: false,
                 ..Default::default()
             };
-            let entries_a = processor.process(&tree_a, text_a);
-            let entries_b = processor.process(&tree_b, text_b);
+            let entries_a = processor.process(&tree_a, text_a, "python");
+            let entries_b = processor.process(&tree_b, text_b, "python");
             assert_ne!(entries_a, entries_b);
         }
     }

@@ -51,6 +51,11 @@ pub fn generate_ast_vector_data(
     } else {
         info!("Will deduce filetype from file extension");
     };
-    let tree = parse::parse_file(&path, file_type, grammar_config)?;
-    Ok(VectorData { text, tree, path })
+    let (tree, resolved_language) = parse::parse_file(&path, file_type, grammar_config)?;
+    Ok(VectorData {
+        text,
+        tree,
+        path,
+        resolved_language,
+    })
 }
