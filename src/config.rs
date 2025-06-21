@@ -99,7 +99,7 @@ impl Config {
 /// $`XDG_CONFIG/.config`, where `$XDG_CONFIG` is `$HOME/.config` by default.
 #[cfg(not(target_os = "windows"))]
 fn default_config_file_path() -> Result<PathBuf> {
-    let xdg_dirs = xdg::BaseDirectories::with_prefix("diffsitter")?;
+    let xdg_dirs = xdg::BaseDirectories::with_prefix("diffsitter");
     let file_path = xdg_dirs.place_config_file(CFG_FILE_NAME)?;
     Ok(file_path)
 }
