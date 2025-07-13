@@ -97,7 +97,7 @@ directories-next = "2.0.0"
 xdg = "3.0.0"
 
 [build-dependencies]
-cc = { version = "1.2.28", features = ["parallel"] }
+cc = { version = "1.2.29", features = ["parallel"] }
 phf = { version = "0.12.1", features = ["macros"] }
 anyhow = "1.0.98"
 cargo-emit = "0.2.1"
