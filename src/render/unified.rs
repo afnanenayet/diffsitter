@@ -200,7 +200,7 @@ impl Unified {
             TitleStack::Vertical
         };
 
-        info!("Using stack style {} for title", stack_style);
+        info!("Using stack style {stack_style} for title");
 
         // Generate a title string and separator based on the stacking style we determined from
         // the terminal width
@@ -253,16 +253,13 @@ impl Unified {
             // release.
             debug_assert!(line_index < lines.len());
             if line_index >= lines.len() {
-                error!(
-                    "Received invalid line index {}. Skipping printing this line.",
-                    line_index
-                );
+                error!("Received invalid line index {line_index}. Skipping printing this line.");
                 continue;
             }
             let text = lines[line_index];
-            debug!("Printing line {}", line_index);
+            debug!("Printing line {line_index}");
             self.print_line(term, text, line, fmt)?;
-            debug!("End line {}", line_index);
+            debug!("End line {line_index}");
         }
         debug!(
             "End hunk (lines {} - {})",

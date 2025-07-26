@@ -132,7 +132,7 @@ pub struct GrammarConfig {
 /// This will return an error if an unknown string is provided.
 #[cfg(feature = "static-grammar-libs")]
 fn generate_language_static(lang: &str) -> Result<Language, LoadingError> {
-    info!("Using tree-sitter parser for language {}", lang);
+    info!("Using tree-sitter parser for language {lang}");
     match LANGUAGES.get(lang) {
         Some(grammar_fn) => Ok(unsafe { grammar_fn() }),
         None => Err(LoadingError::StaticNotCompiled(lang.to_string())),
@@ -210,10 +210,7 @@ pub fn construct_ts_lang_from_shared_lib(
         parser_path.to_string_lossy(),
     );
     let constructor_symbol_name = tree_sitter_constructor_symbol_name(language_name);
-    debug!(
-        "Using '{}' as symbol name for parser constructor method",
-        constructor_symbol_name
-    );
+    debug!("Using '{constructor_symbol_name}' as symbol name for parser constructor method");
     // We need to have the path as bytes for libloading
     let grammar = unsafe {
         // We leak the library because the symbol table has to be loaded in memory for the
@@ -289,7 +286,7 @@ pub fn generate_language(lang: &str, config: &GrammarConfig) -> Result<Language,
 
         match candidate_result {
             Ok(grammar) => {
-                info!("Succeeded loading grammar for {}", lang);
+                info!("Succeeded loading grammar for {lang}");
                 ts_language_abi_checked(&grammar)?;
                 return Ok(grammar);
             }
@@ -298,7 +295,7 @@ pub fn generate_language(lang: &str, config: &GrammarConfig) -> Result<Language,
                 // Only error out on the last candidate, otherwise we want to keep falling back to
                 // the next potential grammar
                 if is_last_cand {
-                    error!("Failed to load all candidate grammars for {}", lang);
+                    error!("Failed to load all candidate grammars for {lang}");
                     return Err(e);
                 }
             }
@@ -328,22 +325,13 @@ pub fn resolve_language_str<'a>(
     let lang_from_defaults = FILE_EXTS.get(ext);
 
     if let Some(lang) = lang_from_override {
-        info!(
-            "Deduced language \"{}\" from extension \"{}\" provided from user mappings",
-            lang, ext
-        );
+        info!("Deduced language \"{lang}\" from extension \"{ext}\" provided from user mappings");
         Some(lang)
     } else if let Some(lang) = lang_from_defaults {
-        info!(
-            "Deduced language \"{}\" from extension \"{}\" from default mappings",
-            lang, ext
-        );
+        info!("Deduced language \"{lang}\" from extension \"{ext}\" from default mappings");
         Some(lang)
     } else {
-        error!(
-            "Was not able to find a language string for extension {}",
-            ext
-        );
+        error!("Was not able to find a language string for extension {ext}");
         None
     }
 }
@@ -378,7 +366,7 @@ pub fn language_from_ext(
 /// * `ext` - The file extension string, without the leading period character. For example: "md",
 ///   "py".
 /// * `config` - The grammar config. This holds file associations between extensions and language
-///    names.
+///   names.
 ///
 /// # Errors
 ///
