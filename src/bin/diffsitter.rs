@@ -133,12 +133,16 @@ fn run_diff(args: Args, config: Config) -> Result<()> {
 
     let ast_data_a = generate_ast_vector_data(path_a.clone(), file_type, &config.grammar)?;
     let ast_data_b = generate_ast_vector_data(path_b.clone(), file_type, &config.grammar)?;
-    let diff_vec_a = config
-        .input_processing
-        .process(&ast_data_a.tree, &ast_data_a.text);
-    let diff_vec_b = config
-        .input_processing
-        .process(&ast_data_b.tree, &ast_data_b.text);
+    let diff_vec_a = config.input_processing.process(
+        &ast_data_a.tree,
+        &ast_data_a.text,
+        &ast_data_a.resolved_language,
+    );
+    let diff_vec_b = config.input_processing.process(
+        &ast_data_b.tree,
+        &ast_data_b.text,
+        &ast_data_b.resolved_language,
+    );
 
     let hunks = diff::compute_edit_script(&diff_vec_a, &diff_vec_b)?;
     let params = DisplayData {
