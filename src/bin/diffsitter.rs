@@ -52,14 +52,14 @@ fn derive_config(args: &Args) -> Result<Config> {
             // not finding a file at all isn't a hard error, it makes sense for us to use the
             // default config.
             ReadError::ReadFileFailure(_) | ReadError::NoDefault => {
-                warn!("{} - falling back to default config", e);
+                warn!("{e} - falling back to default config");
                 Ok(Config::default())
             }
             // If we *do* find a config file and it doesn't parse correctly, we should return an
             // error and let the user know that their config is incorrect. This isn't a browser,
             // we can't just silently march forward and hope for the best.
             ReadError::DeserializationFailure(e) => {
-                error!("Failed to deserialize config file: {}", e);
+                error!("Failed to deserialize config file: {e}");
                 Err(anyhow::anyhow!(e))
             }
         },
@@ -105,7 +105,7 @@ fn are_input_files_supported(args: &Args, config: &Config) -> bool {
                             true
                         }
                         Err(e) => {
-                            warn!("Extension {} not supported: {}", ext, e);
+                            warn!("Extension {ext} not supported: {e}");
                             false
                         }
                     }

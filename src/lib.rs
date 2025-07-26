@@ -41,13 +41,10 @@ pub fn generate_ast_vector_data(
 ) -> Result<VectorData> {
     let text = fs::read_to_string(&path)?;
     let file_name = path.to_string_lossy();
-    debug!("Reading {} to string", file_name);
+    debug!("Reading {file_name} to string");
 
     if let Some(file_type) = file_type {
-        info!(
-            "Using user-set filetype \"{}\" for {}",
-            file_type, file_name
-        );
+        info!("Using user-set filetype \"{file_type}\" for {file_name}");
     } else {
         info!("Will deduce filetype from file extension");
     };
