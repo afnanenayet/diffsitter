@@ -1,0 +1,63 @@
+{
+  "formatting": {
+    "unified": {
+      "addition": {
+        "highlight": null,
+        "emphasized-foreground": {
+          "color256": 0
+        },
+        "bold": true
+      },
+      "deletion": {
+        "regular-foreground": "red",
+        "emphasized-foreground": "red",
+        "bold": true,
+        "underline": false,
+        "prefix": "-"
+      }
+    },
+    "custom": {
+      "custom_render_mode": {
+        "type": "unified",
+        "addition": {
+          "highlight": null,
+          "regular-foreground": "green",
+          "emphasized-foreground": {
+            "color256": 0
+          },
+          "bold": true,
+          "underline": false,
+          "prefix": "+"
+        },
+        "deletion": {
+          "regular-foreground": "red",
+          "emphasized-foreground": "red",
+          "bold": true,
+          "underline": false,
+          "prefix": "-"
+        }
+      }
+    }
+  },
+  "grammar": {
+    "file-associations": {
+      "rs": "rust"
+    },
+    "dylib-overrides": {
+      "rust": "libtree-sitter-rust.so",
+      "c": "/usr/lib/libtree-sitter-c.so",
+      "cpp": "../libtree-sitter-cpp.so"
+    }
+  },
+  "fallback-cmd": "diff",
+  "input-processing": {
+    "split-graphemes": true,
+    "exclude-kinds": [
+      "string"
+    ],
+    "include-kinds": [
+      "method_definition"
+    ],
+    "strip-whitespace": true
+  }
+}

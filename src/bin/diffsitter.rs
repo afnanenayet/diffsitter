@@ -6,7 +6,8 @@ use clap::FromArgMatches;
 use human_panic::setup_panic;
 use libdiffsitter::cli;
 use libdiffsitter::cli::Args;
-use libdiffsitter::config::{Config, ReadError};
+use libdiffsitter::config::Config;
+use libdiffsitter::config::APP_NAME;
 use libdiffsitter::console_utils;
 use libdiffsitter::diff;
 use libdiffsitter::generate_ast_vector_data;
@@ -15,7 +16,7 @@ use libdiffsitter::parse::lang_name_from_file_ext;
 #[cfg(feature = "static-grammar-libs")]
 use libdiffsitter::parse::SUPPORTED_LANGUAGES;
 use libdiffsitter::render::{DisplayData, DocumentDiffData, Renderer};
-use log::{debug, error, info, warn, LevelFilter};
+use log::{debug, info, warn, LevelFilter};
 use serde_json as json;
 use std::{
     io,
@@ -38,32 +39,7 @@ static GLOBAL: Jemalloc = Jemalloc;
 /// If a config path isn't provided or there is some other failure, fall back to the default
 /// config. This will error out if a config is found but is found to be an invalid config.
 fn derive_config(args: &Args) -> Result<Config> {
-    if args.no_config {
-        info!("`no_config` specified, falling back to default config");
-        return Ok(Config::default());
-    }
-    match Config::try_from_file(args.config.as_ref()) {
-        // If the config was parsed correctly with no issue, we don't have to do anything
-        Ok(config) => Ok(config),
-        // If there was an error, we need to figure out whether to propagate the error or fall
-        // back to the default config
-        Err(e) => match e {
-            // If it is a recoverable error, ex: not being able to find the default file path or
-            // not finding a file at all isn't a hard error, it makes sense for us to use the
-            // default config.
-            ReadError::ReadFileFailure(_) | ReadError::NoDefault => {
-                warn!("{e} - falling back to default config");
-                Ok(Config::default())
-            }
-            // If we *do* find a config file and it doesn't parse correctly, we should return an
-            // error and let the user know that their config is incorrect. This isn't a browser,
-            // we can't just silently march forward and hope for the best.
-            ReadError::DeserializationFailure(e) => {
-                error!("Failed to deserialize config file: {e}");
-                Err(anyhow::anyhow!(e))
-            }
-        },
-    }
+    Ok(Config::new_from_args(args)?)
 }
 
 /// Check if the input files are supported by this program.
@@ -198,7 +174,7 @@ pub fn list_supported_languages() {
 /// This is a basic wrapper for the subcommand.
 fn print_shell_completion(shell: clap_complete::Shell) {
     let mut app = cli::Args::command();
-    clap_complete::generate(shell, &mut app, "diffsitter", &mut io::stdout());
+    clap_complete::generate(shell, &mut app, APP_NAME, &mut io::stdout());
 }
 
 fn main() -> Result<()> {
