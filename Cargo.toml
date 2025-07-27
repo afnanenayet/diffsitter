@@ -76,12 +76,14 @@ human-panic = "2.0.2"
 shadow-rs = { version = "1.2.0", optional = true }
 enum_dispatch = "0.3.13"
 lazy_static = { version = "1.5.0", optional = true }
+figment = { version = "0.10", features = ["toml", "json", "env"] }
 
 [dev-dependencies]
 test-case = "3.3.1"
 pretty_assertions = "1.4.1"
 mockall = "0.13.1"
 rstest = "0.25"
+figment = { version = "0.10", features = ["toml", "json", "env", "test"] }
 
 # We need the backtrace feature to enable snapshot name generation in
 # single-threaded tests (tests using cargo cross run single-threaded due to

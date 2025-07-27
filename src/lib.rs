@@ -12,6 +12,7 @@ pub mod cli;
 pub mod config;
 pub mod console_utils;
 pub mod diff;
+mod figment_utils;
 pub mod input_processing;
 pub mod neg_idx_vec;
 pub mod parse;
