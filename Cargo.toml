@@ -82,7 +82,7 @@ figment = { version = "0.10", features = ["toml", "json", "env"] }
 test-case = "3.3.1"
 pretty_assertions = "1.4.1"
 mockall = "0.13.1"
-rstest = "0.25"
+rstest = "0.26"
 figment = { version = "0.10", features = ["toml", "json", "env", "test"] }
 
 # We need the backtrace feature to enable snapshot name generation in
