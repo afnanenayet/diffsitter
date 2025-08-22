@@ -1,4 +1,4 @@
-use crate::diff::{Hunk, Line, RichHunk, RichHunks};
+use crate::diff::{Hunk, Line, RichHunk};
 use crate::render::{
     default_option, opt_color_def, ColorDef, DisplayData, EmphasizedStyle, RegularStyle, Renderer,
 };
@@ -82,26 +82,6 @@ struct FormattingDirectives<'a> {
     pub emphasis: EmphasizedStyle,
     /// The prefix (if any) to use with the line
     pub prefix: &'a dyn AsRef<str>,
-}
-
-/// The parameters required to display a diff for a particular document
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct DocumentDiffData<'a> {
-    /// The filename of the document
-    pub filename: &'a str,
-    /// The full text of the document
-    pub text: &'a str,
-}
-
-/// User supplied parameters that are required to display a diff
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct DisplayParameters<'a> {
-    /// The hunks constituting the diff.
-    pub hunks: RichHunks<'a>,
-    /// The parameters that correspond to the old document
-    pub old: DocumentDiffData<'a>,
-    /// The parameters that correspond to the new document
-    pub new: DocumentDiffData<'a>,
 }
 
 impl<'a> From<&'a TextStyle> for FormattingDirectives<'a> {

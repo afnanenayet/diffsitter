@@ -11,7 +11,7 @@ impl Format for JsonProvider {
 
     const NAME: &'static str = "JSON";
 
-    fn from_str<'de, T: serde::de::DeserializeOwned>(string: &'de str) -> Result<T, Self::Error> {
+    fn from_str<T: serde::de::DeserializeOwned>(string: &str) -> Result<T, Self::Error> {
         json::from_str(string)
     }
 }
