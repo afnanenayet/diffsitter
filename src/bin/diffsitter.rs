@@ -39,7 +39,7 @@ static GLOBAL: Jemalloc = Jemalloc;
 /// If a config path isn't provided or there is some other failure, fall back to the default
 /// config. This will error out if a config is found but is found to be an invalid config.
 fn derive_config(args: &Args) -> Result<Config> {
-    Ok(Config::new_from_args(args)?)
+    Config::new_from_args(args)
 }
 
 /// Check if the input files are supported by this program.
