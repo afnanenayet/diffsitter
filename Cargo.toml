@@ -56,14 +56,14 @@ clap = { version = "4.5.47", features = [
   "unicode",
   "wrap_help",
 ] }
-clap_complete = "4.5.57"
+clap_complete = "4.5.58"
 anyhow = { version = "1.0.99", features = ["backtrace"] }
 phf = { version = "0.13.1", features = ["macros"] }
-console = "0.16.0"
+console = "0.16.1"
 strum = { version = "0.27.2", features = ["derive"] }
 strum_macros = "0.27.2"
-serde = { version = "1.0.219", features = ["derive"] }
-serde_json = "1.0.143"
+serde = { version = "1.0.225", features = ["derive"] }
+serde_json = "1.0.145"
 json5 = "0.4.1"
 pretty_env_logger = "0.5.0"
 log = { version = "0.4.28", features = ["std"] }
@@ -99,7 +99,7 @@ directories-next = "2.0.0"
 xdg = "3.0.0"
 
 [build-dependencies]
-cc = { version = "1.2.36", features = ["parallel"] }
+cc = { version = "1.2.37", features = ["parallel"] }
 phf = { version = "0.13.1", features = ["macros"] }
 anyhow = "1.0.99"
 cargo-emit = "0.2.1"
