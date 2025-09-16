@@ -1,0 +1,15 @@
+[formatting]
+[formatting.unified]
+[formatting.unified.addition]
+bold = true
+highlight = { color256 = 0 }
+
+[formatting.unified.deletion]
+regular-foreground = "red"
+emphasized-foreground = "red"
+bold = true
+underline = false
+prefix = "-"
+
+[pseudo-leaf-types]
+markdown = ["inline"]
