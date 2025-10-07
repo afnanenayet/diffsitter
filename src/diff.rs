@@ -90,7 +90,7 @@ pub struct Line<'a> {
     pub entries: Vec<&'a Entry<'a>>,
 }
 
-impl<'a> Line<'a> {
+impl Line<'_> {
     #[must_use]
     pub fn new(line_index: usize) -> Self {
         Line {
@@ -109,21 +109,23 @@ pub struct Hunk<'a>(pub Vec<Line<'a>>);
 /// Types of errors that come up when inserting an entry to a hunk
 #[derive(Debug, Error)]
 pub enum HunkInsertionError {
-    #[error(
-        "Non-adjacent entry (line {incoming_line:?}) added to hunk (last line: {last_line:?})"
-    )]
+    #[error("Non-adjacent entry (line {incoming_line:?}) added to hunk (last line: {last_line:?})")]
     NonAdjacentHunk {
         incoming_line: usize,
         last_line: usize,
     },
 
-    #[error("Attempted to append an entry with a line index ({incoming_line:?}) less than the first line's index ({last_line:?})")]
+    #[error(
+        "Attempted to append an entry with a line index ({incoming_line:?}) less than the first line's index ({last_line:?})"
+    )]
     PriorLine {
         incoming_line: usize,
         last_line: usize,
     },
 
-    #[error("Attempted to append an entry with a column ({incoming_col:?}, line: {incoming_line:?}) less than the first entry's column ({last_col:?}, line: {last_line:?})")]
+    #[error(
+        "Attempted to append an entry with a column ({incoming_col:?}, line: {incoming_line:?}) less than the first entry's column ({last_col:?}, line: {last_line:?})"
+    )]
     PriorColumn {
         incoming_col: usize,
         incoming_line: usize,
@@ -224,7 +226,7 @@ impl<'a> Hunk<'a> {
     }
 }
 
-impl<'a> Default for Hunk<'a> {
+impl Default for Hunk<'_> {
     fn default() -> Self {
         Self::new()
     }
@@ -364,7 +366,7 @@ impl<'a> RichHunksBuilder<'a> {
                     // Otherwise, the line number must be equal
                 }
             }
-        };
+        }
 
         match incoming_entry {
             DocumentType::Old(_) => self.last_old = last_idx,
@@ -383,7 +385,7 @@ impl<'a> RichHunksBuilder<'a> {
     }
 }
 
-impl<'a> Default for RichHunksBuilder<'a> {
+impl Default for RichHunksBuilder<'_> {
     fn default() -> Self {
         Self::new()
     }
@@ -420,7 +422,7 @@ impl<'a> Hunks<'a> {
     }
 }
 
-impl<'a> Default for Hunks<'a> {
+impl Default for Hunks<'_> {
     fn default() -> Self {
         Self::new()
     }

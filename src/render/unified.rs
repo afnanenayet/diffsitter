@@ -1,6 +1,6 @@
 use crate::diff::{Hunk, Line, RichHunk};
 use crate::render::{
-    default_option, opt_color_def, ColorDef, DisplayData, EmphasizedStyle, RegularStyle, Renderer,
+    ColorDef, DisplayData, EmphasizedStyle, RegularStyle, Renderer, default_option, opt_color_def,
 };
 use anyhow::Result;
 use console::{Color, Style, Term};

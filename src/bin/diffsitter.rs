@@ -6,17 +6,17 @@ use clap::FromArgMatches;
 use human_panic::setup_panic;
 use libdiffsitter::cli;
 use libdiffsitter::cli::Args;
-use libdiffsitter::config::Config;
 use libdiffsitter::config::APP_NAME;
+use libdiffsitter::config::Config;
 use libdiffsitter::console_utils;
 use libdiffsitter::diff;
 use libdiffsitter::generate_ast_vector_data;
-use libdiffsitter::parse::generate_language;
-use libdiffsitter::parse::lang_name_from_file_ext;
 #[cfg(feature = "static-grammar-libs")]
 use libdiffsitter::parse::SUPPORTED_LANGUAGES;
+use libdiffsitter::parse::generate_language;
+use libdiffsitter::parse::lang_name_from_file_ext;
 use libdiffsitter::render::{DisplayData, DocumentDiffData, Renderer};
-use log::{debug, info, warn, LevelFilter};
+use log::{LevelFilter, debug, info, warn};
 use serde_json as json;
 use std::{
     io,

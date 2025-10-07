@@ -6,9 +6,8 @@ use crate::{
 };
 use anyhow::Result;
 use figment::{
-    self,
+    self, Figment,
     providers::{Format, Serialized},
-    Figment,
 };
 use serde::{Deserialize, Serialize};
 use std::{
@@ -82,7 +81,7 @@ impl Config {
     ///
     /// * path: An optional path. If `None` is provided, then try to find the default config file
     ///   path, unless `no_config` is set to true.
-    /// * no_config: Corresponds to the `--no-config` CLI option.
+    /// * `no_config`: Corresponds to the `--no-config` CLI option.
     ///
     /// # Errors
     ///

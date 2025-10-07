@@ -415,7 +415,7 @@ use phf::phf_map;
             if let Some(grammar_path) = &source.as_path().to_str() {
                 rerun_if_changed!((*grammar_path).to_string());
             } else {
-                bail!("Path to grammar for {} is not a valid string", language);
+                bail!("Path to grammar for {language} is not a valid string");
             }
         }
     }

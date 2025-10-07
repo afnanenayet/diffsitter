@@ -45,6 +45,6 @@ fn main() -> Result<()> {
         } => {
             construct_ts_lang_from_shared_lib(&language_name, &parser_path)?;
         }
-    };
+    }
     Ok(())
 }

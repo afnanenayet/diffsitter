@@ -2,7 +2,7 @@
 mod tests {
     use insta::assert_snapshot;
     use libdiffsitter::{
-        diff::{compute_edit_script, DocumentType, Hunk, RichHunks},
+        diff::{DocumentType, Hunk, RichHunks, compute_edit_script},
         generate_ast_vector_data,
         input_processing::{Entry, TreeSitterProcessor},
         parse::GrammarConfig,
@@ -113,7 +113,9 @@ mod tests {
         // We have to set the snapshot name manually, otherwise there appear to be threading issues
         // and we end up with more snapshot files than there are tests, which cause
         // nondeterministic errors.
-        let snapshot_name = format!("{test_type}_{name}_split_graphemes_{split_graphemes}_strip_whitespace_{strip_whitespace}");
+        let snapshot_name = format!(
+            "{test_type}_{name}_split_graphemes_{split_graphemes}_strip_whitespace_{strip_whitespace}"
+        );
         let snapshot_string = generate_snapshot_rich_hunks_string(diff_hunks);
         assert_snapshot!(snapshot_name, snapshot_string);
     }
