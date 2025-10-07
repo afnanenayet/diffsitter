@@ -49,31 +49,31 @@ path = "src/lib.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tree-sitter = "0.25.9"
-clap = { version = "4.5.47", features = [
+tree-sitter = "0.25.10"
+clap = { version = "4.5.48", features = [
   "derive",
   "env",
   "unicode",
   "wrap_help",
 ] }
 clap_complete = "4.5.58"
-anyhow = { version = "1.0.99", features = ["backtrace"] }
+anyhow = { version = "1.0.100", features = ["backtrace"] }
 phf = { version = "0.13.1", features = ["macros"] }
 console = "0.16.1"
 strum = { version = "0.27.2", features = ["derive"] }
 strum_macros = "0.27.2"
-serde = { version = "1.0.225", features = ["derive"] }
+serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.145"
 json5 = "0.4.1"
 pretty_env_logger = "0.5.0"
 log = { version = "0.4.28", features = ["std"] }
-thiserror = "2.0.16"
+thiserror = "2.0.17"
 logging_timer = "1.1.1"
 jemallocator = { version = "0.5.4", optional = true }
-libloading = "0.8.8"
+libloading = "0.8.9"
 unicode-segmentation = "1.12.0"
 human-panic = "2.0.3"
-shadow-rs = { version = "1.3.0", optional = true }
+shadow-rs = { version = "1.4.0", optional = true }
 enum_dispatch = "0.3.13"
 lazy_static = { version = "1.5.0", optional = true }
 figment = { version = "0.10", features = ["toml", "json", "env"] }
@@ -99,13 +99,13 @@ directories-next = "2.0.0"
 xdg = "3.0.0"
 
 [build-dependencies]
-cc = { version = "1.2.37", features = ["parallel"] }
+cc = { version = "1.2.40", features = ["parallel"] }
 phf = { version = "0.13.1", features = ["macros"] }
-anyhow = "1.0.99"
+anyhow = "1.0.100"
 cargo-emit = "0.2.1"
 rayon = "1.11.0"
-thiserror = "2.0.16"
-shadow-rs = { version = "1.3.0", optional = true }
+thiserror = "2.0.17"
+shadow-rs = { version = "1.4.0", optional = true }
 
 [features]
 default = ["static-grammar-libs"]
