@@ -90,7 +90,8 @@ fn codegen_language_map<T: ToString + Display>(languages: &[T]) -> String {
         buffer
     });
     let map_decl = format!(
-        "\nstatic LANGUAGES: phf::Map<&'static str, unsafe extern \"C\" fn() -> Language> = phf_map! {{\n {body}\n }};\n");
+        "\nstatic LANGUAGES: phf::Map<&'static str, unsafe extern \"C\" fn() -> Language> = phf_map! {{\n {body}\n }};\n"
+    );
     map_decl
 }
 
@@ -404,7 +405,7 @@ use phf::phf_map;
         // get to this step.
         writeln!(
             codegen,
-            "extern \"C\" {{ pub fn tree_sitter_{language}() -> Language; }}"
+            "unsafe extern \"C\" {{ pub fn tree_sitter_{language}() -> Language; }}"
         )?;
         languages.push(language.as_str());
 
