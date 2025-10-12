@@ -80,6 +80,15 @@ impl<'a> TSNodeTrait for TSNodeWrapper<'a> {
 }
 
 impl TreeSitterProcessor {
+    /// Convenience function to invoke process from a vector data object.
+    ///
+    /// This was done because dealing with lifetimes is awkward if you're passing references from
+    /// the same struct, and having this makes some of the code in `bin/diffsitter.rs` less
+    /// redundant.
+    pub fn process_vec_data<'a>(&self, vec_data: &'a VectorData) -> Vec<Entry<'a>> {
+        self.process(&vec_data.tree, &vec_data.text)
+    }
+
     #[time("info", "ast::{}")]
     pub fn process<'a>(&self, tree: &'a TSTree, text: &'a str) -> Vec<Entry<'a>> {
         let ast_vector = from_ts_tree(tree, text);
