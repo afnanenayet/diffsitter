@@ -29,6 +29,7 @@ include = [
   "!assets/*",
 ]
 default-run = "diffsitter"
+rust-version = "1.85.1"
 
 [[bin]]
 name = "diffsitter"
