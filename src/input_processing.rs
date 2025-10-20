@@ -73,7 +73,7 @@ impl Default for TreeSitterProcessor {
 #[derive(Debug)]
 struct TSNodeWrapper<'a>(TSNode<'a>);
 
-impl<'a> TSNodeTrait for TSNodeWrapper<'a> {
+impl TSNodeTrait for TSNodeWrapper<'_> {
     fn kind(&self) -> &str {
         self.0.kind()
     }
@@ -185,7 +185,7 @@ pub struct Entry<'node> {
 
     /// A reference to the text the node refers to
     ///
-    /// This is different from the `source_text` that the [AstVector] refers to, as the
+    /// This is different from the `source_text` that the [`AstVector`] refers to, as the
     /// entry only holds a reference to the specific range of text that the node covers.
     ///
     /// We use a [Cow] here instead of a direct string reference because we might have to rewrite
@@ -201,7 +201,7 @@ pub struct Entry<'node> {
     #[serde(with = "PointWrapper")]
     pub end_position: Point,
 
-    /// The cached kind_id from the TSNode reference.
+    /// The cached `kind_id` from the `TSNode` reference.
     ///
     /// Caching it here saves some time because it is queried repeatedly later. If we don't store
     /// it inline then we have to cross the FFI boundary which incurs some overhead.
@@ -301,7 +301,7 @@ impl<'a> From<VectorLeaf<'a>> for Entry<'a> {
     }
 }
 
-impl<'a> Entry<'a> {
+impl Entry<'_> {
     /// Get the start position of an entry
     #[must_use]
     pub fn start_position(&self) -> Point {
@@ -338,7 +338,7 @@ pub struct Vector<'a> {
     pub source_text: &'a str,
 }
 
-impl<'a> Eq for Entry<'a> {}
+impl Eq for Entry<'_> {}
 
 /// A wrapper struct for AST vector data that owns the data that the AST vector references
 ///
@@ -394,20 +394,20 @@ impl<'a> Index<usize> for Vector<'a> {
     }
 }
 
-impl<'a> Hash for VectorLeaf<'a> {
+impl Hash for VectorLeaf<'_> {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.reference.kind_id().hash(state);
         self.text.hash(state);
     }
 }
 
-impl<'a> PartialEq for Entry<'a> {
+impl PartialEq for Entry<'_> {
     fn eq(&self, other: &Entry) -> bool {
         self.kind_id == other.kind_id && self.text == other.text
     }
 }
 
-impl<'a> PartialEq for Vector<'a> {
+impl PartialEq for Vector<'_> {
     fn eq(&self, other: &Vector) -> bool {
         if self.leaves.len() != other.leaves.len() {
             return false;

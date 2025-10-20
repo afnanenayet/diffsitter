@@ -59,6 +59,7 @@ impl<T> NegIdxVec<T> {
 
     /// Return the total number of elements the vector can hold without requiring another
     /// allocation.
+    #[must_use]
     pub fn capacity(&self) -> usize {
         self.data.capacity()
     }

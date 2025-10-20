@@ -36,7 +36,7 @@ use std::{
     path::{Path, PathBuf},
 };
 use thiserror::Error;
-use tree_sitter::{Parser, Tree, LANGUAGE_VERSION, MIN_COMPATIBLE_LANGUAGE_VERSION};
+use tree_sitter::{LANGUAGE_VERSION, MIN_COMPATIBLE_LANGUAGE_VERSION, Parser, Tree};
 
 /// A mapping of file extensions to their associated languages
 ///
@@ -102,7 +102,9 @@ pub enum LoadingError {
     #[error("Unable to dynamically load grammar")]
     LibloadingError(#[from] libloading::Error),
 
-    #[error("Attempted to load a tree-sitter grammar with incompatible language ABI version: {0} (supported range: {1} - {2})")]
+    #[error(
+        "Attempted to load a tree-sitter grammar with incompatible language ABI version: {0} (supported range: {1} - {2})"
+    )]
     AbiOutOfRange(usize, usize, usize),
 }
 
@@ -299,7 +301,7 @@ pub fn generate_language(lang: &str, config: &GrammarConfig) -> Result<Language,
                     return Err(e);
                 }
             }
-        };
+        }
     }
     error!("No grammars were loaded at all");
     Err(LoadingError::NoGrammars)

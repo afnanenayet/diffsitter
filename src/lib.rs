@@ -48,7 +48,7 @@ pub fn generate_ast_vector_data(
         info!("Using user-set filetype \"{file_type}\" for {file_name}");
     } else {
         info!("Will deduce filetype from file extension");
-    };
+    }
     let tree = parse::parse_file(&path, file_type, grammar_config)?;
     Ok(VectorData { text, tree, path })
 }

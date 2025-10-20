@@ -13,14 +13,14 @@ pub struct Args {
     #[clap(short, long)]
     pub debug: bool,
     /// Run a subcommand that doesn't perform a diff. Valid options are: "list",
-    /// "dump_default_config", and "build_info".
+    /// "`dump_default_config`", and "`build_info`".
     ///
     /// * "list" lists all of the filetypes/languages that this program was compiled with support
     ///   for
     ///
-    /// * "dump_default_config" will dump the default configuration to stdout
+    /// * "`dump_default_config`" will dump the default configuration to stdout
     ///
-    /// * "build_info" prints extended build information
+    /// * "`build_info`" prints extended build information
     #[clap(subcommand)]
     pub cmd: Option<Command>,
     /// The first file to compare against
