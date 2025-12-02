@@ -83,6 +83,11 @@ impl TreeSitterProcessor {
     #[time("info", "ast::{}")]
     pub fn process<'a>(&self, tree: &'a TSTree, text: &'a str) -> Vec<Entry<'a>> {
         let ast_vector = from_ts_tree(tree, text);
+        // TODO: delete me
+        for x in &ast_vector.leaves {
+            println!("{:#?} - kind = {}", x.reference, x.reference.kind());
+        }
+
         let iter = ast_vector
             .leaves
             .iter()

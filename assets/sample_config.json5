@@ -103,9 +103,9 @@
     "input-processing": {
         "split-graphemes": true,
         // You can exclude different tree sitter node types - this rule takes precedence over `include_kinds`.
-        "exclude-kinds": ["string"],
+        // "exclude-kinds": ["identifier"],
         // You can specifically allow only certain tree sitter node types
-        "include-kinds": ["method_definition"],
+        // "include-kinds": ["method_definition"],
         "strip-whitespace": true,
     }
 }

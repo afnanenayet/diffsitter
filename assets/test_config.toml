@@ -1,0 +1,2 @@
+[input-processing]
+exclude-kinds = ["identifier", "type_identifier"]
