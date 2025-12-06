@@ -72,6 +72,8 @@ static FILE_EXTS: phf::Map<&'static str, &'static str> = phf_map! {
     "h" => "c",
     "tf" => "hcl",
     "md" => "markdown",
+    "cjs" => "typescript",
+    "mfs" => "typescript",
 };
 
 /// Possible errors that can arise when loading grammars
