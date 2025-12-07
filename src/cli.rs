@@ -75,7 +75,9 @@ pub struct Args {
 /// enums as a clap argument.
 #[derive(Copy, Clone, EnumString, PartialEq, Eq, Debug)]
 #[strum(serialize_all = "snake_case")]
+#[derive(Default)]
 pub enum ShellWrapper {
+    #[default]
     Bash,
     Zsh,
     Fish,
@@ -83,12 +85,6 @@ pub enum ShellWrapper {
 
     #[strum(serialize = "powershell")]
     PowerShell,
-}
-
-impl Default for ShellWrapper {
-    fn default() -> Self {
-        Self::Bash
-    }
 }
 
 impl From<ShellWrapper> for clap_complete::Shell {

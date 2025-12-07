@@ -211,7 +211,7 @@ fn verify_compile_params(compile_params: &CompileParams) -> Result<(), CompilePa
     for include_dir in &compile_params.include_dirs {
         if !include_dir.exists() {
             return Err(CompileParamError::SubdirectoryNotFound(
-                compile_params.display_name.to_string(),
+                compile_params.display_name.clone(),
             ));
         }
     }
@@ -232,7 +232,7 @@ fn verify_compile_params(compile_params: &CompileParams) -> Result<(), CompilePa
 
     if !missing_sources.is_empty() {
         return Err(CompileParamError::SourceFilesNotFound {
-            grammar: compile_params.display_name.to_string(),
+            grammar: compile_params.display_name.clone(),
             source_files: missing_sources,
         });
     }
