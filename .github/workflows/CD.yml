@@ -246,7 +246,7 @@ jobs:
         uses: taiki-e/install-action@v2
         if: matrix.job.target == 'x86_64-unknown-linux-gnu'
         with:
-          tool: cargo-deb@1.43.0
+          tool: cargo-deb@3.6.2
 
       - name: Build Debian release (x86_64-unknown-linux-gnu)
         if: matrix.job.target == 'x86_64-unknown-linux-gnu'
