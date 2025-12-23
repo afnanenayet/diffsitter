@@ -60,7 +60,7 @@ clap = { version = "4.5.53", features = [
 clap_complete = "4.5.61"
 anyhow = { version = "1.0.100", features = ["backtrace"] }
 phf = { version = "0.13.1", features = ["macros"] }
-console = "0.16.1"
+console = "0.16.2"
 strum = { version = "0.27.2", features = ["derive"] }
 strum_macros = "0.27.2"
 serde = { version = "1.0.228", features = ["derive"] }
