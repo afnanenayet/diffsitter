@@ -50,7 +50,7 @@ path = "src/lib.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tree-sitter = "0.25.10"
+tree-sitter = "0.26.3"
 clap = { version = "4.5.53", features = [
   "derive",
   "env",
