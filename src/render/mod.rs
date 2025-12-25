@@ -92,6 +92,7 @@ enum ColorDef {
     Magenta,
     Cyan,
     White,
+    TrueColor(u8, u8, u8),
 }
 
 impl From<ColorDef> for Color {
@@ -106,6 +107,7 @@ impl From<ColorDef> for Color {
             ColorDef::Magenta => Color::Magenta,
             ColorDef::Cyan => Color::Cyan,
             ColorDef::Color256(c) => Color::Color256(c),
+            ColorDef::TrueColor(r, g, b) => Color::TrueColor(r, g, b),
         }
     }
 }
