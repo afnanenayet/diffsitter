@@ -12,3 +12,13 @@ Old(Line={line_index=6, entries=
     Entry{'2', start=(6, 13), end=(6, 14)}
 ]}
 )
+New(Line={line_index=7, entries=
+[
+    Entry{'B', start=(7, 11), end=(7, 12)}
+]}
+)
+Old(Line={line_index=8, entries=
+[
+    Entry{'A', start=(8, 11), end=(8, 12)}
+]}
+)

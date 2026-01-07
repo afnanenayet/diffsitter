@@ -216,35 +216,26 @@ mod tests {
     // rerun if we add a new test case, for example. This is also the most ergonomic way to
     // parametrize on each file name so we can easily see which case failed.
     #[rstest]
-    #[case("empty_dict.json5")]
-    #[case("partial_section_1.json")]
-    #[case("partial_section_2.json")]
-    #[case("partial_section_3.json")]
-    #[case("empty_config.toml")]
-    #[case("partial_section_1.toml")]
-    fn test_config_init(#[case] filename: &str) {
-        let mut config_file_path = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
-        config_file_path.push("resources/test_configs");
+    fn test_config_init(
+        #[files(r"resources/test_configs/*.json")]
+        #[files(r"resources/test_configs/*.json5")]
+        #[files(r"resources/test_configs/*.toml")]
+        path: PathBuf,
+    ) {
         assert!(
-            config_file_path.is_dir(),
-            "test resource directory `{}` was not found",
-            config_file_path.to_string_lossy()
-        );
-        config_file_path.push(filename);
-        assert!(
-            config_file_path.is_file(),
-            "Expected test case file {} doesn't exist",
-            config_file_path.to_string_lossy()
+            path.is_file(),
+            "Config file path {} is not a file",
+            path.to_string_lossy()
         );
 
         // We add the context so if there is an error you'll see the actual deserialization
         // error from serde and which file it failed on, which makes for a much more
         // informative error message in the test logs.
-        Config::try_from_file(Some(&config_file_path), false)
+        Config::try_from_file(Some(&path), false)
             .with_context(|| {
                 format!(
                     "Error parsing file: {}",
-                    &config_file_path.file_name().unwrap().to_string_lossy()
+                    &path.file_name().unwrap().to_string_lossy()
                 )
             })
             .unwrap();
