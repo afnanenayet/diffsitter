@@ -8,9 +8,11 @@
 //!
 //! This module also defines utilities that may be useful for `Renderer` implementations.
 
+mod delta;
 mod json;
 mod unified;
 
+use self::delta::Delta;
 use self::json::Json;
 use crate::diff::RichHunks;
 use anyhow::anyhow;
@@ -48,6 +50,7 @@ pub struct DisplayData<'a> {
 pub enum Renderers {
     Unified,
     Json,
+    Delta,
 }
 
 impl Default for Renderers {
@@ -211,6 +214,7 @@ pub struct RenderConfig {
 
     unified: unified::Unified,
     json: json::Json,
+    delta: delta::Delta,
 }
 
 impl Default for RenderConfig {
@@ -220,6 +224,7 @@ impl Default for RenderConfig {
             default: default_renderer.to_string(),
             unified: Unified::default(),
             json: Json::default(),
+            delta: Delta::default(),
         }
     }
 }
@@ -249,6 +254,7 @@ mod tests {
 
     #[test_case("unified")]
     #[test_case("json")]
+    #[test_case("delta")]
     fn test_get_renderer_custom_tag(tag: &str) {
         let cfg = RenderConfig::default();
         let res = cfg.get_renderer(Some(tag.into()));
