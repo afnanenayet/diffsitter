@@ -20,7 +20,7 @@ use console::{Color, Style, Term};
 use enum_dispatch::enum_dispatch;
 use serde::{Deserialize, Serialize};
 use std::io::Write;
-use strum::{self, Display, EnumIter, EnumString, IntoEnumIterator};
+use strum::{self, Display, EnumIter, EnumString};
 use unified::Unified;
 
 /// The parameters required to display a diff for a particular document
@@ -235,14 +235,14 @@ impl RenderConfig {
     /// If the tag is not specified this will fall back to the default renderer. This is a
     /// relatively expensive operation so it should be used once and the result should be saved.
     pub fn get_renderer(self, tag: Option<String>) -> anyhow::Result<Renderers> {
-        if let Some(t) = tag {
-            let cand_enum = Renderers::iter().find(|e| e.to_string() == t);
-            match cand_enum {
-                None => Err(anyhow!("'{}' is not a valid renderer", &t)),
-                Some(renderer) => Ok(renderer),
-            }
-        } else {
-            Ok(Renderers::default())
+        let tag = tag.unwrap_or_else(|| self.default.clone());
+
+        // Match the tag to the configured renderer, using the config values
+        match tag.as_str() {
+            "unified" => Ok(Renderers::Unified(self.unified)),
+            "json" => Ok(Renderers::Json(self.json)),
+            "delta" => Ok(Renderers::Delta(self.delta)),
+            _ => Err(anyhow!("'{}' is not a valid renderer", &tag)),
         }
     }
 }
