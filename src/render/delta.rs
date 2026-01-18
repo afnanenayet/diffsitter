@@ -11,7 +11,7 @@
 use crate::diff::{DocumentType, Hunk, Line, RichHunk};
 use crate::render::{ColorDef, DisplayData, Renderer, default_option, opt_color_def};
 use anyhow::Result;
-use console::{Color, Style, Term};
+use console::{Color, Style, Term, measure_text_width};
 use log::debug;
 use serde::{Deserialize, Serialize};
 use std::cmp::max;
@@ -31,6 +31,138 @@ const DEFAULT_TERM_WIDTH: usize = 80;
 
 /// Minimum column width for side-by-side view.
 const MIN_COLUMN_WIDTH: usize = 40;
+
+/// Default tab width for expanding tabs.
+const DEFAULT_TAB_WIDTH: usize = 4;
+
+/// Layout parameters for side-by-side rendering.
+///
+/// This struct encapsulates all the calculated widths needed for consistent
+/// side-by-side rendering, ensuring the left and right columns are calculated
+/// from a single source of truth.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct SideBySideLayout {
+    /// Content width for the left (old/deletion) column.
+    left_content_width: usize,
+    /// Content width for the right (new/addition) column.
+    right_content_width: usize,
+    /// Width of the line number area (including separator and spacing).
+    /// This is 0 if line numbers are disabled.
+    line_num_area_width: usize,
+    /// Width of the line number itself (for formatting).
+    line_num_width: usize,
+}
+
+impl SideBySideLayout {
+    /// Calculate the layout for side-by-side rendering.
+    ///
+    /// The layout is structured as:
+    /// ```text
+    /// [line_num │ prefix content] │ [line_num │ prefix content]
+    /// ```
+    ///
+    /// Where:
+    /// - `line_num` is right-padded to `line_num_width`
+    /// - `│` is the LINE_NUMBER_SEPARATOR (1 display column)
+    /// - `prefix` is the +/- character (1 display column)
+    /// - `content` fills the remaining space up to `content_width`
+    /// - The middle `│` is the COLUMN_SEPARATOR with spaces: ` │ ` (3 display columns)
+    fn calculate(
+        term_width: usize,
+        line_num_width: usize,
+        show_line_numbers: bool,
+    ) -> SideBySideLayout {
+        // Per-side overhead breakdown:
+        // - Line number: line_num_width chars (if enabled)
+        // - Space after line number: 1 char (if enabled)
+        // - LINE_NUMBER_SEPARATOR (│): 1 char (if enabled)
+        // - Space after separator: 1 char (if enabled)
+        // - Prefix (+/-): 1 char
+        //
+        // Total per side with line numbers: line_num_width + 4
+        // Total per side without line numbers: 1 (just prefix)
+        let line_num_area_width = if show_line_numbers {
+            line_num_width + 3 // "NNNN │ " = line_num_width + space + separator + space
+        } else {
+            0
+        };
+        let prefix_width = 1;
+        let per_side_overhead = line_num_area_width + prefix_width;
+
+        // Middle separator: " │ " = 3 display columns
+        let middle_separator_width = 3;
+
+        let total_overhead = per_side_overhead * 2 + middle_separator_width;
+        let available_for_content = term_width.saturating_sub(total_overhead);
+
+        // Split content space between columns.
+        // Give any odd character to the left column.
+        let left_content_width = if available_for_content >= MIN_COLUMN_WIDTH * 2 {
+            (available_for_content + 1) / 2
+        } else {
+            // Terminal is narrow - use what space we have
+            ((available_for_content + 1) / 2).max(1)
+        };
+
+        let right_content_width = if available_for_content >= MIN_COLUMN_WIDTH * 2 {
+            available_for_content / 2
+        } else {
+            (available_for_content / 2).max(1)
+        };
+
+        SideBySideLayout {
+            left_content_width,
+            right_content_width,
+            line_num_area_width,
+            line_num_width,
+        }
+    }
+
+    /// Calculate the total expected line width for validation.
+    #[cfg(test)]
+    fn total_width(&self, show_line_numbers: bool) -> usize {
+        let per_side_overhead = if show_line_numbers {
+            self.line_num_area_width + 1 // +1 for prefix
+        } else {
+            1 // just prefix
+        };
+        let middle_separator = 3; // " │ "
+
+        per_side_overhead * 2
+            + self.left_content_width
+            + self.right_content_width
+            + middle_separator
+    }
+}
+
+/// Expand tabs in text to spaces.
+///
+/// Tabs are expanded to align to `tab_width` boundaries, which matches
+/// how terminals typically render them.
+fn expand_tabs(text: &str, tab_width: usize) -> String {
+    if !text.contains('\t') {
+        return text.to_string();
+    }
+
+    let mut result = String::with_capacity(text.len());
+    let mut column = 0;
+
+    for c in text.chars() {
+        if c == '\t' {
+            // Calculate spaces needed to reach next tab stop
+            let spaces_needed = tab_width - (column % tab_width);
+            result.extend(std::iter::repeat(' ').take(spaces_needed));
+            column += spaces_needed;
+        } else {
+            result.push(c);
+            // Use measure_text_width for accurate column counting
+            // For single chars, this handles wide characters correctly
+            column += measure_text_width(&c.to_string());
+        }
+    }
+
+    result
+}
 
 /// A delta-style diff renderer.
 ///
@@ -85,19 +217,19 @@ impl Default for Delta {
         Delta {
             addition: DeltaTextStyle {
                 foreground: Color::Green,
-                line_background: Some(Color::Color256(22)), // Dark green background
-                emphasis_background: Some(Color::Color256(28)), // Brighter green for emphasis
+                line_background: Some(Color::Color256(22)),
+                emphasis_background: Some(Color::Color256(28)),
                 emphasis_foreground: Color::White,
                 bold: true,
-                prefix: "+".into(),
+                prefix: "".into(),
             },
             deletion: DeltaTextStyle {
                 foreground: Color::Red,
-                line_background: Some(Color::Color256(52)), // Dark red background
-                emphasis_background: Some(Color::Color256(88)), // Brighter red for emphasis
+                line_background: Some(Color::Color256(52)),
+                emphasis_background: Some(Color::Color256(88)),
                 emphasis_foreground: Color::White,
                 bold: true,
-                prefix: "-".into(),
+                prefix: "".into(),
             },
             line_numbers: true,
             line_number_width: DEFAULT_LINE_NUMBER_WIDTH,
@@ -194,6 +326,9 @@ impl Renderer for Delta {
         }
 
         if self.side_by_side {
+            // Calculate layout using the unified SideBySideLayout struct
+            let layout = SideBySideLayout::calculate(term_width, line_num_width, self.line_numbers);
+
             self.render_side_by_side(
                 writer,
                 hunks,
@@ -201,8 +336,7 @@ impl Renderer for Delta {
                 &new_lines,
                 &old_formatter,
                 &new_formatter,
-                line_num_width,
-                term_width,
+                &layout,
             )?;
         } else {
             // Render each hunk sequentially (unified view)
@@ -429,7 +563,6 @@ impl Delta {
     /// Groups related old/new hunks and displays them in two columns:
     /// - Left column: deletions (old file)
     /// - Right column: additions (new file)
-    #[allow(clippy::too_many_arguments)]
     fn render_side_by_side(
         &self,
         writer: &mut dyn Write,
@@ -438,33 +571,8 @@ impl Delta {
         new_lines: &[&str],
         old_formatter: &DeltaFormatter,
         new_formatter: &DeltaFormatter,
-        line_num_width: usize,
-        term_width: usize,
+        layout: &SideBySideLayout,
     ) -> Result<()> {
-        // Calculate column widths
-        // Layout: [line_num | prefix content] [sep] [line_num | prefix content]
-        // Each side needs: line_num_width + separator(1) + space(1) + prefix(1) + content
-        let separator_width = 3; // " │ "
-        let line_num_overhead = if self.line_numbers {
-            line_num_width + 3 // number + " │ "
-        } else {
-            0
-        };
-        let prefix_width = 1;
-
-        // Calculate content width for each column
-        // Total line: 2 * (line_num_overhead + prefix + content) + separator
-        let total_overhead = (line_num_overhead + prefix_width) * 2 + separator_width;
-        let available_width = term_width.saturating_sub(total_overhead);
-        // Don't use MIN_COLUMN_WIDTH if it would exceed terminal width
-        // This ensures lines never wrap due to being too wide
-        let column_content_width = if available_width >= MIN_COLUMN_WIDTH * 2 {
-            available_width / 2
-        } else {
-            // Terminal is narrow - use what space we have
-            (available_width / 2).max(1)
-        };
-
         // Group hunks into pairs of (old_hunks, new_hunks) for side-by-side display
         let hunk_groups = self.group_hunks_for_side_by_side(hunks);
 
@@ -477,8 +585,7 @@ impl Delta {
                 new_lines,
                 old_formatter,
                 new_formatter,
-                line_num_width,
-                column_content_width,
+                layout,
             )?;
         }
 
@@ -526,7 +633,6 @@ impl Delta {
     }
 
     /// Render a group of old/new hunks side by side.
-    #[allow(clippy::too_many_arguments)]
     fn render_side_by_side_group(
         &self,
         writer: &mut dyn Write,
@@ -536,16 +642,16 @@ impl Delta {
         new_lines: &[&str],
         old_formatter: &DeltaFormatter,
         new_formatter: &DeltaFormatter,
-        line_num_width: usize,
-        column_width: usize,
+        layout: &SideBySideLayout,
     ) -> Result<()> {
-        // Collect all lines from old hunks
+        // Collect all lines from old hunks, expanding tabs
         let old_display_lines: Vec<_> = old_hunks
             .iter()
             .flat_map(|hunk| {
                 hunk.0.iter().filter_map(|line| {
                     if line.line_index < old_lines.len() {
-                        Some((line, old_lines[line.line_index]))
+                        let expanded = expand_tabs(old_lines[line.line_index], DEFAULT_TAB_WIDTH);
+                        Some((line.clone(), expanded))
                     } else {
                         None
                     }
@@ -553,13 +659,14 @@ impl Delta {
             })
             .collect();
 
-        // Collect all lines from new hunks
+        // Collect all lines from new hunks, expanding tabs
         let new_display_lines: Vec<_> = new_hunks
             .iter()
             .flat_map(|hunk| {
                 hunk.0.iter().filter_map(|line| {
                     if line.line_index < new_lines.len() {
-                        Some((line, new_lines[line.line_index]))
+                        let expanded = expand_tabs(new_lines[line.line_index], DEFAULT_TAB_WIDTH);
+                        Some((line.clone(), expanded))
                     } else {
                         None
                     }
@@ -574,8 +681,7 @@ impl Delta {
             new_hunks,
             old_formatter,
             new_formatter,
-            line_num_width,
-            column_width,
+            layout,
         )?;
 
         // Print lines side by side, padding the shorter side
@@ -587,12 +693,11 @@ impl Delta {
 
             self.print_side_by_side_line(
                 writer,
-                old_line_data.map(|(line, text)| (*line, *text)),
-                new_line_data.map(|(line, text)| (*line, *text)),
+                old_line_data.map(|(line, text)| (line, text.as_str())),
+                new_line_data.map(|(line, text)| (line, text.as_str())),
                 old_formatter,
                 new_formatter,
-                line_num_width,
-                column_width,
+                layout,
             )?;
         }
 
@@ -600,7 +705,6 @@ impl Delta {
     }
 
     /// Print the header for a side-by-side hunk group.
-    #[allow(clippy::too_many_arguments)]
     fn print_side_by_side_header(
         &self,
         writer: &mut dyn Write,
@@ -608,22 +712,13 @@ impl Delta {
         new_hunks: &[&Hunk],
         old_formatter: &DeltaFormatter,
         new_formatter: &DeltaFormatter,
-        line_num_width: usize,
-        column_width: usize,
+        layout: &SideBySideLayout,
     ) -> Result<()> {
         let header_style = Style::default().fg(Color::Cyan);
         let separator_style = Style::default().fg(Color::Color256(240));
 
         // Print blank separator line with vertical bars (reuse the line printing logic)
-        self.print_side_by_side_line(
-            writer,
-            None,
-            None,
-            old_formatter,
-            new_formatter,
-            line_num_width,
-            column_width,
-        )?;
+        self.print_side_by_side_line(writer, None, None, old_formatter, new_formatter, layout)?;
 
         // Build old side header text
         let old_range = if !old_hunks.is_empty() {
@@ -653,12 +748,17 @@ impl Delta {
 
         // Build header with same structure as data lines:
         // [line_num_padding │ header_content padded to column_width] │ [line_num_padding │ header_content]
+        // The header content includes the prefix space (1 char) + content width
 
         // Left side: line number area + header content
         let left_side = if self.line_numbers {
-            let line_num_padding = " ".repeat(line_num_width);
-            // Pad the header content to fill the column width (including prefix space)
-            let padded_content = format!("{:<width$}", old_range, width = column_width + 1);
+            let line_num_padding = " ".repeat(layout.line_num_width);
+            // Pad the header content to fill the column width plus prefix (1 char)
+            let padded_content = format!(
+                "{:<width$}",
+                old_range,
+                width = layout.left_content_width + 1
+            );
             format!(
                 "{} {} {}",
                 separator_style.apply_to(&line_num_padding),
@@ -666,21 +766,36 @@ impl Delta {
                 header_style.apply_to(padded_content)
             )
         } else {
-            let padded_content = format!("{:<width$}", old_range, width = column_width + 1);
+            let padded_content = format!(
+                "{:<width$}",
+                old_range,
+                width = layout.left_content_width + 1
+            );
             format!("{}", header_style.apply_to(padded_content))
         };
 
         // Right side: line number area + header content
         let right_side = if self.line_numbers {
-            let line_num_padding = " ".repeat(line_num_width);
+            let line_num_padding = " ".repeat(layout.line_num_width);
+            // Pad the header content to fill the column width plus prefix (1 char)
+            let padded_content = format!(
+                "{:<width$}",
+                new_range,
+                width = layout.right_content_width + 1
+            );
             format!(
                 "{} {} {}",
                 separator_style.apply_to(&line_num_padding),
                 separator_style.apply_to(LINE_NUMBER_SEPARATOR),
-                header_style.apply_to(&new_range)
+                header_style.apply_to(padded_content)
             )
         } else {
-            format!("{}", header_style.apply_to(&new_range))
+            let padded_content = format!(
+                "{:<width$}",
+                new_range,
+                width = layout.right_content_width + 1
+            );
+            format!("{}", header_style.apply_to(padded_content))
         };
 
         writeln!(
@@ -695,7 +810,6 @@ impl Delta {
     }
 
     /// Print a single line in side-by-side view.
-    #[allow(clippy::too_many_arguments)]
     fn print_side_by_side_line(
         &self,
         writer: &mut dyn Write,
@@ -703,18 +817,17 @@ impl Delta {
         new_data: Option<(&Line, &str)>,
         old_formatter: &DeltaFormatter,
         new_formatter: &DeltaFormatter,
-        line_num_width: usize,
-        column_width: usize,
+        layout: &SideBySideLayout,
     ) -> Result<()> {
         let separator_style = Style::default().fg(Color::Color256(240));
 
-        // Render left (old) side
+        // Render left (old) side with left column width
         let left_content =
-            self.format_side_content(old_data, old_formatter, line_num_width, column_width);
+            self.format_side_content(old_data, old_formatter, layout, layout.left_content_width);
 
-        // Render right (new) side
+        // Render right (new) side with right column width
         let right_content =
-            self.format_side_content(new_data, new_formatter, line_num_width, column_width);
+            self.format_side_content(new_data, new_formatter, layout, layout.right_content_width);
 
         writeln!(
             writer,
@@ -734,7 +847,7 @@ impl Delta {
         &self,
         data: Option<(&Line, &str)>,
         formatter: &DeltaFormatter,
-        line_num_width: usize,
+        layout: &SideBySideLayout,
         column_width: usize,
     ) -> String {
         let mut result = String::new();
@@ -743,8 +856,11 @@ impl Delta {
             Some((line, text)) => {
                 // Line number
                 if self.line_numbers {
-                    let line_num_str =
-                        format!("{:>width$}", line.line_index + 1, width = line_num_width);
+                    let line_num_str = format!(
+                        "{:>width$}",
+                        line.line_index + 1,
+                        width = layout.line_num_width
+                    );
                     result.push_str(&format!(
                         "{} {} ",
                         formatter.line_number_style.apply_to(&line_num_str),
@@ -765,7 +881,7 @@ impl Delta {
             None => {
                 // Empty placeholder
                 if self.line_numbers {
-                    let padding = " ".repeat(line_num_width);
+                    let padding = " ".repeat(layout.line_num_width);
                     result.push_str(&format!(
                         "{} {} ",
                         formatter.line_number_style.apply_to(&padding),
@@ -781,6 +897,9 @@ impl Delta {
     }
 
     /// Format line content with emphasis, truncating or padding to fit column width.
+    ///
+    /// Uses `measure_text_width` for accurate display width calculation that handles
+    /// Unicode characters correctly (including wide characters and combining marks).
     fn format_line_content(
         &self,
         text: &str,
@@ -792,72 +911,98 @@ impl Delta {
         let emphasis = &formatter.emphasis_style;
 
         let mut result = String::new();
-        let mut printed_chars = 0;
-        let mut display_len = 0;
+        let mut byte_pos = 0;
+        let mut display_width = 0;
 
-        // Build content with emphasis
+        // Build content with emphasis, using Unicode-aware width calculation
         for entry in &line.entries {
             let emphasis_range = entry.start_position().column..entry.end_position().column;
             let emphasis_start = emphasis_range.start.min(text.len());
             let emphasis_end = emphasis_range.end.min(text.len());
 
             // Regular text before this entry
-            if printed_chars < emphasis_start {
-                let regular_text = &text[printed_chars..emphasis_start];
-                let chars_to_add = (column_width - display_len).min(regular_text.len());
-                if chars_to_add > 0 {
-                    result.push_str(&format!(
-                        "{}",
-                        regular.apply_to(&regular_text[..chars_to_add])
-                    ));
-                    display_len += chars_to_add;
+            if byte_pos < emphasis_start && display_width < column_width {
+                let regular_text = &text[byte_pos..emphasis_start];
+                let (truncated, width) =
+                    truncate_to_display_width(regular_text, column_width - display_width);
+                if !truncated.is_empty() {
+                    result.push_str(&format!("{}", regular.apply_to(truncated)));
+                    display_width += width;
                 }
             }
 
             // Emphasized text
-            if emphasis_start < emphasis_end && display_len < column_width {
+            if emphasis_start < emphasis_end && display_width < column_width {
                 let emphasized_text = &text[emphasis_start..emphasis_end];
-                let chars_to_add = (column_width - display_len).min(emphasized_text.len());
-                if chars_to_add > 0 {
-                    result.push_str(&format!(
-                        "{}",
-                        emphasis.apply_to(&emphasized_text[..chars_to_add])
-                    ));
-                    display_len += chars_to_add;
+                let (truncated, width) =
+                    truncate_to_display_width(emphasized_text, column_width - display_width);
+                if !truncated.is_empty() {
+                    result.push_str(&format!("{}", emphasis.apply_to(truncated)));
+                    display_width += width;
                 }
             }
 
-            printed_chars = emphasis_end;
+            byte_pos = emphasis_end;
 
-            if display_len >= column_width {
+            if display_width >= column_width {
                 break;
             }
         }
 
         // Remaining text after last entry
-        if printed_chars < text.len() && display_len < column_width {
-            let remaining_text = &text[printed_chars..];
-            let chars_to_add = (column_width - display_len).min(remaining_text.len());
-            if chars_to_add > 0 {
-                result.push_str(&format!(
-                    "{}",
-                    regular.apply_to(&remaining_text[..chars_to_add])
-                ));
-                display_len += chars_to_add;
+        if byte_pos < text.len() && display_width < column_width {
+            let remaining_text = &text[byte_pos..];
+            let (truncated, width) =
+                truncate_to_display_width(remaining_text, column_width - display_width);
+            if !truncated.is_empty() {
+                result.push_str(&format!("{}", regular.apply_to(truncated)));
+                display_width += width;
             }
         }
 
         // Pad to column width if needed
-        if display_len < column_width {
-            result.push_str(&" ".repeat(column_width - display_len));
+        if display_width < column_width {
+            result.push_str(&" ".repeat(column_width - display_width));
         }
 
         result
     }
 }
 
+/// Truncate a string to fit within a maximum display width.
+///
+/// Returns the truncated string slice and its actual display width.
+/// Uses `measure_text_width` to correctly handle Unicode characters.
+fn truncate_to_display_width(text: &str, max_width: usize) -> (&str, usize) {
+    if max_width == 0 {
+        return ("", 0);
+    }
+
+    let text_width = measure_text_width(text);
+    if text_width <= max_width {
+        return (text, text_width);
+    }
+
+    // Need to truncate - find the byte position where we exceed max_width
+    let mut current_width = 0;
+    let mut last_valid_byte_pos = 0;
+
+    for (byte_pos, ch) in text.char_indices() {
+        let char_width = measure_text_width(&ch.to_string());
+        if current_width + char_width > max_width {
+            break;
+        }
+        current_width += char_width;
+        last_valid_byte_pos = byte_pos + ch.len_utf8();
+    }
+
+    (&text[..last_valid_byte_pos], current_width)
+}
+
 #[cfg(test)]
 mod tests {
+    use std::hint::assert_unchecked;
+
     use super::*;
 
     #[test]
@@ -865,7 +1010,7 @@ mod tests {
         let delta = Delta::default();
         assert!(delta.line_numbers);
         assert!(delta.show_header);
-        assert!(!delta.side_by_side);
+        assert!(delta.side_by_side);
         assert_eq!(delta.addition.prefix, "+");
         assert_eq!(delta.deletion.prefix, "-");
     }
@@ -882,5 +1027,283 @@ mod tests {
         let style = DeltaTextStyle::default();
         let formatter = DeltaFormatter::from_style(&style);
         assert_eq!(formatter.prefix, " ");
+    }
+
+    // ============================================================
+    // SideBySideLayout tests
+    // ============================================================
+
+    #[test]
+    fn test_layout_calculation_with_line_numbers() {
+        // Test with 80-column terminal, 4-digit line numbers
+        let layout = SideBySideLayout::calculate(80, 4, true);
+
+        // Per-side overhead: line_num(4) + space(1) + sep(1) + space(1) + prefix(1) = 8
+        // Middle separator: 3
+        // Total overhead: 8 * 2 + 3 = 19
+        // Available: 80 - 19 = 61
+        // Left gets (61 + 1) / 2 = 31, Right gets 61 / 2 = 30
+
+        assert_eq!(layout.line_num_width, 4);
+        assert_eq!(layout.line_num_area_width, 7); // 4 + 3 = "NNNN │ "
+        assert_eq!(layout.left_content_width, 31);
+        assert_eq!(layout.right_content_width, 30);
+
+        // Verify total width matches terminal width
+        assert_eq!(layout.total_width(true), 80);
+    }
+
+    #[test]
+    fn test_layout_calculation_without_line_numbers() {
+        // Test with 80-column terminal, no line numbers
+        let layout = SideBySideLayout::calculate(80, 4, false);
+
+        // Per-side overhead: prefix(1) = 1
+        // Middle separator: 3
+        // Total overhead: 1 * 2 + 3 = 5
+        // Available: 80 - 5 = 75
+        // Left gets (75 + 1) / 2 = 38, Right gets 75 / 2 = 37
+
+        assert_eq!(layout.line_num_area_width, 0);
+        assert_eq!(layout.left_content_width, 38);
+        assert_eq!(layout.right_content_width, 37);
+
+        // Verify total width matches terminal width
+        assert_eq!(layout.total_width(false), 80);
+    }
+
+    #[test]
+    fn test_layout_calculation_even_available_width() {
+        // Use a terminal width that results in even available content width
+        // With line numbers (overhead 19), 99 - 19 = 80 (even)
+        let layout = SideBySideLayout::calculate(99, 4, true);
+
+        // Available: 99 - 19 = 80
+        // Left gets (80 + 1) / 2 = 40, Right gets 80 / 2 = 40
+        // Both columns get the same width when available is even
+        assert_eq!(layout.left_content_width, 40);
+        assert_eq!(layout.right_content_width, 40);
+        assert_eq!(layout.total_width(true), 99);
+    }
+
+    #[test]
+    fn test_layout_calculation_odd_available_width() {
+        // Use a terminal width that results in odd available content width
+        // With line numbers (overhead 19), 100 - 19 = 81 (odd)
+        let layout = SideBySideLayout::calculate(100, 4, true);
+
+        // Available: 100 - 19 = 81
+        // Left gets (81 + 1) / 2 = 41, Right gets 81 / 2 = 40
+        assert_eq!(layout.left_content_width, 41);
+        assert_eq!(layout.right_content_width, 40);
+        assert_eq!(layout.total_width(true), 100);
+    }
+
+    #[test]
+    fn test_layout_calculation_narrow_terminal() {
+        // Test with very narrow terminal (below MIN_COLUMN_WIDTH * 2)
+        let layout = SideBySideLayout::calculate(50, 4, true);
+
+        // Overhead: 19
+        // Available: 50 - 19 = 31 (less than MIN_COLUMN_WIDTH * 2 = 80)
+        // Should use what space we have: left = 16, right = 15
+        assert!(layout.left_content_width >= 1);
+        assert!(layout.right_content_width >= 1);
+        assert_eq!(layout.total_width(true), 50);
+    }
+
+    #[test]
+    fn test_layout_calculation_very_narrow_terminal() {
+        // Test with extremely narrow terminal
+        let layout = SideBySideLayout::calculate(25, 4, true);
+
+        // Overhead: 19
+        // Available: 25 - 19 = 6
+        // Left = 4, Right = 3 (or similar small values)
+        assert!(layout.left_content_width >= 1);
+        assert!(layout.right_content_width >= 1);
+        assert_eq!(layout.total_width(true), 25);
+    }
+
+    #[test]
+    fn test_layout_calculation_larger_line_numbers() {
+        // Test with larger line number width (e.g., for files with 10000+ lines)
+        let layout = SideBySideLayout::calculate(120, 6, true);
+
+        // Per-side overhead: line_num(6) + space(1) + sep(1) + space(1) + prefix(1) = 10
+        // Middle separator: 3
+        // Total overhead: 10 * 2 + 3 = 23
+        // Available: 120 - 23 = 97
+
+        assert_eq!(layout.line_num_width, 6);
+        assert_eq!(layout.line_num_area_width, 9); // 6 + 3
+        assert_eq!(layout.total_width(true), 120);
+    }
+
+    #[test]
+    fn test_layout_total_width_consistency() {
+        // Test multiple terminal widths to ensure total_width always matches
+        for term_width in [40, 60, 80, 100, 120, 150, 200] {
+            for line_num_width in [2, 4, 6, 8] {
+                for show_line_numbers in [true, false] {
+                    let layout =
+                        SideBySideLayout::calculate(term_width, line_num_width, show_line_numbers);
+                    assert_eq!(
+                        layout.total_width(show_line_numbers),
+                        term_width,
+                        "Mismatch for term_width={}, line_num_width={}, line_numbers={}",
+                        term_width,
+                        line_num_width,
+                        show_line_numbers
+                    );
+                }
+            }
+        }
+    }
+
+    // ============================================================
+    // Tab expansion tests
+    // ============================================================
+
+    #[test]
+    fn test_expand_tabs_no_tabs() {
+        let text = "hello world";
+        assert_eq!(expand_tabs(text, 4), "hello world");
+    }
+
+    #[test]
+    fn test_expand_tabs_single_tab_at_start() {
+        let text = "\thello";
+        // Tab at position 0, expands to 4 spaces (next tab stop at 4)
+        assert_eq!(expand_tabs(text, 4), "    hello");
+    }
+
+    #[test]
+    fn test_expand_tabs_tab_after_text() {
+        let text = "ab\tcd";
+        // "ab" takes 2 columns, tab at position 2 expands to 2 spaces (next tab stop at 4)
+        assert_eq!(expand_tabs(text, 4), "ab  cd");
+    }
+
+    #[test]
+    fn test_expand_tabs_multiple_tabs() {
+        let text = "\t\t";
+        // First tab at 0 -> 4 spaces, second tab at 4 -> 4 spaces
+        assert_eq!(expand_tabs(text, 4), "        ");
+    }
+
+    #[test]
+    fn test_expand_tabs_tab_at_tab_stop() {
+        let text = "1234\t5";
+        // "1234" takes 4 columns (at tab stop), tab expands to 4 spaces
+        assert_eq!(expand_tabs(text, 4), "1234    5");
+    }
+
+    #[test]
+    fn test_expand_tabs_custom_width() {
+        let text = "\thello";
+        // Tab at position 0, expands to 8 spaces with tab_width=8
+        assert_eq!(expand_tabs(text, 8), "        hello");
+    }
+
+    // ============================================================
+    // Truncation tests
+    // ============================================================
+
+    #[test]
+    fn test_truncate_empty_string() {
+        let (result, width) = truncate_to_display_width("", 10);
+        assert_eq!(result, "");
+        assert_eq!(width, 0);
+    }
+
+    #[test]
+    fn test_truncate_zero_width() {
+        let (result, width) = truncate_to_display_width("hello", 0);
+        assert_eq!(result, "");
+        assert_eq!(width, 0);
+    }
+
+    #[test]
+    fn test_truncate_fits_exactly() {
+        let (result, width) = truncate_to_display_width("hello", 5);
+        assert_eq!(result, "hello");
+        assert_eq!(width, 5);
+    }
+
+    #[test]
+    fn test_truncate_fits_with_room() {
+        let (result, width) = truncate_to_display_width("hello", 10);
+        assert_eq!(result, "hello");
+        assert_eq!(width, 5);
+    }
+
+    #[test]
+    fn test_truncate_needs_truncation() {
+        let (result, width) = truncate_to_display_width("hello world", 5);
+        assert_eq!(result, "hello");
+        assert_eq!(width, 5);
+    }
+
+    #[test]
+    fn test_truncate_unicode_basic() {
+        // Test with accented characters (1 display column each)
+        let text = "héllo";
+        let (result, width) = truncate_to_display_width(text, 3);
+        assert_eq!(result, "hél");
+        assert_eq!(width, 3);
+    }
+
+    #[test]
+    fn test_truncate_preserves_utf8_boundaries() {
+        // Ensure we don't split in the middle of a multi-byte character
+        let text = "日本語"; // Each character is typically 2 columns wide
+        let text_width = measure_text_width(text);
+
+        // If the terminal supports wide characters, this should be 6 columns
+        // Truncate to 4 should give us 2 characters
+        if text_width == 6 {
+            let (result, width) = truncate_to_display_width(text, 4);
+            assert_eq!(result, "日本");
+            assert_eq!(width, 4);
+        }
+    }
+
+    // ============================================================
+    // Integration tests for width consistency
+    // ============================================================
+
+    #[test]
+    fn test_side_by_side_output_width_consistency() {
+        // This test verifies that the layout calculation matches
+        // what would actually be output
+        let layout = SideBySideLayout::calculate(80, 4, true);
+
+        // Simulate the output structure:
+        // Left side: line_num_area (7) + prefix (1) + content (left_content_width)
+        // Middle: " │ " (3)
+        // Right side: line_num_area (7) + prefix (1) + content (right_content_width)
+
+        let left_side_width = layout.line_num_area_width + 1 + layout.left_content_width;
+        let middle_width = 3;
+        let right_side_width = layout.line_num_area_width + 1 + layout.right_content_width;
+
+        let total = left_side_width + middle_width + right_side_width;
+        assert_eq!(total, 80);
+    }
+
+    #[test]
+    fn test_layout_symmetry_check() {
+        // For even available width, both columns should differ by at most 1
+        let layout = SideBySideLayout::calculate(100, 4, true);
+        let diff = layout
+            .left_content_width
+            .abs_diff(layout.right_content_width);
+        assert!(
+            diff <= 1,
+            "Column widths should differ by at most 1, got {} vs {}",
+            layout.left_content_width,
+            layout.right_content_width
+        );
     }
 }
