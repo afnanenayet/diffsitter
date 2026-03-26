@@ -360,14 +360,14 @@ cargo install diffsitter --features mcp-server --bin tree-sitter-mcp
 
 #### Claude Code
 
-Register the server with Claude Code using any of these methods:
+Register the server with Claude Code:
 
 ```sh
-# Quickest: register the binary directly
+# Register the binary as an MCP server
 claude mcp add tree-sitter-mcp -- /path/to/tree-sitter-mcp
 
-# Or install the bundled plugin (auto-builds on first session)
-claude plugin install --scope user ./plugins/tree-sitter-mcp
+# Or use the bundled plugin for development (loads for one session)
+claude --plugin-dir ./plugins/tree-sitter-mcp
 ```
 
 Once registered, Claude Code can use the tools automatically. For example,

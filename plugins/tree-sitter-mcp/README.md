@@ -19,44 +19,40 @@ Exposes 8 MCP tools that let Claude navigate code as an AST rather than flat tex
 
 Supports 14+ languages: Rust, Python, TypeScript, TSX, JavaScript, Go, Java, C, C++, C#, Ruby, Bash, PHP, OCaml, CSS, HCL.
 
-## Installation
+## Usage
 
-### From the diffsitter repo
+### As a plugin (includes skill + agent + auto-build hook)
 
-If you've cloned diffsitter, the plugin is already at `plugins/tree-sitter-mcp/`:
+Load the plugin for your Claude Code session:
 
 ```sh
-claude plugin install --scope user ./plugins/tree-sitter-mcp
+claude --plugin-dir ./plugins/tree-sitter-mcp
 ```
 
-The plugin automatically builds the `tree-sitter-mcp` binary on first session start. This requires:
+The `SessionStart` hook automatically builds the `tree-sitter-mcp` binary on first use. This requires:
 
 - Rust toolchain (1.85.1+)
 - C/C++ compiler (for tree-sitter grammars)
 - Git submodules initialized (`git submodule update --init --recursive`)
 
-### From a pre-built binary
+### As a standalone MCP server (no plugin needed)
 
-If you have a pre-built `tree-sitter-mcp` binary, you can configure it directly in your Claude Code settings without the plugin:
-
-```sh
-# Add to project settings
-claude mcp add tree-sitter-mcp -- /path/to/tree-sitter-mcp
-
-# Or add to user settings
-claude mcp add --scope user tree-sitter-mcp -- /path/to/tree-sitter-mcp
-```
-
-## Development
-
-To test the plugin locally during development:
+If you have a pre-built `tree-sitter-mcp` binary, register it directly:
 
 ```sh
-claude --plugin-dir ./plugins/tree-sitter-mcp
+# Build
+cargo build --release --features mcp-server --bin tree-sitter-mcp
+
+# Register with Claude Code
+claude mcp add tree-sitter-mcp -- ./target/release/tree-sitter-mcp
 ```
+
+### Development
 
 To rebuild the binary manually:
 
 ```sh
 cargo build --release --features mcp-server --bin tree-sitter-mcp
 ```
+
+Use `/reload-plugins` inside Claude Code to pick up plugin changes without restarting.

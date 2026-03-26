@@ -98,21 +98,21 @@ If a worktree build fails with missing grammar errors, run `git submodule update
 
 ## MCP Server
 
-The `tree-sitter-mcp` binary exposes AST navigation tools via MCP (Model Context Protocol). There are three ways to use it with Claude Code:
+The `tree-sitter-mcp` binary exposes AST navigation tools via MCP (Model Context Protocol).
 
-**Option 1: Plugin (auto-builds)**
-```sh
-claude plugin install --scope user ./plugins/tree-sitter-mcp
-```
-
-**Option 2: Manual binary registration**
+**Option 1: Register the binary directly**
 ```sh
 cargo build --release --features mcp-server --bin tree-sitter-mcp
 claude mcp add tree-sitter-mcp -- ./target/release/tree-sitter-mcp
 ```
 
-**Option 3: Direct settings.json**
-Add to `.claude/settings.json` or `~/.claude/settings.json`:
+**Option 2: Use the bundled plugin (development)**
+```sh
+claude --plugin-dir ./plugins/tree-sitter-mcp
+```
+
+**Option 3: Add to `.mcp.json`**
+Add to `.claude/.mcp.json` (project) or `~/.claude/.mcp.json` (user):
 ```json
 {
   "mcpServers": {
