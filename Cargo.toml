@@ -43,6 +43,11 @@ path = "src/bin/diffsitter_completions.rs"
 name = "diffsitter-utils"
 path = "src/bin/diffsitter_utils.rs"
 
+[[bin]]
+name = "tree-sitter-mcp"
+path = "src/bin/tree_sitter_mcp.rs"
+required-features = ["mcp-server"]
+
 [lib]
 name = "libdiffsitter"
 path = "src/lib.rs"
@@ -78,6 +83,9 @@ shadow-rs = { version = "1.5.0", optional = true }
 enum_dispatch = "0.3.13"
 lazy_static = { version = "1.5.0", optional = true }
 figment = { version = "0.10", features = ["toml", "json", "env"] }
+rmcp = { version = "0.1", features = ["server", "macros", "transport-io"], optional = true }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-std"], optional = true }
+schemars = { version = "0.8", optional = true }
 
 [dev-dependencies]
 test-case = "3.3.1"
@@ -121,6 +129,9 @@ dynamic-grammar-libs = []
 
 # Compile the static tree-sitter grammars from the submodules in this repo.
 static-grammar-libs = ["lazy_static"]
+
+# Enable the tree-sitter MCP server binary and its dependencies.
+mcp-server = ["rmcp", "tokio", "schemars"]
 
 [profile.profiling]
 inherits = "release"

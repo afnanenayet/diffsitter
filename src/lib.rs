@@ -8,12 +8,15 @@
 //! All of the methods used to create diffsitter are here and we have attempted to keep the library
 //! at least somewhat sane and organized for our own usage.
 
+pub mod ast_navigation;
 pub mod cli;
 pub mod config;
 pub mod console_utils;
 pub mod diff;
 mod figment_utils;
 pub mod input_processing;
+#[cfg(feature = "mcp-server")]
+pub mod mcp_server;
 pub mod neg_idx_vec;
 pub mod parse;
 pub mod render;

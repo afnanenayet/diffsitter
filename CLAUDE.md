@@ -18,6 +18,7 @@ diffsitter is an AST-based diff tool written in Rust. It uses tree-sitter to par
 cargo build                    # Build with static grammars (default)
 cargo build --no-default-features --features dynamic-grammar-libs  # Dynamic grammar loading
 cargo build --profile production  # Release build with LTO + strip
+cargo build --features mcp-server --bin tree-sitter-mcp  # Build the MCP server
 ```
 
 ## Testing
@@ -51,7 +52,7 @@ pre-commit install             # Set up pre-commit hooks (formatting, TOML valid
 
 **Library crate** (`libdiffsitter` in `src/lib.rs`): Exposes `generate_ast_vector_data()` as the main public API.
 
-**Three binaries**: `diffsitter` (main), `diffsitter_completions` (shell completions), `diffsitter-utils`.
+**Four binaries**: `diffsitter` (main), `diffsitter_completions` (shell completions), `diffsitter-utils`, `tree-sitter-mcp` (MCP server, requires `mcp-server` feature).
 
 **Build script** (`build.rs`): Compiles tree-sitter C/C++ grammars in parallel (rayon), generates `phf` language maps. This is why builds require a C/C++ toolchain.
 
@@ -59,6 +60,7 @@ pre-commit install             # Set up pre-commit hooks (formatting, TOML valid
 - `static-grammar-libs` (default): Compiles grammars into the binary
 - `dynamic-grammar-libs`: Loads grammars from system shared libraries at runtime
 - `better-build-info`: Extended build metadata via shadow-rs
+- `mcp-server`: Builds `tree-sitter-mcp` binary exposing AST navigation via MCP (adds `rmcp`, `tokio`, `schemars`)
 
 ## Git Worktrees
 
