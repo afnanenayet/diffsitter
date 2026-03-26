@@ -28,6 +28,8 @@ jobs:
       - uses: taiki-e/install-action@v2
         with:
           tool: nextest
+      - name: Validate plugin
+        run: bash plugins/tree-sitter-mcp/scripts/validate-plugin.sh
       - name: Check formatting
         run: cargo fmt --all -- --check
       - name: Clippy

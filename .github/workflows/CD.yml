@@ -204,7 +204,7 @@ jobs:
           release_version="$(cat ./artifacts/release-version)"
           echo "RELEASE_VERSION=$release_version" >> "$GITHUB_ENV"
 
-      - name: Upload Rust binaries for nightly
+      - name: Upload diffsitter for nightly
         uses: taiki-e/upload-rust-binary-action@v1
         if: needs.create_github_release.outputs.version == 'nightly'
         with:
@@ -219,7 +219,7 @@ jobs:
           include: bin/git-diffsitter
           profile: production
 
-      - name: Upload Rust binaries for release
+      - name: Upload diffsitter for release
         uses: taiki-e/upload-rust-binary-action@v1
         if: needs.create_github_release.outputs.version != 'nightly'
         with:
@@ -231,6 +231,35 @@ jobs:
           checksum: sha256
           target: ${{ matrix.job.target }}
           include: bin/git-diffsitter
+          profile: production
+
+      - name: Upload tree-sitter-mcp for nightly
+        uses: taiki-e/upload-rust-binary-action@v1
+        if: needs.create_github_release.outputs.version == 'nightly'
+        with:
+          bin: tree-sitter-mcp
+          archive: $bin-$target
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tar: unix
+          zip: windows
+          checksum: sha256
+          target: ${{ matrix.job.target }}
+          ref: refs/tags/nightly
+          features: mcp-server
+          profile: production
+
+      - name: Upload tree-sitter-mcp for release
+        uses: taiki-e/upload-rust-binary-action@v1
+        if: needs.create_github_release.outputs.version != 'nightly'
+        with:
+          bin: tree-sitter-mcp
+          archive: $bin-$target
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tar: unix
+          zip: windows
+          checksum: sha256
+          target: ${{ matrix.job.target }}
+          features: mcp-server
           profile: production
 
       - name: Install cargo deb
