@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "WorktreeCreate": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/scripts/worktree-create.sh",
+            "timeout": 120
+          }
+        ]
+      }
+    ],
+    "WorktreeRemove": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/scripts/worktree-remove.sh",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

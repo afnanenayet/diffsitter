@@ -1,2 +1,7 @@
 /target
 .vscode/
+
+# Claude Code
+.claude/worktrees/
+.claude/*.local.json
+.claude/*.local.md

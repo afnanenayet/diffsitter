@@ -58,6 +58,19 @@ pre-commit install             # Set up pre-commit hooks (formatting, TOML valid
 - `dynamic-grammar-libs`: Loads grammars from system shared libraries at runtime
 - `better-build-info`: Extended build metadata via shadow-rs
 
+## Git Worktrees
+
+This repo supports Claude Code worktree isolation for parallel sessions. Use the `--worktree` flag or `isolation: "worktree"` in subagent definitions.
+
+```sh
+claude --worktree feature-xyz       # Start isolated session
+claude --worktree                   # Auto-named worktree
+```
+
+Worktrees live in `.claude/worktrees/` (gitignored). A `WorktreeCreate` hook in `.claude/settings.json` automatically runs `git submodule update --init --recursive` — this is critical since the build compiles tree-sitter grammars from vendored submodules.
+
+If a worktree build fails with missing grammar errors, run `git submodule update --init --recursive` manually in the worktree directory.
+
 ## Key Conventions
 
 - Config changes must also update `assets/sample_config.json5` — CI parses it as a test.
