@@ -13,6 +13,10 @@ on:
     tags:
       - '*'
 
+concurrency:
+  group: cd-${{ github.ref }}
+  cancel-in-progress: false
+
 env:
   CARGO_TERM_COLOR: always
 
@@ -25,28 +29,35 @@ jobs:
     steps:
       - name: Get release version from tag
         if: env.VERSION == '' && github.event_name != 'workflow_dispatch' && github.event_name != 'schedule'
+        env:
+          TAG_NAME: ${{ github.event.inputs.tag_name }}
         run: |
-          if [[ -n "${{ github.event.inputs.tag_name }}" ]]; then
+          if [[ -n "$TAG_NAME" ]]; then
             echo "Manual run against a tag; overriding actual tag in the environment..."
-            echo "VERSION=${{ github.event.inputs.tag_name }}" >> $GITHUB_ENV
+            echo "VERSION=$TAG_NAME" >> "$GITHUB_ENV"
           else
             echo "VERSION=${GITHUB_REF#refs/tags/}" >> "$GITHUB_ENV"
           fi
       - name: Get release version from inputs
         if: env.VERSION == '' && (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
         env:
-          default_tag_name: nightly
+          INPUT_TAG: ${{ github.event.inputs.tag_name }}
+          DEFAULT_TAG: nightly
         run: |
-          echo "VERSION=${{ github.event.inputs.tag_name || env.default_tag_name }}" >> "$GITHUB_ENV"
+          echo "VERSION=${INPUT_TAG:-$DEFAULT_TAG}" >> "$GITHUB_ENV"
       - name: Validate version environment variable
+        env:
+          VERSION: ${{ env.VERSION }}
         run: |
-          echo "Version being built against is version ${{ env.VERSION }}"!
+          echo "Version being built against is version ${VERSION}!"
       - name: Save version to output
         id: get_version
+        env:
+          VERSION: ${{ env.VERSION }}
         run: |
-          echo "version=${{ env.VERSION }}" >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           submodules: true
         if: env.VERSION == 'nightly'
@@ -61,11 +72,11 @@ jobs:
           gh release delete nightly --yes --cleanup-tag || true
           git tag nightly
           git push origin nightly
-          echo "PRELEASE=true" >> $GITHUB_ENV
+          echo "PRELEASE=true" >> "$GITHUB_ENV"
 
       - if: env.VERSION != 'nightly'
         run: |
-          echo "PRELEASE=false" >> $GITHUB_ENV
+          echo "PRELEASE=false" >> "$GITHUB_ENV"
 
       - name: Create GitHub release (tag)
         if: github.event_name != 'workflow_dispatch' && github.event_name != 'schedule'
@@ -76,8 +87,6 @@ jobs:
           draft: true
           name: ${{ env.VERSION }}
           prerelease: ${{ env.PRELEASE }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create GitHub release (schedule/workflow dispatch)
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
@@ -89,22 +98,26 @@ jobs:
           name: ${{ env.VERSION }}
           tag: ${{ env.VERSION }}
           prerelease: ${{ env.PRELEASE }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create artifacts directory
         run: mkdir artifacts
 
       - name: Save release upload URL to artifact (tag)
         if: github.event_name != 'workflow_dispatch' && github.event_name != 'schedule'
-        run: echo "${{ steps.release_tag.outputs.upload_url }}" > artifacts/release-upload-url
+        env:
+          UPLOAD_URL: ${{ steps.release_tag.outputs.upload_url }}
+        run: echo "$UPLOAD_URL" > artifacts/release-upload-url
 
       - name: Save release upload URL to artifact (workflow/schedule)
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
-        run: echo "${{ steps.release_dispatch.outputs.upload_url }}" > artifacts/release-upload-url
+        env:
+          UPLOAD_URL: ${{ steps.release_dispatch.outputs.upload_url }}
+        run: echo "$UPLOAD_URL" > artifacts/release-upload-url
 
       - name: Save version number to artifact
-        run: echo "${{ env.VERSION }}" > artifacts/release-version
+        env:
+          VERSION: ${{ env.VERSION }}
+        run: echo "$VERSION" > artifacts/release-version
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -153,41 +166,29 @@ jobs:
             artifact_name: diffsitter
             target: riscv64gc-unknown-linux-gnu
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         with:
           submodules: true
 
-      - uses: Swatinem/rust-cache@v2
-        with:
-          key: cd-${{steps.toolchain.outputs.name}}
-      - if: ${{ matrix.job.os == 'ubuntu-latest' }}
+      - if: matrix.job.os == 'ubuntu-latest'
         name: Install cross-compilation tools
         uses: taiki-e/setup-cross-toolchain-action@v1
         with:
           target: ${{ matrix.job.target }}
-      - if: ${{ matrix.job.os != 'ubuntu-latest' }}
+      - if: matrix.job.os != 'ubuntu-latest'
         name: Install native Rust toolchain
-        uses: dtolnay/rust-toolchain@master
+        uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.job.target }}
-          components: rustfmt,clippy
-          toolchain: stable
-      - uses: taiki-e/install-action@nextest
-      - name: Install packages (Windows)
-        if: matrix.job.os == 'windows-latest'
-        uses: crazy-max/ghaction-chocolatey@v1.4.0
+      - uses: Swatinem/rust-cache@v2
         with:
-          args: install -y zip
+          key: cd-${{ matrix.job.target }}
 
       - name: Install packages (macOS)
         if: matrix.job.os == 'macos-latest'
         shell: bash
         run: |
           brew install coreutils
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.9'
 
       - name: Get release download URL
         uses: actions/download-artifact@v4
@@ -199,25 +200,16 @@ jobs:
         shell: bash
         run: |
           release_upload_url="$(cat ./artifacts/release-upload-url)"
-          echo "RELEASE_UPLOAD_URL=$release_upload_url" >> $GITHUB_ENV
+          echo "RELEASE_UPLOAD_URL=$release_upload_url" >> "$GITHUB_ENV"
           release_version="$(cat ./artifacts/release-version)"
-          echo "RELEASE_VERSION=$release_version" >> $GITHUB_ENV
+          echo "RELEASE_VERSION=$release_version" >> "$GITHUB_ENV"
 
-      # For nightly releases we need to manually specify the tag because the
-      # action was triggered by a schedule not a tag.
-
-      # TODO: separate out the logic so we have another action that creates and
-      # pushes the tag so this file doesn't have to handle that logic. What we
-      # really should do is simply have this job get triggered by tags and
-      # have some way to specify whether it's a prerelease tag and handle it
-      # from there.
       - name: Upload Rust binaries for nightly
         uses: taiki-e/upload-rust-binary-action@v1
         if: needs.create_github_release.outputs.version == 'nightly'
         with:
           bin: diffsitter
           archive: $bin-$target
-          # (required) GitHub token for uploading assets to GitHub Releases.
           token: ${{ secrets.GITHUB_TOKEN }}
           tar: unix
           zip: windows
@@ -233,7 +225,6 @@ jobs:
         with:
           bin: diffsitter
           archive: $bin-$target
-          # (required) GitHub token for uploading assets to GitHub Releases.
           token: ${{ secrets.GITHUB_TOKEN }}
           tar: unix
           zip: windows
@@ -250,23 +241,20 @@ jobs:
 
       - name: Build Debian release (x86_64-unknown-linux-gnu)
         if: matrix.job.target == 'x86_64-unknown-linux-gnu'
+        env:
+          CARGO_TARGET_DIR: "./target"
         run: |
           cargo build --profile production --locked
           cargo deb --profile production --target ${{ matrix.job.target }} --no-build
-          cp ./target/${{ matrix.job.target }}/debian/diffsitter_*.deb ./diffsitter_${{ env.RELEASE_VERSION }}_amd64.deb
-        env:
-          CARGO_TARGET_DIR: "./target"
 
-      - name: Upload Debian file (x86_64-unknown-linux-gnu)
+      - name: Upload Debian package
         if: matrix.job.target == 'x86_64-unknown-linux-gnu'
-        uses: actions/upload-release-asset@v1.0.1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
-          asset_path: diffsitter_${{ env.RELEASE_VERSION }}_amd64.deb
-          asset_name: diffsitter_${{ env.RELEASE_VERSION }}_amd64.deb
-          asset_content_type: application/octet-stream
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_VERSION: ${{ env.RELEASE_VERSION }}
+        run: |
+          cp ./target/${{ matrix.job.target }}/debian/diffsitter_*.deb "./diffsitter_${RELEASE_VERSION}_amd64.deb"
+          gh release upload "${RELEASE_VERSION}" "./diffsitter_${RELEASE_VERSION}_amd64.deb" --clobber
 
       - name: Generate tarball with submodules
         if: matrix.job.target == 'x86_64-unknown-linux-gnu'
@@ -276,11 +264,8 @@ jobs:
 
       - name: Upload tarball with submodules
         if: matrix.job.target == 'x86_64-unknown-linux-gnu'
-        uses: actions/upload-release-asset@v1.0.1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ env.RELEASE_UPLOAD_URL }}
-          asset_path: diffsitter_src.tar.gz
-          asset_name: diffsitter_src.tar.gz
-          asset_content_type: application/octet-stream
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_VERSION: ${{ env.RELEASE_VERSION }}
+        run: |
+          gh release upload "${RELEASE_VERSION}" diffsitter_src.tar.gz --clobber
