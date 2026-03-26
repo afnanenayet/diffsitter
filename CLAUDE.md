@@ -96,6 +96,35 @@ Worktrees live in `.claude/worktrees/` (gitignored). A `WorktreeCreate` hook in 
 
 If a worktree build fails with missing grammar errors, run `git submodule update --init --recursive` manually in the worktree directory.
 
+## MCP Server
+
+The `tree-sitter-mcp` binary exposes AST navigation tools via MCP (Model Context Protocol). There are three ways to use it with Claude Code:
+
+**Option 1: Plugin (auto-builds)**
+```sh
+claude plugin install --scope user ./plugins/tree-sitter-mcp
+```
+
+**Option 2: Manual binary registration**
+```sh
+cargo build --release --features mcp-server --bin tree-sitter-mcp
+claude mcp add tree-sitter-mcp -- ./target/release/tree-sitter-mcp
+```
+
+**Option 3: Direct settings.json**
+Add to `.claude/settings.json` or `~/.claude/settings.json`:
+```json
+{
+  "mcpServers": {
+    "tree-sitter-mcp": {
+      "command": "/absolute/path/to/tree-sitter-mcp"
+    }
+  }
+}
+```
+
+The MCP server provides 8 tools: `parse_file`, `list_symbols`, `get_definition`, `get_children_of`, `get_node_at_position`, `get_scope`, `navigate`, `query`. See `plugins/tree-sitter-mcp/README.md` for details.
+
 ## Key Conventions
 
 - Config changes must also update `assets/sample_config.json5` — CI parses it as a test.

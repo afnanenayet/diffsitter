@@ -1,0 +1,17 @@
+{
+  "name": "tree-sitter-mcp",
+  "version": "0.1.0",
+  "description": "AST-aware code navigation via tree-sitter. Gives Claude structural understanding of code: jump to definitions, list symbols, navigate scopes, and run tree-sitter queries across 14+ languages.",
+  "author": {
+    "name": "Afnan Enayet",
+    "url": "https://github.com/afnanenayet"
+  },
+  "homepage": "https://github.com/afnanenayet/diffsitter",
+  "repository": "https://github.com/afnanenayet/diffsitter",
+  "license": "MIT",
+  "keywords": ["mcp", "tree-sitter", "ast", "code-navigation", "symbols"],
+  "mcpServers": "./.mcp.json",
+  "hooks": "./hooks.json",
+  "skills": "./skills/",
+  "agents": "./agents/"
+}
