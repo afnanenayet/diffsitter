@@ -322,6 +322,95 @@ override the dynamic library file for each language in the config as such:
 *The above excerpt was taken from the
 [sample config](/assets/sample_config.json5).*
 
+## MCP Server (AI Code Navigation)
+
+diffsitter includes an [MCP](https://modelcontextprotocol.io) server that
+exposes tree-sitter AST navigation as tools for AI coding assistants. This
+gives tools like [Claude Code](https://claude.ai/code) structural
+understanding of your code — jumping to definitions by name, listing symbols,
+inspecting scopes, and running tree-sitter queries — across all 14+ supported
+languages.
+
+### Tools
+
+| Tool | Description |
+|------|-------------|
+| `parse_file` | Parse a file and return its top-level AST structure |
+| `list_symbols` | List all functions, classes, structs, traits, enums, constants |
+| `get_definition` | Get the full source text of a symbol by name |
+| `get_children_of` | Get methods/fields inside a class, impl block, or module |
+| `get_node_at_position` | Get the deepest AST node at a line/column |
+| `get_scope` | Get the enclosing scope at a position with full parent chain |
+| `navigate` | Move through the AST: parent, first_child, next_sibling, prev_sibling |
+| `query` | Run a raw tree-sitter S-expression query with captures |
+
+### Setup
+
+Build the MCP server binary:
+
+```sh
+cargo build --release --features mcp-server --bin tree-sitter-mcp
+```
+
+Or install from crates.io:
+
+```sh
+cargo install diffsitter --features mcp-server --bin tree-sitter-mcp
+```
+
+#### Claude Code
+
+Register the server with Claude Code using any of these methods:
+
+```sh
+# Quickest: register the binary directly
+claude mcp add tree-sitter-mcp -- /path/to/tree-sitter-mcp
+
+# Or install the bundled plugin (auto-builds on first session)
+claude plugin install --scope user ./plugins/tree-sitter-mcp
+```
+
+Once registered, Claude Code can use the tools automatically. For example,
+asking "what functions are defined in src/diff.rs?" will use `list_symbols`
+instead of reading the entire file.
+
+#### Other MCP clients
+
+The server communicates over stdio using
+[JSON-RPC](https://www.jsonrpc.org/specification). Any MCP-compatible client
+can use it by launching the binary as a subprocess:
+
+```json
+{
+  "mcpServers": {
+    "tree-sitter-mcp": {
+      "command": "/path/to/tree-sitter-mcp"
+    }
+  }
+}
+```
+
+### Example
+
+Using the `query` tool to find all functions that return a `Result` in a Rust file:
+
+```
+query: (function_item
+  name: (identifier) @name
+  return_type: (generic_type
+    type: (type_identifier) @ret_type
+    (#eq? @ret_type "Result"))) @fn
+```
+
+Or using `list_symbols` to get a quick overview:
+
+```
+file_path: "src/diff.rs"
+```
+
+Returns all top-level symbols with their names, kinds (function_item,
+struct_item, etc.), line ranges, and signature (first line of the definition).
+
 ## Questions, Bugs, and Support
 
 If you notice any bugs, have any issues, want to see a new feature, or just
