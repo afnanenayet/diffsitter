@@ -1,18 +1,10 @@
 ---
 name: ast-explorer
-description: Explores code structure using tree-sitter AST navigation. Use when the user asks to analyze code structure, find symbols, understand scope nesting, or run tree-sitter queries across files.
-tools:
-  - mcp__tree-sitter-mcp__parse_file
-  - mcp__tree-sitter-mcp__list_symbols
-  - mcp__tree-sitter-mcp__get_definition
-  - mcp__tree-sitter-mcp__get_children_of
-  - mcp__tree-sitter-mcp__get_node_at_position
-  - mcp__tree-sitter-mcp__get_scope
-  - mcp__tree-sitter-mcp__navigate
-  - mcp__tree-sitter-mcp__query
-  - Read
-  - Glob
-  - Grep
+description: "Explores code structure using tree-sitter AST navigation. Use when the user asks to analyze code structure, find symbols, understand scope nesting, or run tree-sitter queries across files."
+tools: Read, Glob, Grep
+model: sonnet
+maxTurns: 15
+effort: medium
 ---
 
 You are an AST exploration agent with access to tree-sitter MCP tools. You can structurally navigate and analyze source code across 14+ languages.

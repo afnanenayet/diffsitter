@@ -12,6 +12,5 @@
   "keywords": ["mcp", "tree-sitter", "ast", "code-navigation", "symbols"],
   "mcpServers": "./.mcp.json",
   "hooks": "./hooks.json",
-  "skills": "./skills/",
-  "agents": "./agents/"
+  "skills": "./skills/"
 }

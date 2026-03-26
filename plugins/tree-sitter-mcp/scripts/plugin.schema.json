@@ -1,0 +1,449 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/hesreallyhim/claude-code-json-schema/main/schemas/plugin.schema.json",
+  "title": "Claude Code Plugin Manifest (.claude-plugin/plugin.json) - unofficial best-effort schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Plugin identifier (kebab-case, no spaces).",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "version": {
+      "type": "string",
+      "description": "Semantic version string (MAJOR.MINOR.PATCH) with optional prerelease/build.",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$",
+      "default": "0.1.0"
+    },
+    "description": {
+      "type": "string"
+    },
+    "author": {
+      "description": "Author information. Object form with name (required) and email (optional).",
+      "$ref": "#/$defs/authorObject"
+    },
+    "homepage": {
+      "type": "string",
+      "description": "Plugin homepage or documentation URL.",
+      "format": "uri"
+    },
+    "repository": {
+      "description": "Source code repository URL or object form.",
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "uri"
+        },
+        {
+          "$ref": "#/$defs/repositoryObject"
+        }
+      ]
+    },
+    "license": {
+      "type": "string",
+      "description": "SPDX license identifier (e.g. MIT, Apache-2.0)."
+    },
+    "keywords": {
+      "type": "array",
+      "description": "Tags for plugin discovery and categorization.",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "category": {
+      "type": "string",
+      "description": "Plugin category for organization."
+    },
+    "tags": {
+      "type": "array",
+      "description": "Tags for searchability.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "commands": {
+      "$ref": "#/$defs/pathOrPathArray"
+    },
+    "agents": {
+      "$ref": "#/$defs/pathOrPathArray"
+    },
+    "skills": {
+      "$ref": "#/$defs/pathOrPathArray"
+    },
+    "outputStyles": {
+      "$ref": "#/$defs/pathOrPathArray"
+    },
+    "hooks": {
+      "description": "Hook config paths (string/array) or inline hooks config object.",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/pathOrPathArray"
+        },
+        {
+          "$ref": "#/$defs/hooksInline"
+        }
+      ]
+    },
+    "mcpServers": {
+      "description": "MCP config path(s) or inline map of serverName -> MCP server config.",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/pathOrPathArray"
+        },
+        {
+          "$ref": "#/$defs/mcpInline"
+        }
+      ]
+    },
+    "lspServers": {
+      "description": "LSP config path(s) or inline map of serverName -> LSP server config.",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/pathOrPathArray"
+        },
+        {
+          "$ref": "#/$defs/lspInline"
+        }
+      ]
+    },
+    "settings": {
+      "$ref": "#/$defs/pluginSettings"
+    }
+  },
+  "$defs": {
+    "authorObject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    },
+    "repositoryObject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "url"
+      ],
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "directory": {
+          "type": "string"
+        }
+      }
+    },
+    "relativePath": {
+      "type": "string",
+      "description": "Must be relative to plugin root; start with './'; no parent traversal; forward slashes only.",
+      "pattern": "^\\./",
+      "allOf": [
+        {
+          "not": {
+            "pattern": "\\.\\."
+          }
+        },
+        {
+          "not": {
+            "pattern": "\\\\"
+          }
+        }
+      ]
+    },
+    "pathOrPathArray": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/relativePath"
+        },
+        {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/relativePath"
+          }
+        }
+      ]
+    },
+    "pluginSettings": {
+      "type": "object",
+      "description": "Plugin default settings applied when enabled.",
+      "additionalProperties": true
+    },
+    "hooksInline": {
+      "type": "object",
+      "description": "Inline hooks config: map of eventName -> array of matcher groups.",
+      "properties": {
+        "description": {
+          "type": "string"
+        }
+      },
+      "patternProperties": {
+        "^(?!description$)[A-Za-z][A-Za-z0-9]*$": {
+          "$ref": "#/$defs/hookMatcherGroupArray"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "hookMatcherGroupArray": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/hookMatcherGroup"
+      }
+    },
+    "hookMatcherGroup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hooks"
+      ],
+      "properties": {
+        "matcher": {
+          "type": "string"
+        },
+        "hooks": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/hookHandler"
+          }
+        }
+      }
+    },
+    "hookHandler": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "command",
+            "prompt",
+            "agent"
+          ]
+        },
+        "timeout": {
+          "type": "number",
+          "minimum": 0
+        },
+        "statusMessage": {
+          "type": "string"
+        },
+        "once": {
+          "type": "boolean"
+        },
+        "command": {
+          "type": "string"
+        },
+        "async": {
+          "type": "boolean"
+        },
+        "prompt": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "command"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "command": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "command"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "prompt"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "prompt": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "prompt"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "agent"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "prompt": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "prompt"
+            ]
+          }
+        }
+      ]
+    },
+    "mcpInline": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/mcpServer"
+      }
+    },
+    "mcpServer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "command"
+      ],
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "env": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "cwd": {
+          "type": "string"
+        }
+      }
+    },
+    "lspInline": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/lspServer"
+      }
+    },
+    "lspServer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "command",
+        "extensionToLanguage"
+      ],
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "extensionToLanguage": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "string"
+          },
+          "propertyNames": {
+            "pattern": "^\\.[A-Za-z0-9]+$"
+          }
+        },
+        "transport": {
+          "type": "string",
+          "enum": [
+            "stdio",
+            "socket"
+          ]
+        },
+        "env": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "initializationOptions": {
+          "description": "Arbitrary JSON value forwarded to the language server."
+        },
+        "settings": {
+          "description": "Arbitrary JSON value used for server/workspace settings."
+        },
+        "workspaceFolder": {
+          "type": "string"
+        },
+        "startupTimeout": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "shutdownTimeout": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "restartOnCrash": {
+          "type": "boolean"
+        },
+        "maxRestarts": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  },
+  "$comment": "Best-effort community schema based on official docs and Claude CLI interactions."
+}

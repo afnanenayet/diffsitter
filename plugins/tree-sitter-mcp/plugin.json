@@ -1,0 +1,9 @@
+{
+  "name": "tree-sitter-mcp",
+  "description": "Structural code navigation via tree-sitter AST analysis",
+  "mcpServers": {
+    "tree-sitter-mcp": {
+      "command": "${CLAUDE_PLUGIN_DATA}/bin/tree-sitter-mcp"
+    }
+  }
+}
