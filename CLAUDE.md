@@ -24,12 +24,29 @@ cargo build --features mcp-server --bin tree-sitter-mcp  # Build the MCP server
 ## Testing
 
 ```sh
-cargo test --all               # Run all tests
-cargo test --all-features      # Run with all features enabled
+cargo nextest run --all        # Run all tests (preferred — uses .config/nextest.toml)
+cargo test --all               # Fallback if nextest unavailable
+cargo test --all-features      # Run with all features enabled (includes mcp-server tests)
 cargo insta review             # Review/update snapshot test changes (requires cargo-insta)
+cargo bench                    # Run criterion benchmarks (requires static-grammar-libs)
+cargo fuzz run <target> -- -max_total_time=60  # Run fuzz targets (requires nightly)
 ```
 
-Nextest is configured (`.config/nextest.toml`) and used in CI. Snapshot tests use `insta` and may break when grammars are updated — review and accept with `cargo insta review`.
+### Test infrastructure
+
+**Nextest** is configured (`.config/nextest.toml`) and used in CI. Config defines test groups for proptest (max 2 threads) and MCP server tests (max 4 threads), with extended timeouts for property-based tests.
+
+**Test categories**:
+- **Unit tests** (`src/ast_navigation.rs`): 106 tests covering node info, navigation, queries, symbols, parse cache, scope resolution, error paths
+- **Integration tests** (`tests/ast_navigation_test.rs`): 25 parameterized tests across 7 languages with 6 insta JSON snapshots
+- **Property tests** (`tests/ast_navigation_proptest.rs`): 7 proptest functions — determinism, scope monotonicity, text truncation bounds, navigation invariants
+- **MCP server tests** (`tests/mcp_server_test.rs`): 20 async tests gated behind `#[cfg(feature = "mcp-server")]`
+- **Benchmarks** (`benches/ast_navigation_bench.rs`): 9 criterion groups — parsing, cache hit/miss, symbols, node lookup, navigation, scope, queries, definitions
+- **Fuzz targets** (`fuzz/`): 3 libfuzzer targets — `fuzz_parse_and_navigate`, `fuzz_query`, `fuzz_node_to_info`
+
+**Snapshot tests** use `insta` and may break when grammars are updated — review and accept with `cargo insta review`. Snapshots live in `tests/snapshots/`.
+
+**Test fixtures** live in `test_data/ast_navigation/` (10 files: Rust, Python, TypeScript, Go, C++, C, Java, plus edge cases for deep nesting, Unicode, and empty files).
 
 ## Linting/Formatting
 

@@ -1,0 +1,512 @@
+---
+source: tests/ast_navigation_test.rs
+expression: results
+---
+[
+  {
+    "pattern_index": 0,
+    "captures": [
+      {
+        "name": "definition",
+        "node": {
+          "kind": "function_item",
+          "is_named": true,
+          "span": {
+            "start": {
+              "line": 15,
+              "column": 4
+            },
+            "end": {
+              "line": 17,
+              "column": 5
+            }
+          },
+          "text": "fn new(x: f64, y: f64) -> Self {\n        Self { x, y }\n    }",
+          "child_count": 6,
+          "field_name": null,
+          "named_children": [
+            {
+              "kind": "identifier",
+              "field_name": "name",
+              "span": {
+                "start": {
+                  "line": 15,
+                  "column": 7
+                },
+                "end": {
+                  "line": 15,
+                  "column": 10
+                }
+              }
+            },
+            {
+              "kind": "parameters",
+              "field_name": "parameters",
+              "span": {
+                "start": {
+                  "line": 15,
+                  "column": 10
+                },
+                "end": {
+                  "line": 15,
+                  "column": 26
+                }
+              }
+            },
+            {
+              "kind": "type_identifier",
+              "field_name": "return_type",
+              "span": {
+                "start": {
+                  "line": 15,
+                  "column": 30
+                },
+                "end": {
+                  "line": 15,
+                  "column": 34
+                }
+              }
+            },
+            {
+              "kind": "block",
+              "field_name": "body",
+              "span": {
+                "start": {
+                  "line": 15,
+                  "column": 35
+                },
+                "end": {
+                  "line": 17,
+                  "column": 5
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "name",
+        "node": {
+          "kind": "identifier",
+          "is_named": true,
+          "span": {
+            "start": {
+              "line": 15,
+              "column": 7
+            },
+            "end": {
+              "line": 15,
+              "column": 10
+            }
+          },
+          "text": "new",
+          "child_count": 0,
+          "field_name": null,
+          "named_children": []
+        }
+      }
+    ]
+  },
+  {
+    "pattern_index": 0,
+    "captures": [
+      {
+        "name": "definition",
+        "node": {
+          "kind": "function_item",
+          "is_named": true,
+          "span": {
+            "start": {
+              "line": 19,
+              "column": 4
+            },
+            "end": {
+              "line": 21,
+              "column": 5
+            }
+          },
+          "text": "fn distance_to(&self, other: &Point) -> f64 {\n        ((self.x - other.x).powi(2) + (self.y - other.y).powi(2)).sqrt()\n    }",
+          "child_count": 6,
+          "field_name": null,
+          "named_children": [
+            {
+              "kind": "identifier",
+              "field_name": "name",
+              "span": {
+                "start": {
+                  "line": 19,
+                  "column": 7
+                },
+                "end": {
+                  "line": 19,
+                  "column": 18
+                }
+              }
+            },
+            {
+              "kind": "parameters",
+              "field_name": "parameters",
+              "span": {
+                "start": {
+                  "line": 19,
+                  "column": 18
+                },
+                "end": {
+                  "line": 19,
+                  "column": 40
+                }
+              }
+            },
+            {
+              "kind": "primitive_type",
+              "field_name": "return_type",
+              "span": {
+                "start": {
+                  "line": 19,
+                  "column": 44
+                },
+                "end": {
+                  "line": 19,
+                  "column": 47
+                }
+              }
+            },
+            {
+              "kind": "block",
+              "field_name": "body",
+              "span": {
+                "start": {
+                  "line": 19,
+                  "column": 48
+                },
+                "end": {
+                  "line": 21,
+                  "column": 5
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "name",
+        "node": {
+          "kind": "identifier",
+          "is_named": true,
+          "span": {
+            "start": {
+              "line": 19,
+              "column": 7
+            },
+            "end": {
+              "line": 19,
+              "column": 18
+            }
+          },
+          "text": "distance_to",
+          "child_count": 0,
+          "field_name": null,
+          "named_children": []
+        }
+      }
+    ]
+  },
+  {
+    "pattern_index": 0,
+    "captures": [
+      {
+        "name": "definition",
+        "node": {
+          "kind": "function_item",
+          "is_named": true,
+          "span": {
+            "start": {
+              "line": 25,
+              "column": 4
+            },
+            "end": {
+              "line": 27,
+              "column": 5
+            }
+          },
+          "text": "fn area(&self) -> f64 {\n        0.0\n    }",
+          "child_count": 6,
+          "field_name": null,
+          "named_children": [
+            {
+              "kind": "identifier",
+              "field_name": "name",
+              "span": {
+                "start": {
+                  "line": 25,
+                  "column": 7
+                },
+                "end": {
+                  "line": 25,
+                  "column": 11
+                }
+              }
+            },
+            {
+              "kind": "parameters",
+              "field_name": "parameters",
+              "span": {
+                "start": {
+                  "line": 25,
+                  "column": 11
+                },
+                "end": {
+                  "line": 25,
+                  "column": 18
+                }
+              }
+            },
+            {
+              "kind": "primitive_type",
+              "field_name": "return_type",
+              "span": {
+                "start": {
+                  "line": 25,
+                  "column": 22
+                },
+                "end": {
+                  "line": 25,
+                  "column": 25
+                }
+              }
+            },
+            {
+              "kind": "block",
+              "field_name": "body",
+              "span": {
+                "start": {
+                  "line": 25,
+                  "column": 26
+                },
+                "end": {
+                  "line": 27,
+                  "column": 5
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "name",
+        "node": {
+          "kind": "identifier",
+          "is_named": true,
+          "span": {
+            "start": {
+              "line": 25,
+              "column": 7
+            },
+            "end": {
+              "line": 25,
+              "column": 11
+            }
+          },
+          "text": "area",
+          "child_count": 0,
+          "field_name": null,
+          "named_children": []
+        }
+      }
+    ]
+  },
+  {
+    "pattern_index": 0,
+    "captures": [
+      {
+        "name": "definition",
+        "node": {
+          "kind": "function_item",
+          "is_named": true,
+          "span": {
+            "start": {
+              "line": 29,
+              "column": 4
+            },
+            "end": {
+              "line": 31,
+              "column": 5
+            }
+          },
+          "text": "fn perimeter(&self) -> f64 {\n        0.0\n    }",
+          "child_count": 6,
+          "field_name": null,
+          "named_children": [
+            {
+              "kind": "identifier",
+              "field_name": "name",
+              "span": {
+                "start": {
+                  "line": 29,
+                  "column": 7
+                },
+                "end": {
+                  "line": 29,
+                  "column": 16
+                }
+              }
+            },
+            {
+              "kind": "parameters",
+              "field_name": "parameters",
+              "span": {
+                "start": {
+                  "line": 29,
+                  "column": 16
+                },
+                "end": {
+                  "line": 29,
+                  "column": 23
+                }
+              }
+            },
+            {
+              "kind": "primitive_type",
+              "field_name": "return_type",
+              "span": {
+                "start": {
+                  "line": 29,
+                  "column": 27
+                },
+                "end": {
+                  "line": 29,
+                  "column": 30
+                }
+              }
+            },
+            {
+              "kind": "block",
+              "field_name": "body",
+              "span": {
+                "start": {
+                  "line": 29,
+                  "column": 31
+                },
+                "end": {
+                  "line": 31,
+                  "column": 5
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "name",
+        "node": {
+          "kind": "identifier",
+          "is_named": true,
+          "span": {
+            "start": {
+              "line": 29,
+              "column": 7
+            },
+            "end": {
+              "line": 29,
+              "column": 16
+            }
+          },
+          "text": "perimeter",
+          "child_count": 0,
+          "field_name": null,
+          "named_children": []
+        }
+      }
+    ]
+  },
+  {
+    "pattern_index": 0,
+    "captures": [
+      {
+        "name": "definition",
+        "node": {
+          "kind": "function_item",
+          "is_named": true,
+          "span": {
+            "start": {
+              "line": 42,
+              "column": 0
+            },
+            "end": {
+              "line": 45,
+              "column": 1
+            }
+          },
+          "text": "fn main() {\n    let p = Point::new(1.0, 2.0);\n    println!(\"{}\", p.x);\n}",
+          "child_count": 4,
+          "field_name": null,
+          "named_children": [
+            {
+              "kind": "identifier",
+              "field_name": "name",
+              "span": {
+                "start": {
+                  "line": 42,
+                  "column": 3
+                },
+                "end": {
+                  "line": 42,
+                  "column": 7
+                }
+              }
+            },
+            {
+              "kind": "parameters",
+              "field_name": "parameters",
+              "span": {
+                "start": {
+                  "line": 42,
+                  "column": 7
+                },
+                "end": {
+                  "line": 42,
+                  "column": 9
+                }
+              }
+            },
+            {
+              "kind": "block",
+              "field_name": "body",
+              "span": {
+                "start": {
+                  "line": 42,
+                  "column": 10
+                },
+                "end": {
+                  "line": 45,
+                  "column": 1
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "name",
+        "node": {
+          "kind": "identifier",
+          "is_named": true,
+          "span": {
+            "start": {
+              "line": 42,
+              "column": 3
+            },
+            "end": {
+              "line": 42,
+              "column": 7
+            }
+          },
+          "text": "main",
+          "child_count": 0,
+          "field_name": null,
+          "named_children": []
+        }
+      }
+    ]
+  }
+]

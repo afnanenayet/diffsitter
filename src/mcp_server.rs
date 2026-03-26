@@ -272,10 +272,7 @@ impl TreeSitterMcpServer {
         description = "Run a tree-sitter S-expression query against a source file and return \
                         all pattern matches with their captured nodes."
     )]
-    async fn query(
-        &self,
-        #[tool(aggr)] params: QueryParams,
-    ) -> Result<CallToolResult, McpError> {
+    async fn query(&self, #[tool(aggr)] params: QueryParams) -> Result<CallToolResult, McpError> {
         let path = PathBuf::from(&params.path);
         let mut cache = self.cache.lock().await;
         let parsed = cache

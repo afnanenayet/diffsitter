@@ -1,0 +1,36 @@
+[package]
+name = "diffsitter-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2024"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+
+[dependencies.diffsitter]
+path = ".."
+features = ["static-grammar-libs"]
+
+[dependencies.tree-sitter]
+version = "0.26.3"
+
+[[bin]]
+name = "fuzz_parse_and_navigate"
+path = "fuzz_targets/fuzz_parse_and_navigate.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_query"
+path = "fuzz_targets/fuzz_query.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_node_to_info"
+path = "fuzz_targets/fuzz_node_to_info.rs"
+test = false
+doc = false

@@ -1,2 +1,47 @@
+# Default profile — used for local `cargo nextest run`
+[profile.default]
+# Proptest and integration tests that parse real files can be slow on first run
+# (grammar compilation is amortized but the tree-sitter queries add up).
+slow-timeout = { period = "120s", terminate-after = 2 }
+
+# Retry flaky proptest runs once before failing.
+retries = { backoff = "fixed", count = 1, delay = "1s" }
+
+# CI profile — used in GitHub Actions
+[profile.ci]
+# Stricter: no retries, fail fast on the first broken test.
+retries = 0
+fail-fast = true
+
 [profile.ci.junit]
 path = "junit.xml"
+
+# ---- Test groups ----
+# Proptest property-based tests generate many random inputs and are inherently
+# slower and more resource-intensive. Run them with limited concurrency to avoid
+# overwhelming CI runners and to get deterministic failure output.
+[test-groups.proptest]
+max-threads = 2
+
+# MCP server tests use tokio and shared async state.
+[test-groups.mcp]
+max-threads = 4
+
+# ---- Filter rules: assign tests to groups ----
+[[profile.default.overrides]]
+filter = "binary(~proptest)"
+test-group = "proptest"
+slow-timeout = { period = "180s", terminate-after = 2 }
+
+[[profile.default.overrides]]
+filter = "binary(~mcp_server_test)"
+test-group = "mcp"
+
+[[profile.ci.overrides]]
+filter = "binary(~proptest)"
+test-group = "proptest"
+slow-timeout = { period = "180s", terminate-after = 2 }
+
+[[profile.ci.overrides]]
+filter = "binary(~mcp_server_test)"
+test-group = "mcp"

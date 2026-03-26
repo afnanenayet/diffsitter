@@ -93,11 +93,15 @@ pretty_assertions = "1.4.1"
 mockall = "0.14.0"
 rstest = "0.26"
 figment = { version = "0.10", features = ["toml", "json", "env", "test"] }
+proptest = "1.6"
+criterion = { version = "0.5", features = ["html_reports"] }
+tempfile = "3.15"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 
 # We need the backtrace feature to enable snapshot name generation in
 # single-threaded tests (tests using cargo cross run single-threaded due to
 # limitations with QEMU).
-insta = { version = "1.46.1" }
+insta = { version = "1.46.1", features = ["json"] }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 # We use directories next to get the windows config path
@@ -132,6 +136,11 @@ static-grammar-libs = ["lazy_static"]
 
 # Enable the tree-sitter MCP server binary and its dependencies.
 mcp-server = ["rmcp", "tokio", "schemars"]
+
+[[bench]]
+name = "ast_navigation_bench"
+harness = false
+required-features = ["static-grammar-libs"]
 
 [profile.profiling]
 inherits = "release"

@@ -1,0 +1,22 @@
+---
+source: tests/ast_navigation_test.rs
+expression: "serde_json::json!({ \"symbol\": sym, \"full_text\": full_text, })"
+---
+{
+  "full_text": "struct Point {\n    x: f64,\n    y: f64,\n}",
+  "symbol": {
+    "kind": "struct_item",
+    "name": "Point",
+    "signature": "struct Point {",
+    "span": {
+      "end": {
+        "column": 1,
+        "line": 7
+      },
+      "start": {
+        "column": 0,
+        "line": 4
+      }
+    }
+  }
+}

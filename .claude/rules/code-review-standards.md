@@ -80,6 +80,6 @@ Never introduce new dependencies without justification. Before adding a crate, c
 - `clap` (derive) for CLI
 - `console` + `strum` for terminal/enum utilities
 - `phf` for compile-time maps
-- `test_case`, `rstest`, `mockall`, `pretty_assertions`, `insta` for testing
+- `test_case`, `rstest`, `mockall`, `pretty_assertions`, `insta`, `proptest`, `criterion`, `tempfile` for testing
 
 If an existing dep covers the need, use it rather than adding a new one.

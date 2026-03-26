@@ -1,0 +1,96 @@
+---
+source: tests/ast_navigation_test.rs
+expression: symbols
+---
+[
+  {
+    "name": "Animal",
+    "kind": "class_definition",
+    "span": {
+      "start": {
+        "line": 2,
+        "column": 0
+      },
+      "end": {
+        "line": 11,
+        "column": 34
+      }
+    },
+    "signature": "class Animal:"
+  },
+  {
+    "name": "__init__",
+    "kind": "function_definition",
+    "span": {
+      "start": {
+        "line": 3,
+        "column": 4
+      },
+      "end": {
+        "line": 5,
+        "column": 26
+      }
+    },
+    "signature": "def __init__(self, name, sound):"
+  },
+  {
+    "name": "speak",
+    "kind": "function_definition",
+    "span": {
+      "start": {
+        "line": 7,
+        "column": 4
+      },
+      "end": {
+        "line": 8,
+        "column": 47
+      }
+    },
+    "signature": "def speak(self):"
+  },
+  {
+    "name": "is_loud",
+    "kind": "function_definition",
+    "span": {
+      "start": {
+        "line": 10,
+        "column": 4
+      },
+      "end": {
+        "line": 11,
+        "column": 34
+      }
+    },
+    "signature": "def is_loud(self):"
+  },
+  {
+    "name": "greet",
+    "kind": "function_definition",
+    "span": {
+      "start": {
+        "line": 13,
+        "column": 0
+      },
+      "end": {
+        "line": 14,
+        "column": 25
+      }
+    },
+    "signature": "def greet(animal):"
+  },
+  {
+    "name": "main",
+    "kind": "function_definition",
+    "span": {
+      "start": {
+        "line": 16,
+        "column": 0
+      },
+      "end": {
+        "line": 18,
+        "column": 14
+      }
+    },
+    "signature": "def main():"
+  }
+]
