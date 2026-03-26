@@ -333,6 +333,88 @@ If you file an issue, it would be preferable that you include a minimal example
 and/or post the log output of `diffsitter` (which you can do by adding the
 `-d/--debug` flag).
 
+## Development
+
+### Prerequisites
+
+- **Rust toolchain** (MSRV 1.85.1, edition 2024) — install via [rustup](https://rustup.rs/)
+- **C99+ compiler** and **C++14+ compiler** — required to compile tree-sitter grammars (Apple Clang, GCC, or LLVM all work)
+- **Git submodules** initialized — the build compiles tree-sitter grammars from vendored sources in `grammars/`
+
+```sh
+# Clone with submodules
+git clone --recurse-submodules https://github.com/afnanenayet/diffsitter.git
+
+# Or initialize submodules in an existing checkout
+git submodule update --init --recursive
+```
+
+#### Recommended tools
+
+These are not required for building diffsitter itself, but are used for development and CI:
+
+| Tool | Install | Purpose |
+|------|---------|---------|
+| [cargo-nextest](https://nexte.st) | `cargo install cargo-nextest` | Test runner (used in CI, configured in `.config/nextest.toml`) |
+| [cargo-insta](https://insta.rs) | `cargo install cargo-insta` | Snapshot test review TUI |
+| [pre-commit](https://pre-commit.com) | `pip install pre-commit` | Git hook manager for formatting/linting |
+| [cargo-fuzz](https://github.com/rust-fuzz/cargo-fuzz) | `cargo install cargo-fuzz` | Fuzz testing (requires nightly Rust) |
+
+### Building
+
+```sh
+cargo build                                                            # Default: static grammars
+cargo build --no-default-features --features dynamic-grammar-libs      # Dynamic grammar loading
+cargo build --profile production                                       # Release build with LTO + strip
+cargo build --features mcp-server --bin tree-sitter-mcp                # MCP server binary
+```
+
+The default build compiles all tree-sitter grammars from C/C++ source into the binary. Use `cargo check` for a fast feedback loop that skips grammar compilation.
+
+### Testing
+
+```sh
+cargo nextest run --all-features                  # All tests (preferred)
+cargo test --all-features                         # Fallback without nextest
+cargo test --doc --all-features                   # Doc tests only (nextest doesn't run these)
+cargo insta review                                # Review/accept changed snapshots
+```
+
+### Linting
+
+```sh
+cargo fmt --all -- --check                        # Check formatting
+cargo fmt --all                                   # Auto-format
+cargo clippy --all-targets --all-features -- -D warnings   # Lint (matches CI)
+```
+
+### Benchmarks
+
+```sh
+cargo bench                                       # Run all criterion benchmarks
+cargo bench -- <filter>                           # Run benchmarks matching filter
+```
+
+Benchmarks use [criterion](https://github.com/bheisler/criterion.rs) and cover parsing, cache performance, symbol listing, navigation, and query execution. Results are written to `target/criterion/`.
+
+### Fuzz testing
+
+```sh
+cargo +nightly fuzz list                          # List available fuzz targets
+cargo +nightly fuzz run fuzz_parse_and_navigate -- -max_total_time=60
+cargo +nightly fuzz run fuzz_query -- -max_total_time=60
+cargo +nightly fuzz run fuzz_node_to_info -- -max_total_time=60
+```
+
+### Feature flags
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `static-grammar-libs` | Yes | Compiles tree-sitter grammars into the binary |
+| `dynamic-grammar-libs` | No | Loads grammars from system shared libraries at runtime |
+| `better-build-info` | No | Extended build metadata via shadow-rs |
+| `mcp-server` | No | Builds `tree-sitter-mcp` binary (adds `rmcp`, `tokio`, `schemars`) |
+
 ## Contributing
 
 See [CONTRIBUTING.md](docs/CONTRIBUTING.md).
