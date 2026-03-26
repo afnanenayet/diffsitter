@@ -390,26 +390,66 @@ can use it by launching the binary as a subprocess:
 }
 ```
 
-### Example
+### Example queries
 
-Using the `query` tool to find all functions that return a `Result` in a Rust file:
+The MCP server understands language grammar, not just text. Where `grep` finds
+string patterns, tree-sitter-mcp finds *syntactic* patterns — it knows the
+difference between a function called `test` and a `#[test]` attribute.
 
-```
-query: (function_item
-  name: (identifier) @name
-  return_type: (generic_type
-    type: (type_identifier) @ret_type
-    (#eq? @ret_type "Result"))) @fn
-```
-
-Or using `list_symbols` to get a quick overview:
+#### Symbol discovery
 
 ```
-file_path: "src/diff.rs"
+# "What's defined in this file?"
+list_symbols  →  file_path: "src/diff.rs"
+
+# "What methods does the Renderer trait define?"
+get_children_of  →  file_path: "src/render/mod.rs", symbol_name: "Renderer"
+
+# "Show me the signature of generate_ast_vector_data without reading the whole file"
+get_definition  →  file_path: "src/lib.rs", symbol_name: "generate_ast_vector_data"
 ```
 
-Returns all top-level symbols with their names, kinds (function_item,
-struct_item, etc.), line ranges, and signature (first line of the definition).
+#### Scope & context
+
+```
+# "What function contains line 145 of src/diff.rs? Show me the full parent chain."
+get_scope  →  file_path: "src/diff.rs", line: 145, column: 0
+
+# "What's the AST node at this position? Navigate to its parent, then next sibling."
+get_node_at_position  →  file_path: "src/lib.rs", line: 50, column: 10
+navigate  →  file_path: "src/lib.rs", line: 50, column: 10, direction: "parent"
+```
+
+#### Tree-sitter queries (the real power)
+
+The `query` tool accepts [tree-sitter S-expression
+patterns](https://tree-sitter.github.io/tree-sitter/using-parsers/queries/index.html)
+for structural code search:
+
+```
+# Find all unsafe blocks
+query  →  file_path: "src/diff.rs"
+          pattern: "(unsafe_block) @unsafe"
+
+# Find all impl blocks for a specific type
+query  →  file_path: "src/config.rs"
+          pattern: '(impl_item type: (type_identifier) @name (#eq? @name "Config")) @impl'
+
+# Find all functions that return a Result
+query  →  file_path: "src/diff.rs"
+          pattern: '(function_item
+            name: (identifier) @name
+            return_type: (generic_type
+              type: (type_identifier) @ret (#eq? @ret "Result"))) @fn'
+
+# Find all #[test] functions
+query  →  file_path: "src/diff.rs"
+          pattern: '(attribute_item (attribute (identifier) @attr (#eq? @attr "test"))) @test'
+
+# Find all closures
+query  →  file_path: "src/input_processing.rs"
+          pattern: "(closure_expression) @closure"
+```
 
 ## Questions, Bugs, and Support
 
