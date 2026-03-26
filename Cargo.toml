@@ -43,6 +43,11 @@ path = "src/bin/diffsitter_completions.rs"
 name = "diffsitter-utils"
 path = "src/bin/diffsitter_utils.rs"
 
+[[bin]]
+name = "tree-sitter-mcp"
+path = "src/bin/tree_sitter_mcp.rs"
+required-features = ["mcp-server"]
+
 [lib]
 name = "libdiffsitter"
 path = "src/lib.rs"
@@ -78,6 +83,9 @@ shadow-rs = { version = "1.5.0", optional = true }
 enum_dispatch = "0.3.13"
 lazy_static = { version = "1.5.0", optional = true }
 figment = { version = "0.10", features = ["toml", "json", "env"] }
+rmcp = { version = "0.1", features = ["server", "macros", "transport-io"], optional = true }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-std"], optional = true }
+schemars = { version = "0.8", optional = true }
 
 [dev-dependencies]
 test-case = "3.3.1"
@@ -85,11 +93,15 @@ pretty_assertions = "1.4.1"
 mockall = "0.14.0"
 rstest = "0.26"
 figment = { version = "0.10", features = ["toml", "json", "env", "test"] }
+proptest = "1.6"
+criterion = { version = "0.5", features = ["html_reports"] }
+tempfile = "3.15"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 
 # We need the backtrace feature to enable snapshot name generation in
 # single-threaded tests (tests using cargo cross run single-threaded due to
 # limitations with QEMU).
-insta = { version = "1.46.1" }
+insta = { version = "1.46.1", features = ["json"] }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 # We use directories next to get the windows config path
@@ -121,6 +133,14 @@ dynamic-grammar-libs = []
 
 # Compile the static tree-sitter grammars from the submodules in this repo.
 static-grammar-libs = ["lazy_static"]
+
+# Enable the tree-sitter MCP server binary and its dependencies.
+mcp-server = ["rmcp", "tokio", "schemars"]
+
+[[bench]]
+name = "ast_navigation_bench"
+harness = false
+required-features = ["static-grammar-libs"]
 
 [profile.profiling]
 inherits = "release"

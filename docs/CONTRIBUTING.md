@@ -112,26 +112,28 @@ sudo pacman -S gcc
 
 ## Development
 
-There's not much to say about the architecture at the moment, this is a
-relatively small codebase and subject to change as we receive more feedback. I
-try to keep the codebase well-commented and easy to follow, but feel free to
-file issues about confusing architectural decisions or incomplete/underwhelming
-documentation.
+### Required tools
 
-If you want to contribute, you need to make sure that the project builds and
-that tests pass, which you can check locally with:
+| Tool | Install | Purpose |
+|------|---------|---------|
+| [cargo-nextest](https://nexte.st) | `cargo install cargo-nextest` | Test runner (used in CI) |
+| [cargo-insta](https://insta.rs) | `cargo install cargo-insta` | Snapshot test review TUI |
+
+### Running CI checks locally
+
+Before submitting a PR, make sure formatting, linting, and tests all pass:
 
 ```sh
-cargo test --all
+cargo fmt --all -- --check
+cargo clippy --all-targets --all-features -- -D warnings
+cargo nextest run --all-features
+cargo test --doc --all-features
 ```
 
-The CI will test the project on all major OS's and some additional platforms on
-Linux, such as ARM (using the `cross` toolchain). Having these checks all pass
-is a prerequisite for getting any PR merged. I've found that tests can be a
-little flaky on the Windows platform check, so if you see that tests failed
-there, try re-running the checks with Github actions to see if they pass.
+This matches what CI runs. Having these checks pass is a prerequisite for
+getting any PR merged.
 
-This project targets the latest stable version of `rustc`.
+This project targets the latest stable version of `rustc` (MSRV 1.85.1).
 
 Note that if you update anything to do with the project config, you'll have to
 update the [sample config](../assets/sample_config.json5) as well to ensure
@@ -149,7 +151,7 @@ dependencies ourselves.
 We maintain these vendors and ensure they stay up to date using
 [nvchecker](https://github.com/lilydjwg/nvchecker). We have a repository for
 the grammars at:
-[github.com/afnananeayet/diffsitter-grammars](https://github.com/afnanenayet/diffsitter-grammars).
+[github.com/afnanenayet/diffsitter-grammars](https://github.com/afnanenayet/diffsitter-grammars).
 If you update a tree sitter fork, you should file a pull request in the
 `diffsitter-grammars` repository and a PR in this repository with the updated
 submodule. You can also use that repository with `nvchecker` to find
@@ -158,31 +160,28 @@ tackle in this project.
 
 ### Testing
 
-Tests are run using cargo:
+Tests are run with [nextest](https://nexte.st):
 
 ```sh
-cargo test --all-features
+cargo nextest run --all-features
 ```
 
-Tests are run on every supported platform through Github actions.
+The nextest configuration lives in `.config/nextest.toml` and defines test
+groups with concurrency limits for property-based tests and MCP server tests.
 
-We use a combination of unit testing and snapshot testing. There's certain
-components with expected behavior, and we use unit tests to verify that. We
-also utilize snapshot testing using the [insta](https://docs.rs/insta) library
-that verify that we're seeing consistent output between changes.
+We use a combination of unit testing, snapshot testing, and property-based
+testing:
 
-We don't expect the existing unit tests to change as much, but it's very
-plausible that snapshot tests will change. If you change some code and snapshot
-tests change, feel free to update the snapshots if the change is expected. You
-can easily review the changes and create new snapshots using
-[cargo-insta](https://crates.io/crates/cargo-insta). Snapshot tests typically
-break because of updates to the grammars.
+- **Unit tests** verify expected behavior of individual functions
+- **Snapshot tests** ([insta](https://docs.rs/insta)) verify consistent output between changes — these typically break when grammars are updated
+- **Property tests** ([proptest](https://docs.rs/proptest)) verify invariants hold across randomly generated inputs
+- **Benchmarks** ([criterion](https://docs.rs/criterion)) measure parsing and navigation performance
 
-To update snapshots, install `cargo-insta` and run the following command:
+If snapshot tests change, review and accept the new snapshots:
 
 ```sh
 cargo insta review
 ```
 
-This will open up a TUI tool that lets you review snapshots and accept or
-reject the changes.
+This opens a TUI tool that lets you review snapshots and accept or reject
+the changes.

@@ -1,0 +1,201 @@
+---
+source: tests/ast_navigation_test.rs
+expression: symbols
+---
+[
+  {
+    "name": "MAX_SIZE",
+    "kind": "const_item",
+    "span": {
+      "start": {
+        "line": 0,
+        "column": 0
+      },
+      "end": {
+        "line": 0,
+        "column": 28
+      }
+    },
+    "signature": "const MAX_SIZE: usize = 100;"
+  },
+  {
+    "name": "Result",
+    "kind": "type_item",
+    "span": {
+      "start": {
+        "line": 2,
+        "column": 0
+      },
+      "end": {
+        "line": 2,
+        "column": 48
+      }
+    },
+    "signature": "type Result<T> = std::result::Result<T, String>;"
+  },
+  {
+    "name": "Point",
+    "kind": "struct_item",
+    "span": {
+      "start": {
+        "line": 4,
+        "column": 0
+      },
+      "end": {
+        "line": 7,
+        "column": 1
+      }
+    },
+    "signature": "struct Point {"
+  },
+  {
+    "name": "Shape",
+    "kind": "trait_item",
+    "span": {
+      "start": {
+        "line": 9,
+        "column": 0
+      },
+      "end": {
+        "line": 12,
+        "column": 1
+      }
+    },
+    "signature": "trait Shape {"
+  },
+  {
+    "name": "Point",
+    "kind": "impl_item",
+    "span": {
+      "start": {
+        "line": 14,
+        "column": 0
+      },
+      "end": {
+        "line": 22,
+        "column": 1
+      }
+    },
+    "signature": "impl Point {"
+  },
+  {
+    "name": "new",
+    "kind": "function_item",
+    "span": {
+      "start": {
+        "line": 15,
+        "column": 4
+      },
+      "end": {
+        "line": 17,
+        "column": 5
+      }
+    },
+    "signature": "fn new(x: f64, y: f64) -> Self {"
+  },
+  {
+    "name": "distance_to",
+    "kind": "function_item",
+    "span": {
+      "start": {
+        "line": 19,
+        "column": 4
+      },
+      "end": {
+        "line": 21,
+        "column": 5
+      }
+    },
+    "signature": "fn distance_to(&self, other: &Point) -> f64 {"
+  },
+  {
+    "name": "Point",
+    "kind": "impl_item",
+    "span": {
+      "start": {
+        "line": 24,
+        "column": 0
+      },
+      "end": {
+        "line": 32,
+        "column": 1
+      }
+    },
+    "signature": "impl Shape for Point {"
+  },
+  {
+    "name": "area",
+    "kind": "function_item",
+    "span": {
+      "start": {
+        "line": 25,
+        "column": 4
+      },
+      "end": {
+        "line": 27,
+        "column": 5
+      }
+    },
+    "signature": "fn area(&self) -> f64 {"
+  },
+  {
+    "name": "perimeter",
+    "kind": "function_item",
+    "span": {
+      "start": {
+        "line": 29,
+        "column": 4
+      },
+      "end": {
+        "line": 31,
+        "column": 5
+      }
+    },
+    "signature": "fn perimeter(&self) -> f64 {"
+  },
+  {
+    "name": "Color",
+    "kind": "enum_item",
+    "span": {
+      "start": {
+        "line": 34,
+        "column": 0
+      },
+      "end": {
+        "line": 38,
+        "column": 1
+      }
+    },
+    "signature": "enum Color {"
+  },
+  {
+    "name": "ORIGIN",
+    "kind": "static_item",
+    "span": {
+      "start": {
+        "line": 40,
+        "column": 0
+      },
+      "end": {
+        "line": 40,
+        "column": 48
+      }
+    },
+    "signature": "static ORIGIN: Point = Point { x: 0.0, y: 0.0 };"
+  },
+  {
+    "name": "main",
+    "kind": "function_item",
+    "span": {
+      "start": {
+        "line": 42,
+        "column": 0
+      },
+      "end": {
+        "line": 45,
+        "column": 1
+      }
+    },
+    "signature": "fn main() {"
+  }
+]

@@ -1,0 +1,147 @@
+---
+source: tests/ast_navigation_test.rs
+expression: "serde_json::json!({\n    \"kind\": root_info.kind, \"is_named\": root_info.is_named, \"span\":\n    root_info.span, \"child_count\": root_info.child_count, \"named_children\":\n    root_info.named_children,\n})"
+---
+{
+  "child_count": 9,
+  "is_named": true,
+  "kind": "source_file",
+  "named_children": [
+    {
+      "field_name": null,
+      "kind": "const_item",
+      "span": {
+        "end": {
+          "column": 28,
+          "line": 0
+        },
+        "start": {
+          "column": 0,
+          "line": 0
+        }
+      }
+    },
+    {
+      "field_name": null,
+      "kind": "type_item",
+      "span": {
+        "end": {
+          "column": 48,
+          "line": 2
+        },
+        "start": {
+          "column": 0,
+          "line": 2
+        }
+      }
+    },
+    {
+      "field_name": null,
+      "kind": "struct_item",
+      "span": {
+        "end": {
+          "column": 1,
+          "line": 7
+        },
+        "start": {
+          "column": 0,
+          "line": 4
+        }
+      }
+    },
+    {
+      "field_name": null,
+      "kind": "trait_item",
+      "span": {
+        "end": {
+          "column": 1,
+          "line": 12
+        },
+        "start": {
+          "column": 0,
+          "line": 9
+        }
+      }
+    },
+    {
+      "field_name": null,
+      "kind": "impl_item",
+      "span": {
+        "end": {
+          "column": 1,
+          "line": 22
+        },
+        "start": {
+          "column": 0,
+          "line": 14
+        }
+      }
+    },
+    {
+      "field_name": null,
+      "kind": "impl_item",
+      "span": {
+        "end": {
+          "column": 1,
+          "line": 32
+        },
+        "start": {
+          "column": 0,
+          "line": 24
+        }
+      }
+    },
+    {
+      "field_name": null,
+      "kind": "enum_item",
+      "span": {
+        "end": {
+          "column": 1,
+          "line": 38
+        },
+        "start": {
+          "column": 0,
+          "line": 34
+        }
+      }
+    },
+    {
+      "field_name": null,
+      "kind": "static_item",
+      "span": {
+        "end": {
+          "column": 48,
+          "line": 40
+        },
+        "start": {
+          "column": 0,
+          "line": 40
+        }
+      }
+    },
+    {
+      "field_name": null,
+      "kind": "function_item",
+      "span": {
+        "end": {
+          "column": 1,
+          "line": 45
+        },
+        "start": {
+          "column": 0,
+          "line": 42
+        }
+      }
+    }
+  ],
+  "span": {
+    "end": {
+      "column": 0,
+      "line": 46
+    },
+    "start": {
+      "column": 0,
+      "line": 0
+    }
+  }
+}

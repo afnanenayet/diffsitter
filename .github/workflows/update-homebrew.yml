@@ -1,0 +1,91 @@
+name: Update Homebrew tap
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  update-tap:
+    name: Update Homebrew formulae
+    runs-on: ubuntu-latest
+    # Skip nightly and draft releases
+    if: "!github.event.release.draft && github.event.release.tag_name != 'nightly'"
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Get release version
+        env:
+          TAG_NAME: ${{ github.event.release.tag_name }}
+        run: |
+          SHORT_VERSION="${TAG_NAME#v}"
+          echo "VERSION=${TAG_NAME}" >> "$GITHUB_ENV"
+          echo "SHORT_VERSION=${SHORT_VERSION}" >> "$GITHUB_ENV"
+
+      - name: Download release assets and compute checksums
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ env.VERSION }}
+        run: |
+          mkdir -p /tmp/release-assets
+          cd /tmp/release-assets
+
+          for target in \
+            x86_64-apple-darwin \
+            aarch64-apple-darwin \
+            x86_64-unknown-linux-gnu \
+            aarch64-unknown-linux-gnu
+          do
+            for bin in diffsitter tree-sitter-mcp; do
+              asset="${bin}-${target}.tar.gz"
+              echo "Downloading ${asset}..."
+              gh release download "${VERSION}" \
+                --repo afnanenayet/diffsitter \
+                --pattern "${asset}" \
+                --dir . || echo "WARN: ${asset} not found, skipping"
+
+              if [[ -f "${asset}" ]]; then
+                checksum=$(sha256sum "${asset}" | awk '{print $1}')
+                var_name="${bin}_${target//-/_}_SHA256"
+                echo "${var_name}=${checksum}" >> "$GITHUB_ENV"
+              fi
+            done
+          done
+
+      - name: Checkout homebrew-tap
+        uses: actions/checkout@v6
+        with:
+          repository: afnanenayet/homebrew-tap
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          path: homebrew-tap
+          ref: master
+
+      - name: Generate formulae
+        env:
+          SHORT_VERSION: ${{ env.SHORT_VERSION }}
+          VERSION: ${{ env.VERSION }}
+        run: python3 deployment/generate_formulae.py homebrew-tap
+
+      - name: Create pull request
+        working-directory: homebrew-tap
+        env:
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          SHORT_VERSION: ${{ env.SHORT_VERSION }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          branch="update-${SHORT_VERSION}"
+          git checkout -b "$branch"
+          git add diffsitter.rb tree-sitter-mcp.rb
+          git diff --cached --quiet && { echo "No changes to commit"; exit 0; }
+          git commit -m "Update formulae to ${SHORT_VERSION}"
+          git push -u origin "$branch"
+
+          gh pr create \
+            --repo afnanenayet/homebrew-tap \
+            --base master \
+            --title "Update formulae to ${SHORT_VERSION}" \
+            --body "Automated update from [diffsitter ${SHORT_VERSION}](https://github.com/afnanenayet/diffsitter/releases/tag/${SHORT_VERSION})."

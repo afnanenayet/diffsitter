@@ -1,12 +1,14 @@
-# Taken from: https://github.com/nextest-rs/nextest/blob/c54694dfe7be016993983b5dedbcf2b50d4b1a6e/.github/workflows/coverage.yml
+name: Test coverage
+
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
-name: Test coverage
+concurrency:
+  group: coverage-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   coverage:
@@ -18,7 +20,7 @@ jobs:
       RUSTFLAGS: -D warnings
       CARGO_TERM_COLOR: always
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
       - uses: dtolnay/rust-toolchain@stable
@@ -31,11 +33,10 @@ jobs:
         uses: taiki-e/install-action@nextest
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
-
       - name: Collect coverage data
-        run: cargo llvm-cov nextest --lcov --output-path lcov.info
+        run: cargo llvm-cov nextest --all-features --lcov --output-path lcov.info
       - name: Upload coverage data to codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           files: lcov.info
           token: ${{ secrets.CODECOV_TOKEN }}

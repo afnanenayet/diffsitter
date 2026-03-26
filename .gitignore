@@ -1,2 +1,10 @@
 /target
 .vscode/
+fuzz/target/
+fuzz/corpus/
+fuzz/artifacts/
+
+# Claude Code
+.claude/worktrees/
+.claude/*.local.json
+.claude/*.local.md

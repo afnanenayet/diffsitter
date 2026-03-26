@@ -322,6 +322,135 @@ override the dynamic library file for each language in the config as such:
 *The above excerpt was taken from the
 [sample config](/assets/sample_config.json5).*
 
+## MCP Server (AI Code Navigation)
+
+diffsitter includes an [MCP](https://modelcontextprotocol.io) server that
+exposes tree-sitter AST navigation as tools for AI coding assistants. This
+gives tools like [Claude Code](https://claude.ai/code) structural
+understanding of your code — jumping to definitions by name, listing symbols,
+inspecting scopes, and running tree-sitter queries — across all 14+ supported
+languages.
+
+### Tools
+
+| Tool | Description |
+|------|-------------|
+| `parse_file` | Parse a file and return its top-level AST structure |
+| `list_symbols` | List all functions, classes, structs, traits, enums, constants |
+| `get_definition` | Get the full source text of a symbol by name |
+| `get_children_of` | Get methods/fields inside a class, impl block, or module |
+| `get_node_at_position` | Get the deepest AST node at a line/column |
+| `get_scope` | Get the enclosing scope at a position with full parent chain |
+| `navigate` | Move through the AST: parent, first_child, next_sibling, prev_sibling |
+| `query` | Run a raw tree-sitter S-expression query with captures |
+
+### Setup
+
+Build the MCP server binary:
+
+```sh
+cargo build --release --features mcp-server --bin tree-sitter-mcp
+```
+
+Or install from crates.io:
+
+```sh
+cargo install diffsitter --features mcp-server --bin tree-sitter-mcp
+```
+
+#### Claude Code
+
+Register the server with Claude Code:
+
+```sh
+# Register the binary as an MCP server
+claude mcp add tree-sitter-mcp -- /path/to/tree-sitter-mcp
+
+# Or use the bundled plugin for development (loads for one session)
+claude --plugin-dir ./plugins/tree-sitter-mcp
+```
+
+Once registered, Claude Code can use the tools automatically. For example,
+asking "what functions are defined in src/diff.rs?" will use `list_symbols`
+instead of reading the entire file.
+
+#### Other MCP clients
+
+The server communicates over stdio using
+[JSON-RPC](https://www.jsonrpc.org/specification). Any MCP-compatible client
+can use it by launching the binary as a subprocess:
+
+```json
+{
+  "mcpServers": {
+    "tree-sitter-mcp": {
+      "command": "/path/to/tree-sitter-mcp"
+    }
+  }
+}
+```
+
+### Example queries
+
+The MCP server understands language grammar, not just text. Where `grep` finds
+string patterns, tree-sitter-mcp finds *syntactic* patterns — it knows the
+difference between a function called `test` and a `#[test]` attribute.
+
+#### Symbol discovery
+
+```
+# "What's defined in this file?"
+list_symbols  →  file_path: "src/diff.rs"
+
+# "What methods does the Renderer trait define?"
+get_children_of  →  file_path: "src/render/mod.rs", symbol_name: "Renderer"
+
+# "Show me the signature of generate_ast_vector_data without reading the whole file"
+get_definition  →  file_path: "src/lib.rs", symbol_name: "generate_ast_vector_data"
+```
+
+#### Scope & context
+
+```
+# "What function contains line 145 of src/diff.rs? Show me the full parent chain."
+get_scope  →  file_path: "src/diff.rs", line: 145, column: 0
+
+# "What's the AST node at this position? Navigate to its parent, then next sibling."
+get_node_at_position  →  file_path: "src/lib.rs", line: 50, column: 10
+navigate  →  file_path: "src/lib.rs", line: 50, column: 10, direction: "parent"
+```
+
+#### Tree-sitter queries (the real power)
+
+The `query` tool accepts [tree-sitter S-expression
+patterns](https://tree-sitter.github.io/tree-sitter/using-parsers/queries/index.html)
+for structural code search:
+
+```
+# Find all unsafe blocks
+query  →  file_path: "src/diff.rs"
+          pattern: "(unsafe_block) @unsafe"
+
+# Find all impl blocks for a specific type
+query  →  file_path: "src/config.rs"
+          pattern: '(impl_item type: (type_identifier) @name (#eq? @name "Config")) @impl'
+
+# Find all functions that return a Result
+query  →  file_path: "src/diff.rs"
+          pattern: '(function_item
+            name: (identifier) @name
+            return_type: (generic_type
+              type: (type_identifier) @ret (#eq? @ret "Result"))) @fn'
+
+# Find all #[test] functions
+query  →  file_path: "src/diff.rs"
+          pattern: '(attribute_item (attribute (identifier) @attr (#eq? @attr "test"))) @test'
+
+# Find all closures
+query  →  file_path: "src/input_processing.rs"
+          pattern: "(closure_expression) @closure"
+```
+
 ## Questions, Bugs, and Support
 
 If you notice any bugs, have any issues, want to see a new feature, or just
@@ -332,6 +461,88 @@ have a question, feel free to open an
 If you file an issue, it would be preferable that you include a minimal example
 and/or post the log output of `diffsitter` (which you can do by adding the
 `-d/--debug` flag).
+
+## Development
+
+### Prerequisites
+
+- **Rust toolchain** (MSRV 1.85.1, edition 2024) — install via [rustup](https://rustup.rs/)
+- **C99+ compiler** and **C++14+ compiler** — required to compile tree-sitter grammars (Apple Clang, GCC, or LLVM all work)
+- **Git submodules** initialized — the build compiles tree-sitter grammars from vendored sources in `grammars/`
+
+```sh
+# Clone with submodules
+git clone --recurse-submodules https://github.com/afnanenayet/diffsitter.git
+
+# Or initialize submodules in an existing checkout
+git submodule update --init --recursive
+```
+
+#### Recommended tools
+
+These are not required for building diffsitter itself, but are used for development and CI:
+
+| Tool | Install | Purpose |
+|------|---------|---------|
+| [cargo-nextest](https://nexte.st) | `cargo install cargo-nextest` | Test runner (used in CI, configured in `.config/nextest.toml`) |
+| [cargo-insta](https://insta.rs) | `cargo install cargo-insta` | Snapshot test review TUI |
+| [pre-commit](https://pre-commit.com) | `pip install pre-commit` | Git hook manager for formatting/linting |
+| [cargo-fuzz](https://github.com/rust-fuzz/cargo-fuzz) | `cargo install cargo-fuzz` | Fuzz testing (requires nightly Rust) |
+
+### Building
+
+```sh
+cargo build                                                            # Default: static grammars
+cargo build --no-default-features --features dynamic-grammar-libs      # Dynamic grammar loading
+cargo build --profile production                                       # Release build with LTO + strip
+cargo build --features mcp-server --bin tree-sitter-mcp                # MCP server binary
+```
+
+The default build compiles all tree-sitter grammars from C/C++ source into the binary. Use `cargo check` for a fast feedback loop that skips grammar compilation.
+
+### Testing
+
+```sh
+cargo nextest run --all-features                  # All tests (preferred)
+cargo test --all-features                         # Fallback without nextest
+cargo test --doc --all-features                   # Doc tests only (nextest doesn't run these)
+cargo insta review                                # Review/accept changed snapshots
+```
+
+### Linting
+
+```sh
+cargo fmt --all -- --check                        # Check formatting
+cargo fmt --all                                   # Auto-format
+cargo clippy --all-targets --all-features -- -D warnings   # Lint (matches CI)
+```
+
+### Benchmarks
+
+```sh
+cargo bench                                       # Run all criterion benchmarks
+cargo bench -- <filter>                           # Run benchmarks matching filter
+```
+
+Benchmarks use [criterion](https://github.com/bheisler/criterion.rs) and cover parsing, cache performance, symbol listing, navigation, and query execution. Results are written to `target/criterion/`.
+
+### Fuzz testing
+
+```sh
+cargo +nightly fuzz list                          # List available fuzz targets
+cargo +nightly fuzz run fuzz_parse_and_navigate -- -max_total_time=60
+cargo +nightly fuzz run fuzz_query -- -max_total_time=60
+cargo +nightly fuzz run fuzz_node_to_info -- -max_total_time=60
+```
+
+### Feature flags
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `static-grammar-libs` | Yes | Compiles tree-sitter grammars into the binary |
+| `dynamic-grammar-libs` | No | Loads grammars from system shared libraries at runtime |
+| `better-build-info` | No | Extended build metadata via shadow-rs |
+| `mcp-server` | No | Builds `tree-sitter-mcp` binary (adds `rmcp`, `tokio`, `schemars`) |
 
 ## Contributing
 

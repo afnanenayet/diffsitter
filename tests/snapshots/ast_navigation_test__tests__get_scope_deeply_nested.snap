@@ -1,0 +1,111 @@
+---
+source: tests/ast_navigation_test.rs
+expression: scope
+---
+{
+  "node": {
+    "kind": "function_item",
+    "is_named": true,
+    "span": {
+      "start": {
+        "line": 6,
+        "column": 8
+      },
+      "end": {
+        "line": 12,
+        "column": 9
+      }
+    },
+    "text": "fn process(&self) -> i32 {\n            let transform = |x: i32| {\n                let inner = x * 2;\n                inner + 1\n            };\n            transform(self.value)\n        }",
+    "child_count": 6,
+    "field_name": "process",
+    "named_children": [
+      {
+        "kind": "identifier",
+        "field_name": "name",
+        "span": {
+          "start": {
+            "line": 6,
+            "column": 11
+          },
+          "end": {
+            "line": 6,
+            "column": 18
+          }
+        }
+      },
+      {
+        "kind": "parameters",
+        "field_name": "parameters",
+        "span": {
+          "start": {
+            "line": 6,
+            "column": 18
+          },
+          "end": {
+            "line": 6,
+            "column": 25
+          }
+        }
+      },
+      {
+        "kind": "primitive_type",
+        "field_name": "return_type",
+        "span": {
+          "start": {
+            "line": 6,
+            "column": 29
+          },
+          "end": {
+            "line": 6,
+            "column": 32
+          }
+        }
+      },
+      {
+        "kind": "block",
+        "field_name": "body",
+        "span": {
+          "start": {
+            "line": 6,
+            "column": 33
+          },
+          "end": {
+            "line": 12,
+            "column": 9
+          }
+        }
+      }
+    ]
+  },
+  "parent_chain": [
+    {
+      "kind": "impl_item",
+      "name": null,
+      "span": {
+        "start": {
+          "line": 5,
+          "column": 4
+        },
+        "end": {
+          "line": 17,
+          "column": 5
+        }
+      }
+    },
+    {
+      "kind": "mod_item",
+      "name": "outer",
+      "span": {
+        "start": {
+          "line": 0,
+          "column": 0
+        },
+        "end": {
+          "line": 22,
+          "column": 1
+        }
+      }
+    }
+  ]
+}

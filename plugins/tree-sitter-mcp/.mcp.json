@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "tree-sitter-mcp": {
+      "type": "stdio",
+      "command": "${CLAUDE_PLUGIN_DATA}/bin/tree-sitter-mcp",
+      "env": {
+        "RUST_LOG": "warn"
+      }
+    }
+  }
+}
