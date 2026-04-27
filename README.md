@@ -556,3 +556,4 @@ See [CONTRIBUTING.md](docs/CONTRIBUTING.md).
 * [diffr](https://github.com/mookid/diffr)
 * [delta](https://github.com/dandavison/delta)
 * [Semantic Diff Tool](https://www.sdt.dev)
+* [sem](https://github.com/ataraxy-labs/sem)
