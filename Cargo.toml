@@ -83,7 +83,7 @@ shadow-rs = { version = "1.5.0", optional = true }
 enum_dispatch = "0.3.13"
 lazy_static = { version = "1.5.0", optional = true }
 figment = { version = "0.10", features = ["toml", "json", "env"] }
-rmcp = { version = "0.1", features = ["server", "macros", "transport-io"], optional = true }
+rmcp = { version = "1.4", features = ["server", "macros", "transport-io"], optional = true }
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-std"], optional = true }
 schemars = { version = "0.8", optional = true }
 
