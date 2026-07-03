@@ -10,8 +10,11 @@
 //! node-level renames, insertions, and deletions.
 
 mod band;
+mod ted;
+mod touzet;
 mod tree;
 
+pub use touzet::touzet_depth;
 pub use tree::{LabeledTree, build_labeled_trees};
 
 use thiserror::Error;

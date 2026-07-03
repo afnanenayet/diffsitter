@@ -419,7 +419,6 @@ impl<'a> LabeledTree<'a> {
     /// Neighborhood vector `(left, descendants, ancestors, right)` of node
     /// `i` (paper Def. 4.1), derived in O(1) from postorder ID, subtree
     /// size, and depth.
-    #[allow(dead_code)]
     pub(crate) fn neighborhood(&self, i: usize) -> (i64, i64, i64, i64) {
         let left = (i + 1 - self.sizes[i]) as i64;
         let descendants = (self.sizes[i] - 1) as i64;

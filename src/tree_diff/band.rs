@@ -8,11 +8,9 @@
 //! treats as "unreachable within the budget".
 
 /// Effectively-infinite distance; large enough that `INF + 1` cannot wrap.
-#[allow(dead_code)] // consumed by ted.rs (Task 4)
 pub(crate) const INF: u32 = u32::MAX / 2;
 
 /// A `rows × cols` matrix that only stores cells with `|col − row| ≤ h`.
-#[allow(dead_code)] // consumed by ted.rs (Task 4)
 #[derive(Debug, Clone)]
 pub(crate) struct BandMatrix {
     rows: usize,
@@ -21,7 +19,6 @@ pub(crate) struct BandMatrix {
     data: Vec<u32>,
 }
 
-#[allow(dead_code)] // consumed by ted.rs (Task 4)
 impl BandMatrix {
     /// Create a band matrix with every stored cell initialized to [`INF`].
     ///
@@ -39,6 +36,7 @@ impl BandMatrix {
         }
     }
 
+    #[allow(dead_code)] // consumed by topdiff.rs (Task 6)
     pub(crate) fn half_width(&self) -> usize {
         self.half_width
     }
