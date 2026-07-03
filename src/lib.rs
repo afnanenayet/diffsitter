@@ -20,6 +20,7 @@ pub mod mcp_server;
 pub mod neg_idx_vec;
 pub mod parse;
 pub mod render;
+pub mod tree_diff;
 
 use anyhow::Result;
 use input_processing::VectorData;
