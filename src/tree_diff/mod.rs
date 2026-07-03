@@ -11,7 +11,7 @@
 
 mod tree;
 
-pub use tree::LabeledTree;
+pub use tree::{LabeledTree, build_labeled_trees};
 
 use thiserror::Error;
 

@@ -137,6 +137,23 @@ impl TreeSitterProcessor {
         }
     }
 
+    /// Whether a node kind passes the user's include/exclude filters.
+    ///
+    /// Exclusion takes precedence over inclusion; missing sets apply no
+    /// filter. Shared by the Myers leaf pipeline and the tree diff engine so
+    /// both honor the same configuration.
+    pub(crate) fn should_include_kind(&self, kind: &str) -> bool {
+        let should_exclude = self
+            .exclude_kinds
+            .as_ref()
+            .is_some_and(|x| x.contains(kind))
+            || self
+                .include_kinds
+                .as_ref()
+                .is_some_and(|x| !x.contains(kind));
+        !should_exclude
+    }
+
     /// A helper method to determine whether a node type should be filtered out based on the user's filtering
     /// preferences.
     ///
@@ -144,15 +161,7 @@ impl TreeSitterProcessor {
     /// check if the node kind is explicitly included. If either the exclusion or inclusion sets aren't specified,
     /// then the filter will not be applied.
     fn should_include_node(&self, node: &dyn TSNodeTrait) -> bool {
-        let should_exclude = self
-            .exclude_kinds
-            .as_ref()
-            .is_some_and(|x| x.contains(node.kind()))
-            || self
-                .include_kinds
-                .as_ref()
-                .is_some_and(|x| !x.contains(node.kind()));
-        !should_exclude
+        self.should_include_kind(node.kind())
     }
 }
 

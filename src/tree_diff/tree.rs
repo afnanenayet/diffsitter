@@ -1,9 +1,11 @@
 //! Postorder array representation of a processed syntax tree.
 
+use std::collections::{HashMap, HashSet};
 use std::ops::Range;
-use tree_sitter::Point;
+use tree_sitter::{Node as TSNode, Point};
 
 use super::TreeDiffError;
+use crate::input_processing::{TreeSitterProcessor, VectorData};
 
 /// A labeled, ordered tree stored as structure-of-arrays in postorder.
 ///
@@ -119,6 +121,220 @@ fn postorder_dfs(id: usize, children: &[Vec<usize>], out: &mut Vec<usize>) {
         postorder_dfs(c, children, out);
     }
     out.push(id);
+}
+
+/// Interns `(kind_id, leaf text)` pairs to dense `u32` labels.
+///
+/// A single interner spans both input trees so that equal labels mean equal
+/// content across the pair. Internal nodes intern `(kind_id, None)`.
+#[derive(Default)]
+struct Interner<'a> {
+    map: HashMap<(u16, Option<&'a str>), u32>,
+}
+
+impl<'a> Interner<'a> {
+    fn intern(&mut self, kind_id: u16, text: Option<&'a str>) -> u32 {
+        let next = self.map.len() as u32;
+        *self.map.entry((kind_id, text)).or_insert(next)
+    }
+}
+
+/// A node surviving the processor filters, before postorder flattening.
+struct PendingNode<'a> {
+    kind_id: u16,
+    kind: &'a str,
+    named: bool,
+    byte_range: Range<usize>,
+    start: Point,
+    end: Point,
+    /// `Some(text)` for leaves (the label text), `None` for internal nodes.
+    leaf_text: Option<&'a str>,
+    children: Vec<PendingNode<'a>>,
+}
+
+/// Build comparable [`LabeledTree`]s for a pair of parsed documents.
+///
+/// Applies the same filter semantics as the Myers leaf pipeline
+/// ([`TreeSitterProcessor::process`]): pseudo-leaf kinds stop descent,
+/// excluded kinds and whitespace-only leaves are dropped, and leaf label text
+/// is whitespace-trimmed when `strip_whitespace` is on. Internal nodes whose
+/// children are all dropped are themselves dropped. `split_graphemes` is
+/// irrelevant at node granularity and is ignored.
+pub fn build_labeled_trees<'a>(
+    processor: &TreeSitterProcessor,
+    old: &'a VectorData,
+    new: &'a VectorData,
+) -> (LabeledTree<'a>, LabeledTree<'a>) {
+    let mut interner = Interner::default();
+    let old_tree = build_one(processor, old, &mut interner);
+    let new_tree = build_one(processor, new, &mut interner);
+    (old_tree, new_tree)
+}
+
+fn build_one<'a>(
+    processor: &TreeSitterProcessor,
+    data: &'a VectorData,
+    interner: &mut Interner<'a>,
+) -> LabeledTree<'a> {
+    let empty_set = HashSet::new();
+    let pseudo_leaf_types = processor
+        .pseudo_leaf_types
+        .get(&data.resolved_language)
+        .unwrap_or(&empty_set);
+    let pending = convert(
+        data.tree.root_node(),
+        &data.text,
+        processor,
+        pseudo_leaf_types,
+    );
+    match pending {
+        Some(root) => flatten(root, &data.text, interner),
+        None => LabeledTree {
+            labels: Vec::new(),
+            parents: Vec::new(),
+            depths: Vec::new(),
+            sizes: Vec::new(),
+            llds: Vec::new(),
+            kinds: Vec::new(),
+            named: Vec::new(),
+            byte_ranges: Vec::new(),
+            starts: Vec::new(),
+            ends: Vec::new(),
+            source: &data.text,
+        },
+    }
+}
+
+/// Recursively convert a CST node, applying the processor's filters.
+/// Returns `None` when the node (and its whole subtree) is dropped.
+fn convert<'a>(
+    node: TSNode<'a>,
+    text: &'a str,
+    processor: &TreeSitterProcessor,
+    pseudo_leaf_types: &HashSet<String>,
+) -> Option<PendingNode<'a>> {
+    let is_leaf = node.child_count() == 0 || pseudo_leaf_types.contains(node.kind());
+    if is_leaf {
+        if node.byte_range().is_empty() {
+            return None;
+        }
+        let node_text: &'a str = &text[node.byte_range()];
+        // Mirror the Go-parser newline workaround in `input_processing::build`.
+        if node_text
+            .replace("\r\n", "")
+            .replace(['\n', '\r'], "")
+            .is_empty()
+        {
+            return None;
+        }
+        if !processor.should_include_kind(node.kind()) {
+            return None;
+        }
+        let label_text = if processor.strip_whitespace {
+            node_text.trim()
+        } else {
+            node_text
+        };
+        if processor.strip_whitespace && label_text.is_empty() {
+            return None;
+        }
+        return Some(PendingNode {
+            kind_id: node.kind_id(),
+            kind: node.kind(),
+            named: node.is_named(),
+            byte_range: node.byte_range(),
+            start: node.start_position(),
+            end: node.end_position(),
+            leaf_text: Some(label_text),
+            children: Vec::new(),
+        });
+    }
+    let mut cursor = node.walk();
+    let children: Vec<PendingNode<'a>> = node
+        .children(&mut cursor)
+        .filter_map(|child| convert(child, text, processor, pseudo_leaf_types))
+        .collect();
+    if children.is_empty() {
+        // Every descendant was filtered out; drop the now-empty internal node.
+        return None;
+    }
+    Some(PendingNode {
+        kind_id: node.kind_id(),
+        kind: node.kind(),
+        named: node.is_named(),
+        byte_range: node.byte_range(),
+        start: node.start_position(),
+        end: node.end_position(),
+        leaf_text: None,
+        children,
+    })
+}
+
+/// Flatten a pending tree into postorder arrays.
+fn flatten<'a>(
+    root: PendingNode<'a>,
+    source: &'a str,
+    interner: &mut Interner<'a>,
+) -> LabeledTree<'a> {
+    struct Arrays<'a> {
+        labels: Vec<u32>,
+        parents: Vec<Option<usize>>,
+        kinds: Vec<&'a str>,
+        named: Vec<bool>,
+        byte_ranges: Vec<Range<usize>>,
+        starts: Vec<Point>,
+        ends: Vec<Point>,
+    }
+
+    fn push_subtree<'a>(
+        node: PendingNode<'a>,
+        out: &mut Arrays<'a>,
+        interner: &mut Interner<'a>,
+    ) -> usize {
+        let child_ids: Vec<usize> = node
+            .children
+            .into_iter()
+            .map(|child| push_subtree(child, out, interner))
+            .collect();
+        let id = out.labels.len();
+        out.labels
+            .push(interner.intern(node.kind_id, node.leaf_text));
+        out.parents.push(None);
+        out.kinds.push(node.kind);
+        out.named.push(node.named);
+        out.byte_ranges.push(node.byte_range);
+        out.starts.push(node.start);
+        out.ends.push(node.end);
+        for c in child_ids {
+            out.parents[c] = Some(id);
+        }
+        id
+    }
+
+    let mut arrays = Arrays {
+        labels: Vec::new(),
+        parents: Vec::new(),
+        kinds: Vec::new(),
+        named: Vec::new(),
+        byte_ranges: Vec::new(),
+        starts: Vec::new(),
+        ends: Vec::new(),
+    };
+    push_subtree(root, &mut arrays, interner);
+    let (depths, sizes, llds) = derive_structure(&arrays.parents);
+    LabeledTree {
+        labels: arrays.labels,
+        parents: arrays.parents,
+        depths,
+        sizes,
+        llds,
+        kinds: arrays.kinds,
+        named: arrays.named,
+        byte_ranges: arrays.byte_ranges,
+        starts: arrays.starts,
+        ends: arrays.ends,
+        source,
+    }
 }
 
 impl<'a> LabeledTree<'a> {
@@ -320,5 +536,113 @@ mod tests {
         assert_eq!(t.lld(0), 0);
         assert_eq!(t.size(0), 1);
         assert_eq!(t.neighborhood(0), (0, 0, 0, 0));
+    }
+
+    #[cfg(feature = "static-grammar-libs")]
+    mod builder {
+        use super::super::*;
+        use crate::input_processing::{TreeSitterProcessor, VectorData};
+        use crate::parse::{GrammarConfig, generate_language};
+        use std::collections::HashSet;
+        use std::path::PathBuf;
+
+        fn parse(text: &str, lang: &str, file_name: &str) -> VectorData {
+            let language = generate_language(lang, &GrammarConfig::default()).unwrap();
+            let mut parser = tree_sitter::Parser::new();
+            parser.set_language(&language).unwrap();
+            let tree = parser.parse(text, None).unwrap();
+            VectorData {
+                text: text.into(),
+                tree,
+                path: PathBuf::from(file_name),
+                resolved_language: lang.into(),
+            }
+        }
+
+        #[test]
+        fn identical_sources_produce_identical_labels() {
+            let a = parse("fn a() -> i32 { 1 }\n", "rust", "a.rs");
+            let b = parse("fn a() -> i32 { 1 }\n", "rust", "b.rs");
+            let (ta, tb) = build_labeled_trees(&TreeSitterProcessor::default(), &a, &b);
+            assert!(!ta.is_empty());
+            assert_eq!(ta.len(), tb.len());
+            for i in 0..ta.len() {
+                assert_eq!(ta.label(i), tb.label(i), "label mismatch at node {i}");
+                assert_eq!(ta.kind(i), tb.kind(i));
+            }
+        }
+
+        #[test]
+        fn renamed_identifier_changes_exactly_one_label() {
+            let a = parse("fn a() -> i32 { 1 }\n", "rust", "a.rs");
+            let b = parse("fn b() -> i32 { 1 }\n", "rust", "b.rs");
+            let (ta, tb) = build_labeled_trees(&TreeSitterProcessor::default(), &a, &b);
+            assert_eq!(ta.len(), tb.len());
+            let diffs: Vec<usize> = (0..ta.len())
+                .filter(|&i| ta.label(i) != tb.label(i))
+                .collect();
+            assert_eq!(diffs.len(), 1, "expected exactly one differing label");
+            assert_eq!(ta.kind(diffs[0]), "identifier");
+        }
+
+        #[test]
+        fn postorder_invariants_hold() {
+            let a = parse(
+                "fn a() -> i32 { 1 }\nfn main() { println!(\"{}\", a()); }\n",
+                "rust",
+                "a.rs",
+            );
+            let (t, _) = build_labeled_trees(&TreeSitterProcessor::default(), &a, &a);
+            let n = t.len();
+            assert!(n > 0);
+            assert_eq!(t.parent(n - 1), None, "root must be the last node");
+            for i in 0..n {
+                if let Some(p) = t.parent(i) {
+                    assert!(p > i, "parent {p} must come after child {i} in postorder");
+                }
+                assert_eq!(t.lld(i), i + 1 - t.size(i));
+                // Subtree byte ranges nest within the parent's range.
+                if let Some(p) = t.parent(i) {
+                    assert!(t.byte_range(i).start >= t.byte_range(p).start);
+                    assert!(t.byte_range(i).end <= t.byte_range(p).end);
+                }
+            }
+        }
+
+        #[test]
+        fn excluded_kinds_are_dropped() {
+            let a = parse("fn a() -> i32 { 1 }\n", "rust", "a.rs");
+            let processor = TreeSitterProcessor {
+                exclude_kinds: Some(HashSet::from(["identifier".into()])),
+                ..Default::default()
+            };
+            let (t, _) = build_labeled_trees(&processor, &a, &a);
+            for i in 0..t.len() {
+                assert_ne!(t.kind(i), "identifier");
+            }
+        }
+
+        #[test]
+        fn whitespace_only_source_yields_empty_tree() {
+            let a = parse("   \n\n", "rust", "a.rs");
+            let (t, _) = build_labeled_trees(&TreeSitterProcessor::default(), &a, &a);
+            assert!(t.is_empty());
+        }
+
+        #[test]
+        fn pseudo_leaf_types_stop_descent() {
+            // The default processor treats markdown "inline" nodes as leaves.
+            let a = parse("# Title\n\nSome *emphasized* text.\n", "markdown", "a.md");
+            let (t, _) = build_labeled_trees(&TreeSitterProcessor::default(), &a, &a);
+            let inline_nodes: Vec<usize> =
+                (0..t.len()).filter(|&i| t.kind(i) == "inline").collect();
+            assert!(
+                !inline_nodes.is_empty(),
+                "expected at least one inline node"
+            );
+            for i in inline_nodes {
+                assert_eq!(t.size(i), 1, "pseudo-leaf must have no children");
+            }
+        }
     }
 }
