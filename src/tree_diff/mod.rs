@@ -9,6 +9,7 @@
 //! leaf sequence, this engine diffs the tree structure itself and reports
 //! node-level renames, insertions, and deletions.
 
+mod band;
 mod tree;
 
 pub use tree::{LabeledTree, build_labeled_trees};
