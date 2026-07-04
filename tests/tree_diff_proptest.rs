@@ -3,7 +3,7 @@
 //! correct — so any disagreement is a bug in the banded/pruned algorithms.
 
 use libdiffsitter::tree_diff::{
-    LabeledTree, TreeDiffOptions, topdiff, touzet_depth, tree_edit_distance,
+    LabeledTree, TreeDiffOptions, edit_mapping, topdiff, touzet_depth, tree_edit_distance,
 };
 use proptest::prelude::*;
 
@@ -109,6 +109,18 @@ fn arb_tree(max_nodes: usize, n_labels: u32) -> impl Strategy<Value = LabeledTre
         (proptest::collection::vec(0..n_labels, n), parents)
             .prop_map(|(labels, parent_of)| build_postorder_tree(&labels, &parent_of))
     })
+}
+
+/// True iff `anc` is a proper ancestor of `node` in `t`.
+fn is_ancestor(t: &LabeledTree, anc: usize, node: usize) -> bool {
+    let mut current = node;
+    while let Some(p) = t.parent(current) {
+        if p == anc {
+            return true;
+        }
+        current = p;
+    }
+    false
 }
 
 #[test]
@@ -232,5 +244,46 @@ proptest! {
     ) {
         let got = tree_edit_distance(&a, &b, &TreeDiffOptions::default()).unwrap();
         prop_assert!(got as usize <= a.len() + b.len());
+    }
+
+    #[test]
+    fn mapping_cost_equals_distance(a in arb_tree(20, 4), b in arb_tree(20, 4)) {
+        let m = edit_mapping(&a, &b, &TreeDiffOptions::default()).unwrap();
+        prop_assert_eq!(m.distance, zs_oracle(&a, &b));
+        // Every node is accounted for exactly once.
+        prop_assert_eq!(m.mapped.len() + m.deleted.len(), a.len());
+        prop_assert_eq!(m.mapped.len() + m.inserted.len(), b.len());
+    }
+
+    #[test]
+    fn mapping_satisfies_edit_mapping_conditions(
+        a in arb_tree(15, 3),
+        b in arb_tree(15, 3),
+    ) {
+        let m = edit_mapping(&a, &b, &TreeDiffOptions::default()).unwrap();
+        for (idx, &(x, y)) in m.mapped.iter().enumerate() {
+            for &(x2, y2) in &m.mapped[idx + 1..] {
+                // One-to-one.
+                prop_assert!(x != x2 && y != y2);
+                // Ancestor condition.
+                prop_assert_eq!(is_ancestor(&a, x, x2), is_ancestor(&b, y, y2));
+                prop_assert_eq!(is_ancestor(&a, x2, x), is_ancestor(&b, y2, y));
+                // Order condition: postorder + ancestor relation determine
+                // left-of; with both ancestor checks equal, left-of reduces
+                // to postorder comparison.
+                if !is_ancestor(&a, x2, x) && !is_ancestor(&a, x, x2) {
+                    prop_assert_eq!(x < x2, y < y2);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn mapping_is_deterministic(a in arb_tree(15, 3), b in arb_tree(15, 3)) {
+        let opts = TreeDiffOptions::default();
+        prop_assert_eq!(
+            edit_mapping(&a, &b, &opts).unwrap(),
+            edit_mapping(&a, &b, &opts).unwrap()
+        );
     }
 }

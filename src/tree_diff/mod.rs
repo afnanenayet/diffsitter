@@ -12,11 +12,13 @@
 mod autostop;
 mod band;
 mod cost;
+mod mapping;
 mod ted;
 mod topdiff;
 mod touzet;
 mod tree;
 
+pub use mapping::{EditMapping, edit_mapping};
 pub use topdiff::topdiff;
 pub use touzet::touzet_depth;
 pub use tree::{LabeledTree, build_labeled_trees};

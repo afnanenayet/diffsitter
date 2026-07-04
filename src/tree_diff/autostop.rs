@@ -16,10 +16,8 @@ pub(crate) struct BoundedResult {
     /// The exact tree edit distance.
     pub distance: u32,
     /// The bound the search converged at (`distance <= tau`).
-    #[allow(dead_code)] // consumed by mapping recovery (Task 8)
     pub tau: u32,
     /// Subtree distances from the final round.
-    #[allow(dead_code)] // consumed by mapping recovery (Task 8)
     pub td: BandMatrix,
 }
 
