@@ -2,7 +2,9 @@
 //! oracle. The oracle uses full matrices and no pruning — slow but obviously
 //! correct — so any disagreement is a bug in the banded/pruned algorithms.
 
-use libdiffsitter::tree_diff::{LabeledTree, topdiff, touzet_depth};
+use libdiffsitter::tree_diff::{
+    LabeledTree, TreeDiffOptions, topdiff, touzet_depth, tree_edit_distance,
+};
 use proptest::prelude::*;
 
 const INF: u32 = u32::MAX / 2;
@@ -213,5 +215,22 @@ proptest! {
         if t1 <= tau {
             prop_assert_eq!(t1, t2);
         }
+    }
+
+    #[test]
+    fn autostop_matches_oracle(a in arb_tree(20, 4), b in arb_tree(20, 4)) {
+        // The strongest end-to-end check: no bound is provided at all.
+        let expected = zs_oracle(&a, &b);
+        let got = tree_edit_distance(&a, &b, &TreeDiffOptions::default()).unwrap();
+        prop_assert_eq!(got, expected);
+    }
+
+    #[test]
+    fn autostop_distance_bounded_by_total_size(
+        a in arb_tree(20, 4),
+        b in arb_tree(20, 4),
+    ) {
+        let got = tree_edit_distance(&a, &b, &TreeDiffOptions::default()).unwrap();
+        prop_assert!(got as usize <= a.len() + b.len());
     }
 }
