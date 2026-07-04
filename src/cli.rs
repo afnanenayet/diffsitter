@@ -67,6 +67,13 @@ pub struct Args {
     /// If no option is supplied then this will fall back to the default renderer.
     #[clap(short, long)]
     pub renderer: Option<String>,
+
+    /// Specify which diff engine to use. Valid values are: "myers", "topdiff".
+    ///
+    /// This overrides the "diff-engine" config key. The "topdiff" engine
+    /// computes a tree edit distance and requires the "structural" renderer.
+    #[clap(long)]
+    pub diff_engine: Option<String>,
 }
 
 /// A wrapper struct for `clap_complete::Shell`.

@@ -1,0 +1,6 @@
+{
+    "diff-engine": "topdiff",
+    "tree-diff": {
+        "max-tau": 512,
+    },
+}

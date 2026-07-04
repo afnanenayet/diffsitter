@@ -2,7 +2,7 @@
 
 use crate::{
     cli::Args, figment_utils::JsonProvider, input_processing::TreeSitterProcessor,
-    parse::GrammarConfig, render::RenderConfig,
+    parse::GrammarConfig, render::RenderConfig, tree_diff::TreeDiffOptions,
 };
 use anyhow::Result;
 use figment::{
@@ -16,6 +16,7 @@ use std::{
     io,
     path::{Path, PathBuf},
 };
+use strum::{Display, EnumString};
 use thiserror::Error;
 
 #[cfg(target_os = "windows")]
@@ -47,6 +48,17 @@ pub struct Config {
     /// Options for processing tree-sitter input.
     pub input_processing: TreeSitterProcessor,
 
+    /// Which diff engine to use.
+    ///
+    /// "myers" (the default) diffs the flattened token sequence and renders
+    /// hunks. "topdiff" computes a tree edit distance over the AST and
+    /// reports node-level structural edits.
+    pub diff_engine: DiffEngine,
+
+    /// Options for the tree diff engine (used when `diff-engine` is
+    /// "topdiff").
+    pub tree_diff: TreeDiffOptions,
+
     /// The program to invoke if the given files can not be parsed by the available tree-sitter
     /// parsers.
     ///
@@ -56,6 +68,23 @@ pub struct Config {
     /// ${FALLBACK_PROGRAM} ${OLD} ${NEW}
     /// ```
     pub fallback_cmd: Option<String>,
+}
+
+/// Which diff algorithm drives the comparison.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default, Display, EnumString,
+)]
+// Both attributes use kebab-case so the CLI strings and config strings stay
+// identical by construction if a multi-word engine name is ever added.
+#[serde(rename_all = "kebab-case")]
+#[strum(serialize_all = "kebab-case")]
+pub enum DiffEngine {
+    /// Myers diff over the flattened leaf sequence (the classic behavior).
+    #[default]
+    Myers,
+    /// Tree edit distance over the AST (reports structural edits; requires
+    /// the "structural" renderer).
+    Topdiff,
 }
 
 /// The possible errors that can arise when attempting to read a config
