@@ -11,9 +11,11 @@
 
 mod band;
 mod ted;
+mod topdiff;
 mod touzet;
 mod tree;
 
+pub use topdiff::topdiff;
 pub use touzet::touzet_depth;
 pub use tree::{LabeledTree, build_labeled_trees};
 

@@ -5,7 +5,6 @@ use super::band::BandMatrix;
 use super::tree::LabeledTree;
 
 /// L1 distance between the neighborhood vectors of `x` and `y` (Def. 4.1).
-#[allow(dead_code)] // consumed by topdiff.rs (Task 6)
 pub(crate) fn neighborhood_distance(
     old: &LabeledTree,
     new: &LabeledTree,
@@ -52,7 +51,6 @@ pub(crate) struct ForestDistance {
     pub fd: BandMatrix,
     /// Anchored-cell subtree distances `(gi, gj, dist)` discovered along the
     /// way, in ascending order; includes the pair `(x, y)` itself last.
-    #[allow(dead_code)] // consumed by topdiff.rs / mapping.rs (Task 6/8)
     pub anchored: Vec<(usize, usize, u32)>,
     /// `m = |Tx|`.
     pub rows: usize,

@@ -2,7 +2,7 @@
 //! oracle. The oracle uses full matrices and no pruning — slow but obviously
 //! correct — so any disagreement is a bug in the banded/pruned algorithms.
 
-use libdiffsitter::tree_diff::{LabeledTree, touzet_depth};
+use libdiffsitter::tree_diff::{LabeledTree, topdiff, touzet_depth};
 use proptest::prelude::*;
 
 const INF: u32 = u32::MAX / 2;
@@ -176,5 +176,42 @@ proptest! {
     #[test]
     fn identity_distance_is_zero(a in arb_tree(20, 4)) {
         prop_assert_eq!(touzet_depth(&a, &a, 1), 0);
+    }
+
+    #[test]
+    fn topdiff_matches_oracle_with_loose_bound(
+        a in arb_tree(20, 4),
+        b in arb_tree(20, 4),
+    ) {
+        let expected = zs_oracle(&a, &b);
+        let tau = (a.len() + b.len()) as u32;
+        prop_assert_eq!(topdiff(&a, &b, tau), expected);
+    }
+
+    #[test]
+    fn topdiff_matches_oracle_with_tight_bound(
+        a in arb_tree(20, 4),
+        b in arb_tree(20, 4),
+    ) {
+        let expected = zs_oracle(&a, &b);
+        let tau = expected.max(1);
+        prop_assert_eq!(topdiff(&a, &b, tau), expected);
+    }
+
+    #[test]
+    fn topdiff_and_touzet_agree(
+        a in arb_tree(20, 4),
+        b in arb_tree(20, 4),
+        tau in 1u32..40,
+    ) {
+        // For ANY tau (even invalid bounds) both algorithms must agree on
+        // whether the result is within tau, per Lemma 7.1: dtau <= tau iff
+        // the true distance is <= tau.
+        let t1 = touzet_depth(&a, &b, tau);
+        let t2 = topdiff(&a, &b, tau);
+        prop_assert_eq!(t1 <= tau, t2 <= tau);
+        if t1 <= tau {
+            prop_assert_eq!(t1, t2);
+        }
     }
 }

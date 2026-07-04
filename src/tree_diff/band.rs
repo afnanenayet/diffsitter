@@ -36,7 +36,6 @@ impl BandMatrix {
         }
     }
 
-    #[allow(dead_code)] // consumed by topdiff.rs (Task 6)
     pub(crate) fn half_width(&self) -> usize {
         self.half_width
     }
