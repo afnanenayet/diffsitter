@@ -15,7 +15,7 @@ use libdiffsitter::generate_ast_vector_data;
 use libdiffsitter::parse::SUPPORTED_LANGUAGES;
 use libdiffsitter::parse::generate_language;
 use libdiffsitter::parse::lang_name_from_file_ext;
-use libdiffsitter::render::{DisplayData, DocumentDiffData, Renderer};
+use libdiffsitter::render::{DiffPayload, DisplayData, DocumentDiffData, Renderer};
 use log::{LevelFilter, debug, info, warn};
 use serde_json as json;
 use std::{
@@ -114,7 +114,7 @@ fn run_diff(args: Args, config: Config) -> Result<()> {
 
     let hunks = diff::compute_edit_script(&diff_vec_a, &diff_vec_b)?;
     let params = DisplayData {
-        hunks,
+        diff: DiffPayload::Hunks(hunks),
         old: DocumentDiffData {
             filename: &ast_data_a.path.to_string_lossy(),
             text: &ast_data_a.text,

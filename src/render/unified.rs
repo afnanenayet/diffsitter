@@ -1,7 +1,9 @@
 use crate::diff::{Hunk, Line, RichHunk};
 use crate::render::{
-    ColorDef, DisplayData, EmphasizedStyle, RegularStyle, Renderer, default_option, opt_color_def,
+    ColorDef, DiffPayload, DisplayData, EmphasizedStyle, RegularStyle, Renderer, default_option,
+    opt_color_def,
 };
+use crate::tree_diff::TreeDiffError;
 use anyhow::Result;
 use console::{Color, Style, Term};
 use log::{debug, error, info};
@@ -101,7 +103,16 @@ impl Renderer for Unified {
         data: &DisplayData,
         term_info: Option<&Term>,
     ) -> Result<()> {
-        let DisplayData { hunks, old, new } = &data;
+        let DisplayData { diff, old, new } = &data;
+        let DiffPayload::Hunks(hunks) = diff else {
+            // The engine name is inferred from the payload variant: today
+            // only the topdiff engine produces `Structural` payloads.
+            return Err(TreeDiffError::RendererMismatch {
+                engine: "topdiff".into(),
+                renderer: "unified".into(),
+            }
+            .into());
+        };
         let old_fmt = FormattingDirectives::from(&self.deletion);
         let new_fmt = FormattingDirectives::from(&self.addition);
 

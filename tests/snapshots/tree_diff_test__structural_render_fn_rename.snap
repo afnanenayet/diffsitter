@@ -1,0 +1,7 @@
+---
+source: tests/tree_diff_test.rs
+expression: "String::from_utf8(buf).unwrap()"
+---
+a.rs -> b.rs (tree diff, distance 2)
+~ identifier 1:4 `foo` -> `bar`  (in function_item `fn foo() -> i32 {`)
+~ identifier 6:13 `foo` -> `bar`  (in call_expression `foo()`)

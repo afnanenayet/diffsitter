@@ -9,17 +9,33 @@
 //! This module also defines utilities that may be useful for `Renderer` implementations.
 
 mod json;
+mod structural;
 mod unified;
 
 use self::json::Json;
 use crate::diff::RichHunks;
+use crate::tree_diff::StructuralDiff;
 use anyhow::anyhow;
 use console::{Color, Style, Term};
 use enum_dispatch::enum_dispatch;
 use serde::{Deserialize, Serialize};
 use std::io::Write;
+use structural::Structural;
 use strum::{self, Display, EnumIter, EnumString, IntoEnumIterator};
 use unified::Unified;
+
+/// The diff content produced by whichever engine ran.
+///
+/// Serialization is untagged so the `Hunks` variant keeps the exact JSON
+/// shape `RichHunks` had before this enum existed.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(untagged)]
+pub enum DiffPayload<'a> {
+    /// Line-oriented hunks from the Myers engine.
+    Hunks(RichHunks<'a>),
+    /// Node-level edits from the tree diff engine.
+    Structural(StructuralDiff),
+}
 
 /// The parameters required to display a diff for a particular document
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -33,8 +49,12 @@ pub struct DocumentDiffData<'a> {
 /// The parameters a [Renderer] instance receives to render a diff.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct DisplayData<'a> {
-    /// The hunks constituting the diff.
-    pub hunks: RichHunks<'a>,
+    /// The diff payload produced by the configured engine.
+    ///
+    /// Serialized under the historical name `hunks` so the JSON renderer's
+    /// output schema stays stable for the default (Myers) engine.
+    #[serde(rename = "hunks")]
+    pub diff: DiffPayload<'a>,
     /// The parameters that correspond to the old document
     pub old: DocumentDiffData<'a>,
     /// The parameters that correspond to the new document
@@ -48,6 +68,7 @@ pub struct DisplayData<'a> {
 pub enum Renderers {
     Unified,
     Json,
+    Structural,
 }
 
 impl Default for Renderers {
@@ -211,6 +232,7 @@ pub struct RenderConfig {
 
     unified: unified::Unified,
     json: json::Json,
+    structural: structural::Structural,
 }
 
 impl Default for RenderConfig {
@@ -220,6 +242,7 @@ impl Default for RenderConfig {
             default: default_renderer.to_string(),
             unified: Unified::default(),
             json: Json::default(),
+            structural: Structural::default(),
         }
     }
 }
@@ -249,6 +272,7 @@ mod tests {
 
     #[test_case("unified")]
     #[test_case("json")]
+    #[test_case("structural")]
     fn test_get_renderer_custom_tag(tag: &str) {
         let cfg = RenderConfig::default();
         let res = cfg.get_renderer(Some(tag.into()));
