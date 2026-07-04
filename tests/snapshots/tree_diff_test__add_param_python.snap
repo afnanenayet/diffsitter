@@ -1,0 +1,63 @@
+---
+source: tests/tree_diff_test.rs
+expression: diff
+---
+{
+  "edits": [
+    {
+      "type": "insert",
+      "node": {
+        "kind": ",",
+        "snippet": ",",
+        "start": {
+          "row": 0,
+          "column": 14
+        },
+        "end": {
+          "row": 0,
+          "column": 15
+        }
+      },
+      "context": {
+        "kind": "parameters",
+        "snippet": "(name, excited)",
+        "start": {
+          "row": 0,
+          "column": 9
+        },
+        "end": {
+          "row": 0,
+          "column": 24
+        }
+      }
+    },
+    {
+      "type": "insert",
+      "node": {
+        "kind": "identifier",
+        "snippet": "excited",
+        "start": {
+          "row": 0,
+          "column": 16
+        },
+        "end": {
+          "row": 0,
+          "column": 23
+        }
+      },
+      "context": {
+        "kind": "parameters",
+        "snippet": "(name, excited)",
+        "start": {
+          "row": 0,
+          "column": 9
+        },
+        "end": {
+          "row": 0,
+          "column": 24
+        }
+      }
+    }
+  ],
+  "distance": 2
+}

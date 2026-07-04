@@ -13,16 +13,21 @@ mod autostop;
 mod band;
 mod cost;
 mod mapping;
+mod output;
 mod ted;
 mod topdiff;
 mod touzet;
 mod tree;
 
 pub use mapping::{EditMapping, edit_mapping};
+pub use output::{
+    NodeSummary, Position, StructuralDiff, StructuralEdit, StructuralEditKind, classify,
+};
 pub use topdiff::topdiff;
 pub use touzet::touzet_depth;
 pub use tree::{LabeledTree, build_labeled_trees};
 
+use crate::input_processing::{TreeSitterProcessor, VectorData};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -62,6 +67,23 @@ pub fn tree_edit_distance(
         (false, true) => Ok(u32::try_from(old.len()).unwrap_or(u32::MAX)),
         (false, false) => Ok(autostop::autostop(old, new, options)?.distance),
     }
+}
+
+/// Compute a structural diff between two parsed documents.
+///
+/// This is the tree diff engine's main entry point, mirroring what
+/// [`crate::diff::compute_edit_script`] is for the Myers engine: it builds
+/// labeled trees, recovers the optimal edit mapping, and classifies it into
+/// renames, deletions, and insertions.
+pub fn tree_diff(
+    processor: &TreeSitterProcessor,
+    old: &VectorData,
+    new: &VectorData,
+    options: &TreeDiffOptions,
+) -> Result<StructuralDiff, TreeDiffError> {
+    let (old_tree, new_tree) = build_labeled_trees(processor, old, new);
+    let mapping = edit_mapping(&old_tree, &new_tree, options)?;
+    Ok(classify(&old_tree, &new_tree, &mapping))
 }
 
 /// Errors that can arise when computing a tree diff.

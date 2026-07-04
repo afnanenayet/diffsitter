@@ -1,0 +1,87 @@
+---
+source: tests/tree_diff_test.rs
+expression: diff
+---
+{
+  "edits": [
+    {
+      "type": "rename",
+      "old": {
+        "kind": "identifier",
+        "snippet": "foo",
+        "start": {
+          "row": 0,
+          "column": 3
+        },
+        "end": {
+          "row": 0,
+          "column": 6
+        }
+      },
+      "new": {
+        "kind": "identifier",
+        "snippet": "bar",
+        "start": {
+          "row": 0,
+          "column": 3
+        },
+        "end": {
+          "row": 0,
+          "column": 6
+        }
+      },
+      "context": {
+        "kind": "function_item",
+        "snippet": "fn foo() -> i32 {",
+        "start": {
+          "row": 0,
+          "column": 0
+        },
+        "end": {
+          "row": 2,
+          "column": 1
+        }
+      }
+    },
+    {
+      "type": "rename",
+      "old": {
+        "kind": "identifier",
+        "snippet": "foo",
+        "start": {
+          "row": 5,
+          "column": 12
+        },
+        "end": {
+          "row": 5,
+          "column": 15
+        }
+      },
+      "new": {
+        "kind": "identifier",
+        "snippet": "bar",
+        "start": {
+          "row": 5,
+          "column": 12
+        },
+        "end": {
+          "row": 5,
+          "column": 15
+        }
+      },
+      "context": {
+        "kind": "call_expression",
+        "snippet": "foo()",
+        "start": {
+          "row": 5,
+          "column": 12
+        },
+        "end": {
+          "row": 5,
+          "column": 17
+        }
+      }
+    }
+  ],
+  "distance": 2
+}
