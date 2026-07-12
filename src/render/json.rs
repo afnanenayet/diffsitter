@@ -34,7 +34,7 @@ impl Renderer for Json {
             .into());
         }
         let json_str = self.generate_json_str(data)?;
-        write!(writer, "{}", &json_str)?;
+        write!(writer, "{json_str}")?;
         Ok(())
     }
 }

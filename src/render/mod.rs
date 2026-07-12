@@ -256,7 +256,7 @@ impl RenderConfig {
         if let Some(t) = tag {
             let cand_enum = Renderers::iter().find(|e| e.to_string() == t);
             match cand_enum {
-                None => Err(anyhow!("'{}' is not a valid renderer", &t)),
+                None => Err(anyhow!("'{t}' is not a valid renderer")),
                 Some(renderer) => Ok(renderer),
             }
         } else {
