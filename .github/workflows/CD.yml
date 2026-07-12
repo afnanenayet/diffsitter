@@ -57,7 +57,7 @@ jobs:
         run: |
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: true
         if: env.VERSION == 'nightly'
@@ -166,7 +166,7 @@ jobs:
             artifact_name: diffsitter
             target: riscv64gc-unknown-linux-gnu
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: true
 
