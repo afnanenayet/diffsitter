@@ -120,15 +120,22 @@ ancestor node (for annotation context, e.g. "in fn parse_file").
 
 ### Structural renderer (`src/render/structural.rs`)
 
-Line-oriented colored diff of changed regions (reusing the line-printing
-and context style of `unified.rs`), augmented per region with structural
-notes:
+Annotated structural notes: a bold header naming both files and the
+distance, then one colored line per node-level edit with its 1-based
+position, snippet, and nearest named ancestor as context (this is the
+format the implementation plan locked and Task 10 shipped, pinned by
+snapshot):
 
 ```
-~ rename: identifier `foo` → `bar`   (in fn parse_file)
-- delete: parameter `verbose: bool`  (in fn parse_file)
-+ insert: match arm `Err(e) => …`    (in fn run)
+old.rs -> new.rs (tree diff, distance 2)
+~ identifier 1:4 `foo` -> `bar`  (in function_item `fn foo() -> i32 {`)
+- parameter 10:8 `verbose: bool`  (in function_item `fn parse_file(`)
++ match_arm 22:8 `Err(e) => {`  (in function_item `fn run(`)
 ```
+
+Follow-up (not shipped): additionally rendering the changed source
+regions line-by-line in `unified.rs`'s style, interleaved with these
+notes.
 
 ## Guardrails
 
