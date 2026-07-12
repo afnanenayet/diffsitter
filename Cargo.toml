@@ -142,6 +142,11 @@ name = "ast_navigation_bench"
 harness = false
 required-features = ["static-grammar-libs"]
 
+[[bench]]
+name = "tree_diff_bench"
+harness = false
+required-features = ["static-grammar-libs"]
+
 [profile.profiling]
 inherits = "release"
 # Debug symbols are required for profiling
