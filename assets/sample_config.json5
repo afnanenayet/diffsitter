@@ -100,6 +100,15 @@
     // ${fallback_cmd} ${old} ${new}
     // ```
     "fallback-cmd": "diff",
+    // Which diff engine to use: "myers" (token-sequence diff, the default)
+    // or "topdiff" (tree edit distance; requires the "structural" renderer).
+    "diff-engine": "myers",
+    // Options for the "topdiff" tree diff engine.
+    "tree-diff": {
+        // Abort when the distance search bound exceeds this value; wildly
+        // dissimilar inputs are better served by the myers engine.
+        "max-tau": 2048,
+    },
     "input-processing": {
         "split-graphemes": true,
         // You can exclude different tree sitter node types - this rule takes precedence over `include_kinds`.

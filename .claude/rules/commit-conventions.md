@@ -14,6 +14,8 @@ Lowercase description (except proper nouns). No period at end.
 - `build(deps):` — dependency version bumps
 - `chore:` — maintenance (clippy fixes, dep updates, version bumps, MSRV)
 - `docs:` — documentation changes
+- `test:` — test-only additions (fuzz targets, oracles, fixtures)
+- `bench:` — benchmark additions or changes
 
 ## Scopes
 

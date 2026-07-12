@@ -36,7 +36,7 @@ mod tests {
                     // Added the newlines so the diffs from `insta` are easier to parse
                     "Line={{line_index={}, entries=\n[\n{}\n]}}\n",
                     line.line_index,
-                    &generate_snapshot_entries_string(line.entries.as_slice())
+                    generate_snapshot_entries_string(line.entries.as_slice())
                 )
             })
             .collect::<Vec<String>>()

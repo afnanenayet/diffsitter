@@ -1,5 +1,5 @@
 use ::console::Term;
-use anyhow::Result;
+use anyhow::{Result, anyhow};
 use clap::CommandFactory;
 use clap::FromArgMatches;
 #[cfg(panic = "unwind")]
@@ -8,6 +8,7 @@ use libdiffsitter::cli;
 use libdiffsitter::cli::Args;
 use libdiffsitter::config::APP_NAME;
 use libdiffsitter::config::Config;
+use libdiffsitter::config::DiffEngine;
 use libdiffsitter::console_utils;
 use libdiffsitter::diff;
 use libdiffsitter::generate_ast_vector_data;
@@ -15,13 +16,15 @@ use libdiffsitter::generate_ast_vector_data;
 use libdiffsitter::parse::SUPPORTED_LANGUAGES;
 use libdiffsitter::parse::generate_language;
 use libdiffsitter::parse::lang_name_from_file_ext;
-use libdiffsitter::render::{DisplayData, DocumentDiffData, Renderer};
+use libdiffsitter::render::{DiffPayload, DisplayData, DocumentDiffData, Renderer, Renderers};
+use libdiffsitter::tree_diff::{self, TreeDiffError};
 use log::{LevelFilter, debug, info, warn};
 use serde_json as json;
 use std::{
     io,
     path::Path,
     process::{Child, Command},
+    str::FromStr,
 };
 
 #[cfg(feature = "better-build-info")]
@@ -99,6 +102,23 @@ fn run_diff(args: Args, config: Config) -> Result<()> {
     let render_param = args.renderer;
     let renderer = render_config.get_renderer(render_param)?;
 
+    let engine = match args.diff_engine.as_deref() {
+        Some(s) => DiffEngine::from_str(s).map_err(|_| {
+            anyhow!("'{s}' is not a valid diff engine (expected one of: myers, topdiff)")
+        })?,
+        None => config.diff_engine,
+    };
+
+    // Reject engine/renderer mismatches in both directions before doing any
+    // diff work; the topdiff direction is checked in its match arm below.
+    if engine == DiffEngine::Myers && matches!(renderer, Renderers::Structural(_)) {
+        return Err(TreeDiffError::RendererMismatch {
+            engine: engine.to_string(),
+            renderer: renderer.to_string(),
+        }
+        .into());
+    }
+
     let file_type = args.file_type.as_deref();
     let path_a = args.old.as_ref().unwrap();
     let path_b = args.new.as_ref().unwrap();
@@ -109,12 +129,43 @@ fn run_diff(args: Args, config: Config) -> Result<()> {
 
     let ast_data_a = generate_ast_vector_data(path_a.clone(), file_type, &config.grammar)?;
     let ast_data_b = generate_ast_vector_data(path_b.clone(), file_type, &config.grammar)?;
-    let diff_vec_a = config.input_processing.process_vec_data(&ast_data_a);
-    let diff_vec_b = config.input_processing.process_vec_data(&ast_data_b);
 
-    let hunks = diff::compute_edit_script(&diff_vec_a, &diff_vec_b)?;
+    // The Myers hunks borrow from the processed vectors, so those must
+    // outlive `params`; they are only initialized on the Myers path.
+    let diff_vec_a;
+    let diff_vec_b;
+    let diff_payload = match engine {
+        DiffEngine::Myers => {
+            diff_vec_a = config.input_processing.process_vec_data(&ast_data_a);
+            diff_vec_b = config.input_processing.process_vec_data(&ast_data_b);
+            DiffPayload::Hunks(diff::compute_edit_script(&diff_vec_a, &diff_vec_b)?)
+        }
+        DiffEngine::Topdiff => {
+            if !matches!(renderer, Renderers::Structural(_)) {
+                return Err(TreeDiffError::RendererMismatch {
+                    engine: engine.to_string(),
+                    renderer: renderer.to_string(),
+                }
+                .into());
+            }
+            let structural_diff = tree_diff::tree_diff(
+                &config.input_processing,
+                &ast_data_a,
+                &ast_data_b,
+                &config.tree_diff,
+            )
+            .map_err(|e| match e {
+                TreeDiffError::BoundExceeded { .. } => anyhow!(e).context(
+                    "the inputs are too dissimilar for the tree diff engine; \
+                     rerun with --diff-engine myers",
+                ),
+                other => anyhow!(other),
+            })?;
+            DiffPayload::Structural(structural_diff)
+        }
+    };
     let params = DisplayData {
-        hunks,
+        diff: diff_payload,
         old: DocumentDiffData {
             filename: &ast_data_a.path.to_string_lossy(),
             text: &ast_data_a.text,
