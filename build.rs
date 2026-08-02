@@ -128,7 +128,7 @@ fn compile_grammar(
             .flag_if_supported("-std=c++17")
             .warnings(false)
             .extra_warnings(false)
-            .try_compile(&format!("{}-cxx-diffsitter", &output_name))?;
+            .try_compile(&format!("{}-cxx-diffsitter", output_name))?;
     }
 
     Ok(())

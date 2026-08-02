@@ -22,7 +22,7 @@ impl Renderer for Json {
         _term_info: Option<&Term>,
     ) -> anyhow::Result<()> {
         let json_str = self.generate_json_str(data)?;
-        write!(writer, "{}", &json_str)?;
+        write!(writer, "{}", json_str)?;
         Ok(())
     }
 }

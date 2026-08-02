@@ -235,7 +235,7 @@ mod tests {
             .with_context(|| {
                 format!(
                     "Error parsing file: {}",
-                    &path.file_name().unwrap().to_string_lossy()
+                    path.file_name().unwrap().to_string_lossy()
                 )
             })
             .unwrap();
