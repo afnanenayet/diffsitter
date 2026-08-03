@@ -263,7 +263,7 @@ jobs:
           profile: production
 
       - name: Install cargo deb
-        uses: taiki-e/install-action@v2
+        uses: taiki-e/install-action@v2.85.5
         if: matrix.job.target == 'x86_64-unknown-linux-gnu'
         with:
           tool: cargo-deb@3.6.2
