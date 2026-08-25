@@ -295,7 +295,7 @@ pub fn generate_language(lang: &str, config: &GrammarConfig) -> Result<Language,
                 return Ok(grammar);
             }
             Err(e) => {
-                debug!("Failed to load candidate grammar for {}: {}", lang, &e);
+                debug!("Failed to load candidate grammar for {}: {}", lang, e);
                 // Only error out on the last candidate, otherwise we want to keep falling back to
                 // the next potential grammar
                 if is_last_cand {
