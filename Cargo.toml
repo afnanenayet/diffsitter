@@ -55,53 +55,53 @@ path = "src/lib.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tree-sitter = "0.26.3"
-clap = { version = "4.5.54", features = [
+tree-sitter = "0.26.13"
+clap = { version = "4.6.6", features = [
   "derive",
   "env",
   "unicode",
   "wrap_help",
 ] }
-clap_complete = "4.5.65"
-anyhow = { version = "1.0.100", features = ["backtrace"] }
-phf = { version = "0.13.1", features = ["macros"] }
-console = "0.16.2"
-strum = { version = "0.27.2", features = ["derive"] }
-strum_macros = "0.27.2"
-serde = { version = "1.0.228", features = ["derive"] }
-serde_json = "1.0.148"
-json5 = "1.3.0"
+clap_complete = "4.6.9"
+anyhow = { version = "1.0.104", features = ["backtrace"] }
+phf = { version = "0.14.0", features = ["macros"] }
+console = "0.16.4"
+strum = { version = "0.28.0", features = ["derive"] }
+strum_macros = "0.28.0"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+json5 = "1.3.1"
 pretty_env_logger = "0.5.0"
-log = { version = "0.4.29", features = ["std"] }
-thiserror = "2.0.18"
+log = { version = "0.4.34", features = ["std"] }
+thiserror = "2.0.20"
 logging_timer = "1.1.1"
 jemallocator = { version = "0.5.4", optional = true }
 libloading = "0.8.9"
-unicode-segmentation = "1.12.0"
+unicode-segmentation = "1.13.3"
 human-panic = "2.0.5"
-shadow-rs = { version = "1.5.0", optional = true }
+shadow-rs = { version = "2.0.0", optional = true }
 enum_dispatch = "0.3.13"
 lazy_static = { version = "1.5.0", optional = true }
 figment = { version = "0.10", features = ["toml", "json", "env"] }
-rmcp = { version = "0.1", features = ["server", "macros", "transport-io"], optional = true }
+rmcp = { version = "2.2", features = ["server", "macros", "transport-io"], optional = true }
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "io-std"], optional = true }
-schemars = { version = "0.8", optional = true }
+schemars = { version = "1.2", optional = true }
 
 [dev-dependencies]
 test-case = "3.3.1"
 pretty_assertions = "1.4.1"
-mockall = "0.14.0"
+mockall = "0.15.0"
 rstest = "0.26"
 figment = { version = "0.10", features = ["toml", "json", "env", "test"] }
-proptest = "1.6"
-criterion = { version = "0.5", features = ["html_reports"] }
-tempfile = "3.15"
+proptest = "1.11"
+criterion = { version = "0.7", features = ["html_reports"] }
+tempfile = "3.27"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 
 # We need the backtrace feature to enable snapshot name generation in
 # single-threaded tests (tests using cargo cross run single-threaded due to
 # limitations with QEMU).
-insta = { version = "1.46.1", features = ["json"] }
+insta = { version = "1.48.0", features = ["json"] }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 # We use directories next to get the windows config path
@@ -112,13 +112,13 @@ directories-next = "2.0.0"
 xdg = "3.0.0"
 
 [build-dependencies]
-cc = { version = "1.2.54", features = ["parallel"] }
-phf = { version = "0.13.1", features = ["macros"] }
-anyhow = "1.0.100"
+cc = { version = "1.4.4", features = ["parallel"] }
+phf = { version = "0.14.0", features = ["macros"] }
+anyhow = "1.0.104"
 cargo-emit = "0.2.1"
-rayon = "1.11.0"
-thiserror = "2.0.18"
-shadow-rs = { version = "1.5.0", optional = true }
+rayon = "1.12.0"
+thiserror = "2.0.20"
+shadow-rs = { version = "2.0.0", optional = true }
 
 [features]
 default = ["static-grammar-libs"]
