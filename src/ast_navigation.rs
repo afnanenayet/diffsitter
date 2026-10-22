@@ -821,31 +821,31 @@ impl ParseCache {
             .and_then(|m| m.modified())
             .map_err(NavigationError::Io)?;
 
-        // Check if we have a fresh entry.
+        // Resolve the language name before checking the cache so explicit overrides participate
+        // in the cache validity check.
+        let lang_name = match language {
+            Some(l) => l.to_string(),
+            None => {
+                let ext = canonical
+                    .extension()
+                    .and_then(|e| e.to_str())
+                    .ok_or_else(|| {
+                        NavigationError::ParseError(LoadingError::NoFileExt(
+                            canonical.to_string_lossy().to_string(),
+                        ))
+                    })?;
+                parse::lang_name_from_file_ext(ext, &self.config)?.to_string()
+            }
+        };
+
+        // Check if we have a fresh entry for this file and resolved language.
         let needs_parse = match self.entries.get(&canonical) {
-            Some(entry) => entry.last_modified < current_mtime,
+            Some(entry) => entry.last_modified < current_mtime || entry.language_name != lang_name,
             None => true,
         };
 
         if needs_parse {
             let text = fs::read_to_string(&canonical).map_err(NavigationError::Io)?;
-
-            // Resolve the language name.
-            let lang_name = match language {
-                Some(l) => l.to_string(),
-                None => {
-                    let ext = canonical
-                        .extension()
-                        .and_then(|e| e.to_str())
-                        .ok_or_else(|| {
-                            NavigationError::ParseError(LoadingError::NoFileExt(
-                                canonical.to_string_lossy().to_string(),
-                            ))
-                        })?;
-                    parse::lang_name_from_file_ext(ext, &self.config)?.to_string()
-                }
-            };
-
             let ts_language = parse::generate_language(&lang_name, &self.config)?;
 
             let mut parser = tree_sitter::Parser::new();
@@ -1646,6 +1646,20 @@ mod tests {
         let parsed = cache.get_or_parse(&path, Some("rust")).unwrap();
         p_assert_eq!(parsed.language_name, "rust");
         assert!(parsed.text.contains("fn overridden()"));
+    }
+
+    #[test]
+    fn parse_cache_reparses_when_language_override_changes() {
+        let mut cache = ParseCache::new(GrammarConfig::default());
+        let mut tmpfile = tempfile::Builder::new().suffix(".txt").tempfile().unwrap();
+        writeln!(tmpfile, "fn synthetic() {{}}").unwrap();
+        let path = tmpfile.path().to_owned();
+
+        let first = cache.get_or_parse(&path, Some("rust")).unwrap();
+        p_assert_eq!(first.language_name, "rust");
+
+        let second = cache.get_or_parse(&path, Some("python")).unwrap();
+        p_assert_eq!(second.language_name, "python");
     }
 
     // -----------------------------------------------------------------------
